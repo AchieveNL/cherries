@@ -71,13 +71,27 @@ export default function Home() {
             <div className="w-full h-[1px] bg-[#676767] mb-3 sm:mb-4"></div>
 
             {/* Input with arrow button */}
-            <div className="relative">
+            {/* <div className="relative"> */}
+            {/*   <input */}
+            {/*     type="email" */}
+            {/*     placeholder="Vul je email adres in" */}
+            {/*     className="w-full h-[44px] sm:h-[48px] bg-white rounded-full px-4 sm:px-6 pr-14 sm:pr-16 outline-none text-[#4F4F4F] text-[14px] sm:text-[16px] font-normal border border-[#E0E0E0] focus:border-[#BDBDBD] transition-colors placeholder:text-[#000000]" */}
+            {/*   /> */}
+            {/*   <button className="absolute right-1  top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-[#830016] rounded-full flex items-center justify-center hover:bg-[#661012] active:bg-[#4a000c] transition-colors"> */}
+            {/*     <ArrowIcon className="w-3 h-3 sm:w-4 sm:h-4" /> */}
+            {/*   </button> */}
+            {/* </div> */}
+            <div className="relative opacity-50 pointer-events-none">
               <input
                 type="email"
                 placeholder="Vul je email adres in"
                 className="w-full h-[44px] sm:h-[48px] bg-white rounded-full px-4 sm:px-6 pr-14 sm:pr-16 outline-none text-[#4F4F4F] text-[14px] sm:text-[16px] font-normal border border-[#E0E0E0] focus:border-[#BDBDBD] transition-colors placeholder:text-[#000000]"
+                disabled
               />
-              <button className="absolute right-1  top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-[#830016] rounded-full flex items-center justify-center hover:bg-[#661012] active:bg-[#4a000c] transition-colors">
+              <button
+                className="absolute right-1 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-[#830016] rounded-full flex items-center justify-center hover:bg-[#661012] active:bg-[#4a000c] transition-colors"
+                disabled
+              >
                 <ArrowIcon className="w-3 h-3 sm:w-4 sm:h-4" />
               </button>
             </div>
