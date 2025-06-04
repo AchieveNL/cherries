@@ -32,7 +32,7 @@ const ArrowIcon = ({ title, titleId, ...props }: SVGProps<SVGSVGElement> & SVGRP
 export default function Home() {
   return (
     <main className="relative bg-[#830016] min-h-screen">
-      {/* Header - Mobile optimized */}
+      {/* Header */}
       <header className="flex bg-white min-h-[80px] lg:min-h-[101px] flex-col items-center justify-center py-4 px-4">
         <Image
           src="/logo.svg"
@@ -43,25 +43,25 @@ export default function Home() {
         />
       </header>
 
-      {/* Main Section - Mobile responsive */}
+      {/* Main Section  */}
       <section className=" pt-40 sm:pt-36 bg-[url('/hero-bg.png')]  pb-20 sm:pb-24 lg:pb-32 min-h-[calc(100vh-80px)] lg:min-h-[calc(100vh-101px)] px-4">
         <div className="text-center max-w-6xl mx-auto">
-          {/* Responsive heading */}
+          {/*  heading */}
           <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-white mb-4 sm:mb-6 lg:mb-8 leading-tight">
             Coming soon!
           </h1>
 
-          {/* Responsive paragraph */}
+          {/*  paragraph */}
           <p className="text-base sm:text-lg lg:text-xl mx-auto max-w-[895px] text-white mb-8 sm:mb-12 lg:mb-16 px-4 leading-relaxed">
             Meld je aan voor onze nieuwsbrief en ontvang 10% korting op je eerste bestelling. Blijf op de hoogte van
             nieuwe producten en speciale aanbiedingen.🔥
           </p>
         </div>
 
-        {/* Email signup form - Mobile responsive */}
+        {/* Email signup form */}
         <div className="w-full relative z-10 max-w-[848px] mx-auto px-4">
           <div className="rounded-[20px] sm:rounded-[24px] bg-[#EFE8DD] p-4 sm:p-6">
-            {/* Header text - Mobile responsive */}
+            {/* Header text  */}
             <h4 className="text-[#171717] text-[14px] sm:text-[16px] font-semibold flex items-center mb-3 sm:mb-4">
               <EmailIcon className="mr-2 w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
               <span className="leading-tight">Meld je aan en ontvang direct 10% korting!</span>
@@ -70,7 +70,7 @@ export default function Home() {
             {/* Separator line */}
             <div className="w-full h-[1px] bg-[#676767] mb-3 sm:mb-4"></div>
 
-            {/* Input with arrow button - Mobile responsive */}
+            {/* Input with arrow button */}
             <div className="relative">
               <input
                 type="email"
@@ -85,7 +85,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Hero frame image - Mobile responsive */}
+      {/* Hero frame image */}
       <div className="absolute bottom-0 left-0 w-full z-0">
         <Image
           src="/hero-frame.png"
