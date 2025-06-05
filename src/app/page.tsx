@@ -1,6 +1,8 @@
+'use client';
+
 import Image from 'next/image';
 import * as React from 'react';
-import { SVGProps } from 'react';
+import { SVGProps, useState } from 'react';
 
 interface SVGRProps {
   title?: string;
@@ -30,6 +32,61 @@ const ArrowIcon = ({ title, titleId, ...props }: SVGProps<SVGSVGElement> & SVGRP
 );
 
 export default function Home() {
+  const [email, setEmail] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [status, setStatus] = useState<{
+    type: 'success' | 'error' | null;
+    message: string;
+  }>({ type: null, message: '' });
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!email || !email.includes('@')) {
+      setStatus({
+        type: 'error',
+        message: 'Vul een geldig e-mailadres in',
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    setStatus({ type: null, message: '' });
+
+    try {
+      const response = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setStatus({
+          type: 'success',
+          message: result.message || 'Aanmelding succesvol!',
+        });
+        setEmail(''); // Clear the input
+      } else {
+        setStatus({
+          type: 'error',
+          message: result.error || 'Er is een fout opgetreden',
+        });
+      }
+    } catch (error) {
+      setStatus({
+        type: 'error',
+        message: 'Er is een fout opgetreden. Probeer het opnieuw.',
+      });
+      console.error('Newsletter signup error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <main className="relative bg-[#830016] min-h-screen">
       {/* Header */}
@@ -54,7 +111,7 @@ export default function Home() {
           {/*  paragraph */}
           <p className="text-base sm:text-lg lg:text-xl mx-auto max-w-[895px] text-white mb-8 sm:mb-12 lg:mb-16 px-4 leading-relaxed">
             Meld je aan voor onze nieuwsbrief en ontvang 10% korting op je eerste bestelling. Blijf op de hoogte van
-            nieuwe producten en speciale aanbiedingen.🔥
+            nieuwe producten en speciale aanbiedingen.🔥
           </p>
         </div>
 
@@ -70,31 +127,53 @@ export default function Home() {
             {/* Separator line */}
             <div className="w-full h-[1px] bg-[#676767] mb-3 sm:mb-4"></div>
 
-            {/* Input with arrow button */}
-            {/* <div className="relative"> */}
-            {/*   <input */}
-            {/*     type="email" */}
-            {/*     placeholder="Vul je email adres in" */}
-            {/*     className="w-full h-[44px] sm:h-[48px] bg-white rounded-full px-4 sm:px-6 pr-14 sm:pr-16 outline-none text-[#4F4F4F] text-[14px] sm:text-[16px] font-normal border border-[#E0E0E0] focus:border-[#BDBDBD] transition-colors placeholder:text-[#000000]" */}
-            {/*   /> */}
-            {/*   <button className="absolute right-1  top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-[#830016] rounded-full flex items-center justify-center hover:bg-[#661012] active:bg-[#4a000c] transition-colors"> */}
-            {/*     <ArrowIcon className="w-3 h-3 sm:w-4 sm:h-4" /> */}
-            {/*   </button> */}
-            {/* </div> */}
-            <div className="relative opacity-50 pointer-events-none">
-              <input
-                type="email"
-                placeholder="Vul je email adres in"
-                className="w-full h-[44px] sm:h-[48px] bg-white rounded-full px-4 sm:px-6 pr-14 sm:pr-16 outline-none text-[#4F4F4F] text-[14px] sm:text-[16px] font-normal border border-[#E0E0E0] focus:border-[#BDBDBD] transition-colors placeholder:text-[#000000]"
-                disabled
-              />
-              <button
-                className="absolute right-1 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-[#830016] rounded-full flex items-center justify-center hover:bg-[#661012] active:bg-[#4a000c] transition-colors"
-                disabled
+            {/* Status message */}
+            {status.type && (
+              <div
+                className={`mb-4 p-3 rounded-lg flex items-center text-sm ${
+                  status.type === 'success'
+                    ? 'bg-green-100 text-green-800 border border-green-200'
+                    : 'bg-red-100 text-red-800 border border-red-200'
+                }`}
               >
-                <ArrowIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-              </button>
-            </div>
+                {status.type === 'success' && (
+                  <svg className="mr-2 w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                )}
+                <span>{status.message}</span>
+              </div>
+            )}
+
+            {/* Input with arrow button */}
+            <form onSubmit={handleSubmit}>
+              <div className="relative">
+                <input
+                  type="email"
+                  placeholder="Vul je email adres in"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isLoading}
+                  className="w-full h-[44px] sm:h-[48px] bg-white rounded-full px-4 sm:px-6 pr-14 sm:pr-16 outline-none text-[#4F4F4F] text-[14px] sm:text-[16px] font-normal border border-[#E0E0E0] focus:border-[#BDBDBD] transition-colors placeholder:text-[#000000] disabled:opacity-50 disabled:cursor-not-allowed"
+                  required
+                />
+                <button
+                  type="submit"
+                  disabled={isLoading || !email}
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-[#830016] rounded-full flex items-center justify-center hover:bg-[#661012] active:bg-[#4a000c] transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#830016]"
+                >
+                  {isLoading ? (
+                    <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <ArrowIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </section>
