@@ -10,16 +10,18 @@ import {
   useCart,
   useCartLine,
 } from '@shopify/hydrogen-react';
-import { ArrowRight, Minus, Plus, Shield, ShoppingCart, Truck, X } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
+
+import Button from '../ui/Button';
 
 function CartPageContent() {
   const { lines, status } = useCart();
 
   if (status === 'uninitialized' || status === 'updating') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
@@ -27,18 +29,15 @@ function CartPageContent() {
 
   if (!lines || lines.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+      <div className="min-h-screen bg-white">
         <div className="container mx-auto px-4 py-16">
           <div className="text-center max-w-md mx-auto">
             <ShoppingCart className="w-20 h-20 text-gray-400 mx-auto mb-6" />
-            <h1 className="text-3xl font-bungee font-bold text-gray-900 mb-4">Your cart is empty</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">Your cart is empty</h1>
             <p className="text-gray-600 mb-8 text-lg">Looks like you haven&apos;t added any items yet</p>
-            <a
-              href="/products"
-              className="inline-flex items-center space-x-2 bg-primary text-white px-8 py-4 rounded-xl  transition-all duration-200 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-            >
-              <span>Start Shopping</span>
-              <ArrowRight className="w-5 h-5" />
+
+            <a href="/products">
+              <Button className="mx-auto">Start Shopping</Button>
             </a>
           </div>
         </div>
@@ -47,43 +46,33 @@ function CartPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bungee font-bold text-gray-900 mb-2">Shopping Cart</h1>
-          <p className="text-gray-600 text-lg">
-            {lines.length} item{lines.length !== 1 ? 's' : ''} in your cart
-          </p>
+    <div className="min-h-screen bg-white">
+      <div className="max-w-8xl container mx-auto px-4 py-8">
+        <div className="flex items-center justify-between border-b border-gray-200 pb-4">
+          <h1 className="text-2xl font-bold text-gray-900 uppercase tracking-wide">MY CART({lines.length})</h1>
+          <a href="/products" className="text-red-700 hover:text-red-800 font-medium underline">
+            Continue Shopping
+          </a>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-8 gap-8">
           {/* Cart Items */}
-          <div className="lg:col-span-2 space-y-4">
-            {lines.map((line) => {
-              // Type guard to ensure line is defined
-              if (!line || !line.id) return null;
+          <div className="lg:col-span-6 border-r border-b pb-2 pr-8 border-gray-200">
+            <div className="space-y-6">
+              {lines.map((line) => {
+                if (!line || !line.id) return null;
 
-              return (
-                <CartLineProvider key={line.id} line={line}>
-                  <CartLineItemFull />
-                </CartLineProvider>
-              );
-            })}
-
-            {/* Continue Shopping */}
-            <div className="mt-8 pt-6 border-t border-gray-200">
-              <a
-                href="/products"
-                className="inline-flex items-center space-x-2 text-primary  font-medium transition-colors text-lg"
-              >
-                <ArrowRight className="w-5 h-5 rotate-180" />
-                <span>Continue Shopping</span>
-              </a>
+                return (
+                  <CartLineProvider key={line.id} line={line}>
+                    <CartLineItemCompact />
+                  </CartLineProvider>
+                );
+              })}
             </div>
           </div>
 
           {/* Order Summary */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-2 ">
             <CartSummary />
           </div>
         </div>
@@ -92,93 +81,181 @@ function CartPageContent() {
   );
 }
 
-// Full Cart Line Item Component
-function CartLineItemFull() {
-  const { merchandise, quantity } = useCartLine();
-  console.log('CartLineItemFull', merchandise, quantity);
+// Compact Cart Line Item Component
+function CartLineItemCompact() {
+  const { merchandise, quantity, id } = useCartLine();
+  const { linesRemove } = useCart();
   const [isRemoving, setIsRemoving] = useState(false);
 
-  if (!merchandise) return null;
+  // Move useCallback before any early returns
+  const handleRemove = useCallback(async () => {
+    if (isRemoving || !id) return;
 
-  // Safely get the quantity with fallback
+    setIsRemoving(true);
+    try {
+      await linesRemove([id]);
+    } catch (error) {
+      console.error('Failed to remove cart line:', error);
+      setIsRemoving(false);
+    }
+  }, [id, linesRemove, isRemoving]);
+
+  if (!merchandise || !id) return null;
+
   const safeQuantity = quantity ?? 0;
   const priceAmount = merchandise.price?.amount ? Number(merchandise.price.amount) : 0;
+  const currencyCode = merchandise.price?.currencyCode || 'USD';
+
+  const getVariantAttributes = (): Array<{ name: string; value: string }> => {
+    const attributes: Array<{ name: string; value: string }> = [];
+
+    // If merchandise has selectedOptions, use those
+    if (merchandise.selectedOptions && merchandise.selectedOptions.length > 0) {
+      merchandise.selectedOptions.forEach((option) => {
+        if (option && option.name && option.value) {
+          attributes.push({
+            name: option.name,
+            value: option.value,
+          });
+        }
+      });
+    }
+
+    // Fallback: Check if merchandise has variant title that we can parse
+    // This is useful if selectedOptions aren't available
+    if (attributes.length === 0 && merchandise.title) {
+      // You might need to adjust this parsing logic based on your variant title format
+      // For example, if variant titles are like "Color: Brown / Material: Rubber"
+      const titleParts = merchandise.title.split(' / ');
+      titleParts.forEach((part) => {
+        const [name, value] = part.split(': ');
+        if (name && value) {
+          attributes.push({ name: name.trim(), value: value.trim() });
+        }
+      });
+    }
+
+    return attributes;
+  };
+
+  const variantAttributes = getVariantAttributes();
+
+  // Format currency properly
+  const formatPrice = (amount: number, currency: string) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency,
+    }).format(amount);
+  };
 
   return (
-    <div
-      className={`bg-white rounded-xl p-6 shadow-sm border border-gray-100 transition-all duration-300 ${isRemoving ? 'opacity-50 scale-95' : ''}`}
-    >
+    <div className={` pt-6 ${isRemoving ? 'opacity-50' : ''}`}>
       <div className="flex items-start space-x-6">
         {/* Product Image */}
-        <div className="flex-shrink-0 w-24 h-24 rounded-xl overflow-hidden bg-gray-100">
+        <div className="flex-shrink-0 w-[312px] h-[295px] bg-gray-100 rounded">
           {merchandise.image && merchandise.image.url && (
             <Image
               alt={merchandise.image.altText || merchandise.title || 'Product Image'}
               src={merchandise.image.url}
-              width={merchandise.image.width || 96}
-              height={merchandise.image.height || 96}
-              className="w-full h-full object-cover"
-              sizes="96px"
+              width={312}
+              height={295}
+              className="w-full h-full object-cover rounded"
             />
           )}
         </div>
 
         {/* Product Details */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between mb-4">
+        <div className="flex-1">
+          <div className="flex mb-4 flex-col">
             <div>
-              <h3 className="font-semibold text-gray-900 text-xl leading-tight">{merchandise.product?.title}</h3>
-              <p className="text-gray-600 mt-1">
-                {merchandise.title !== merchandise.product?.title && merchandise.title}
-              </p>
-            </div>
+              <h3 className="font-bold mb-4 font-bungee text-gray-900 text-lg uppercase tracking-wide">
+                {merchandise.product?.title}
+              </h3>
 
-            <button
-              onClick={() => setIsRemoving(true)}
-              className="p-2 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
-              aria-label="Remove item from cart"
-            >
-              <X className="w-5 h-5" />
-            </button>
+              {/* Product attributes */}
+              <div className="space-y-1 text-sm">
+                {variantAttributes.length > 0 ? (
+                  variantAttributes.map((attribute, index) => (
+                    <div key={index} className="flex justify-between">
+                      <span className="text-gray-600">{attribute.name}</span>
+                      <span className="text-gray-900">{attribute.value}</span>
+                    </div>
+                  ))
+                ) : (
+                  // Fallback display if no variant attributes are found
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">SKU</span>
+                      <span className="text-gray-900">{merchandise.sku || 'N/A'}</span>
+                    </div>
+                    {merchandise.title && merchandise.title !== merchandise.product?.title && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Variant</span>
+                        <span className="text-gray-900">{merchandise.title}</span>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
           </div>
 
-          {/* Price and Quantity */}
+          <hr className="border-gray-200 border-2 my-6" />
+
+          {/* Quantity and Remove */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-6">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Price</p>
-                <p className="text-xl font-bold text-primary">${priceAmount.toFixed(2)}</p>
-              </div>
+            <div>
+              <p className="text-sm text-gray-600 mb-2 uppercase tracking-wide">QUANTITY</p>
+              <div className="flex items-center border border-gray-300">
+                <CartLineQuantityAdjustButton
+                  adjust="decrease"
+                  className="px-3 py-1 hover:bg-gray-50 transition-colors text-lg"
+                  aria-label="Decrease quantity"
+                >
+                  −
+                </CartLineQuantityAdjustButton>
 
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Quantity</p>
-                <div className="flex items-center border border-gray-300 rounded-lg">
-                  <CartLineQuantityAdjustButton
-                    adjust="decrease"
-                    className="p-2 hover:bg-gray-50 transition-colors"
-                    aria-label="Decrease quantity"
-                  >
-                    <Minus className="w-4 h-4" />
-                  </CartLineQuantityAdjustButton>
+                <CartLineQuantity className="px-4 py-1 font-medium text-gray-900 min-w-[3rem] text-center border-l border-r border-gray-300" />
 
-                  <CartLineQuantity className="px-4 py-2 font-medium text-gray-900 min-w-[3rem] text-center" />
-
-                  <CartLineQuantityAdjustButton
-                    adjust="increase"
-                    className="p-2 hover:bg-gray-50 transition-colors"
-                    aria-label="Increase quantity"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </CartLineQuantityAdjustButton>
-                </div>
+                <CartLineQuantityAdjustButton
+                  adjust="increase"
+                  className="px-3 py-1 hover:bg-gray-50 transition-colors text-lg"
+                  aria-label="Increase quantity"
+                >
+                  +
+                </CartLineQuantityAdjustButton>
               </div>
             </div>
 
             <div className="text-right">
-              <p className="text-sm text-gray-600 mb-1">Total</p>
-              <p className="text-2xl font-bold text-gray-900">${(priceAmount * safeQuantity).toFixed(2)}</p>
+              <div className="text-2xl font-bold text-gray-900 mb-4">
+                {formatPrice(priceAmount * safeQuantity, currencyCode)}
+              </div>
             </div>
           </div>
+
+          <hr className="border-gray-200 border-2 my-6" />
+
+          {/* Remove Button */}
+          <button
+            onClick={handleRemove}
+            disabled={isRemoving}
+            className="bg-red-800 text-white px-6 py-2 text-sm font-medium hover:bg-red-900 transition-colors uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Remove item from cart"
+          >
+            {isRemoving ? 'Removing...' : 'Remove'}
+          </button>
+
+          {/* Alternative: Use Hydrogen's built-in remove functionality */}
+          {/*
+          <CartLineQuantityAdjustButton
+            adjust="remove"
+            className="bg-red-800 text-white px-6 py-2 text-sm font-medium hover:bg-red-900 transition-colors uppercase tracking-wide"
+            aria-label="Remove item from cart"
+          >
+            Remove
+          </CartLineQuantityAdjustButton>
+          */}
         </div>
       </div>
     </div>
@@ -188,24 +265,24 @@ function CartLineItemFull() {
 // Cart Summary Component
 function CartSummary() {
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 sticky top-8">
-      <h3 className="font-semibold text-gray-900 mb-6 text-xl">Order Summary</h3>
-
-      <div className="space-y-4 mb-6">
-        <div className="flex justify-between text-gray-600">
+    <div className="bg-white pt-6 ">
+      <div className="space-y-2 mb-6">
+        <div className="flex justify-between text-text">
           <span>Subtotal</span>
           <CartCost amountType="subtotal" />
         </div>
 
-        <div className="flex justify-between text-gray-600">
+        <div className="flex justify-between text-text">
           <span>Shipping</span>
-          <span className="text-primary font-medium">FREE</span>
+          <CartCost amountType="duty" />
         </div>
 
-        <div className="flex justify-between text-gray-600">
+        <div className="flex justify-between text-text">
           <span>Tax</span>
           <CartCost amountType="tax" />
         </div>
+
+        <p className="text-[11px] text-gray-600">Will Be Calculated According To Your Delivery Address</p>
 
         <div className="border-t border-gray-200 pt-4">
           <div className="flex justify-between text-xl font-bold text-gray-900">
@@ -216,25 +293,24 @@ function CartSummary() {
       </div>
 
       <div className="space-y-4">
-        <CartCheckoutButton className="w-full bg-primary text-white py-4 px-6 rounded-xl  transition-all duration-200 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center space-x-2">
-          <span>Proceed to Checkout</span>
-          <ArrowRight className="w-5 h-5" />
-        </CartCheckoutButton>
+        <Button className="w-full" showArrow>
+          <CartCheckoutButton>
+            <span>Checkout</span>
+          </CartCheckoutButton>
+        </Button>
 
-        <div className="flex items-center justify-center text-sm text-gray-600">
-          <Shield className="w-4 h-4 mr-2 text-primary" />
-          <span>Secure checkout with SSL encryption</span>
-        </div>
-
-        <div className="flex items-center justify-center text-sm text-primary p-3 rounded-lg">
-          <Truck className="w-4 h-4 mr-2" />
+        <div className="text-center">
+          <div className="inline-flex items-center space-x-2 text-sm">
+            <span>Pay With</span>
+            <Image src="/cart/paypal.png" width={101} height={39} alt="PayPal Logo" />
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-// Main Cart Page Export (No provider needed - uses your layout providers)
+// Main Cart Page Export
 export function CartPage() {
   return (
     <>

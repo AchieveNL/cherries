@@ -267,9 +267,9 @@ export interface CustomerAddressInput {
   address1?: string;
   address2?: string;
   city?: string;
-  province?: string;
+  territoryCode?: string; // Country code (e.g., 'US', 'CA')
+  zoneCode?: string; // State/Province code (e.g., 'NY', 'CA', 'ON')
   zip?: string;
-  territoryCode?: string;
   phoneNumber?: string;
 }
 

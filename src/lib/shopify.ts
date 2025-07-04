@@ -524,9 +524,26 @@ const PRODUCT_RECOMMENDATIONS_QUERY = `#graphql
       id
       title
       handle
+      description
       vendor
+      productType
+      tags
       availableForSale
-      images(first: 1) {
+      createdAt
+      updatedAt
+      onlineStoreUrl
+
+      # Featured image (fallback if images array is empty)
+      featuredImage {
+        id
+        url
+        altText
+        width
+        height
+      }
+
+      # Multiple images for variety
+      images(first: 3) {
         nodes {
           id
           url
@@ -535,9 +552,14 @@ const PRODUCT_RECOMMENDATIONS_QUERY = `#graphql
           height
         }
       }
-      variants(first: 1) {
+
+      # Get multiple variants for better pricing info
+      variants(first: 3) {
         nodes {
           id
+          title
+          availableForSale
+          quantityAvailable
           price {
             amount
             currencyCode
@@ -546,13 +568,69 @@ const PRODUCT_RECOMMENDATIONS_QUERY = `#graphql
             amount
             currencyCode
           }
+          selectedOptions {
+            name
+            value
+          }
+          image {
+            id
+            url
+            altText
+            width
+            height
+          }
         }
       }
+
+      # Price ranges for better pricing display
       priceRange {
         minVariantPrice {
           amount
           currencyCode
         }
+        maxVariantPrice {
+          amount
+          currencyCode
+        }
+      }
+
+      compareAtPriceRange {
+        minVariantPrice {
+          amount
+          currencyCode
+        }
+        maxVariantPrice {
+          amount
+          currencyCode
+        }
+      }
+
+      # SEO data
+      seo {
+        title
+        description
+      }
+
+      # Collections for categorization
+      collections(first: 3) {
+        nodes {
+          id
+          title
+          handle
+        }
+      }
+
+      # Custom metafields for ratings, etc.
+      metafields(identifiers: [
+        {namespace: "custom", key: "rating"}
+        {namespace: "custom", key: "review_count"}
+        {namespace: "custom", key: "features"}
+      ]) {
+        id
+        namespace
+        key
+        value
+        type
       }
     }
   }
@@ -862,14 +940,42 @@ export async function getProducts({
 
 export async function getProductRecommendations(
   productId: string,
-  intent: 'RELATED' | 'COMPLEMENTARY' = 'RELATED'
+  intent: 'RELATED' | 'COMPLEMENTARY' = 'RELATED',
+  limit: number = 8
 ): Promise<PartialDeep<Product, { recurseIntoArrays: true }>[]> {
-  const data = await shopifyRequest<{ productRecommendations: Product[] }>(PRODUCT_RECOMMENDATIONS_QUERY, {
-    productId,
-    intent,
-  });
+  // Input validation
+  if (!productId || typeof productId !== 'string') {
+    console.warn('getProductRecommendations: Invalid productId provided');
+    return [];
+  }
 
-  return data?.productRecommendations || [];
+  // Validate intent
+  if (!['RELATED', 'COMPLEMENTARY'].includes(intent)) {
+    console.warn('getProductRecommendations: Invalid intent provided, defaulting to RELATED');
+    intent = 'RELATED';
+  }
+
+  try {
+    const data = await shopifyRequest<{ productRecommendations: Product[] }>(PRODUCT_RECOMMENDATIONS_QUERY, {
+      productId,
+      intent,
+    });
+
+    const recommendations = data?.productRecommendations || [];
+
+    // Log for debugging (remove in production)
+    console.log(`Found ${recommendations.length} recommendations for product ${productId} with intent ${intent}`);
+
+    // Filter out any null/undefined products and limit results
+    const validRecommendations = recommendations
+      .filter((product): product is Product => product !== null && product !== undefined)
+      .slice(0, limit);
+
+    return validRecommendations;
+  } catch (error) {
+    console.error('Error fetching product recommendations:', error);
+    return [];
+  }
 }
 
 // ===========================

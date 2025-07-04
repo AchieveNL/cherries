@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { ChevronDown, Filter, Grid, List, Search, SortAsc, X } from 'lucide-react';
+import { ChevronDown, Grid, List, X } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { PartialDeep } from 'type-fest';
 
@@ -137,7 +137,7 @@ export default function ProductFilter({
   ].filter(Boolean).length;
 
   return (
-    <div className="bg-white  border border-gray-200 rounded-lg shadow-sm  my-6">
+    <div className="bg-white  border border-gray-200  shadow-sm  my-6">
       {/* Main Filter Bar */}
       <div className="px-6 container mx-auto py-4">
         {/* Bottom Row - Controls */}
@@ -148,12 +148,11 @@ export default function ProductFilter({
             <div className="relative">
               <button
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
-                className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 font-medium px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200"
+                className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 font-medium px-4 py-2 border border-gray-300  hover:bg-gray-50 transition-all duration-200"
               >
-                <Filter className="w-4 h-4" />
                 <span>Filters</span>
                 {activeFiltersCount > 0 && (
-                  <span className="bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full min-w-[20px] h-5 flex items-center justify-center">
+                  <span className="bg-primary text-white text-xs px-2 py-0.5  min-w-[20px] h-5 flex items-center justify-center">
                     {activeFiltersCount}
                   </span>
                 )}
@@ -162,7 +161,7 @@ export default function ProductFilter({
 
               {/* Filter Dropdown */}
               {isFilterOpen && (
-                <div className="absolute top-full left-0 mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-xl z-50">
+                <div className="absolute top-full left-0 mt-2 w-80 bg-white border border-solid border-gray-200  shadow-xl z-50">
                   <div className="p-6">
                     <div className="flex justify-between items-center mb-6">
                       <h3 className="text-lg font-semibold text-gray-900">Filter Products</h3>
@@ -180,9 +179,9 @@ export default function ProductFilter({
                       <div className="grid grid-cols-2 gap-2">
                         <button
                           onClick={() => handleLocalFilterChange('availability', 'inStock')}
-                          className={`px-3 py-2 text-sm rounded-lg border transition-all ${
+                          className={`px-3 py-2 text-sm  border border-solid transition-all ${
                             localFilters.availability === 'inStock'
-                              ? 'bg-green-50 border-green-200 text-green-700'
+                              ? 'bg-primary/10 border-primary text-primary'
                               : 'border-gray-200 hover:bg-gray-50'
                           }`}
                         >
@@ -190,9 +189,9 @@ export default function ProductFilter({
                         </button>
                         <button
                           onClick={() => handleLocalFilterChange('sortBy', 'priceAsc')}
-                          className={`px-3 py-2 text-sm rounded-lg border transition-all ${
+                          className={`px-3 py-2 text-sm  border border-solid transition-all ${
                             localFilters.sortBy === 'priceAsc'
-                              ? 'bg-blue-50 border-blue-200 text-primary'
+                              ? 'bg-primary/10 border-primary text-primary'
                               : 'border-gray-200 hover:bg-gray-50'
                           }`}
                         >
@@ -208,7 +207,7 @@ export default function ProductFilter({
                         <select
                           value={localFilters.category}
                           onChange={(e) => handleLocalFilterChange('category', e.target.value)}
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
+                          className="w-full p-3 border border-solid border-gray-300  focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
                         >
                           <option value="">All Categories</option>
                           {filterOptions.categories.map((category) => (
@@ -227,7 +226,7 @@ export default function ProductFilter({
                         <select
                           value={localFilters.vendor}
                           onChange={(e) => handleLocalFilterChange('vendor', e.target.value)}
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
+                          className="w-full p-3 border border-solid border-gray-300  focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
                         >
                           <option value="">All Brands</option>
                           {filterOptions.vendors.map((vendor) => (
@@ -254,7 +253,7 @@ export default function ProductFilter({
                                 const value = Math.max(0, parseInt(e.target.value) || 0);
                                 handleLocalFilterChange('priceRange', [value, localFilters.priceRange[1]]);
                               }}
-                              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
+                              className="w-full p-2 border border-solid border-gray-300  focus:ring-2 focus:ring-primary focus:border-primary"
                             />
                           </div>
                           <div className="flex-1">
@@ -270,7 +269,7 @@ export default function ProductFilter({
                                 );
                                 handleLocalFilterChange('priceRange', [localFilters.priceRange[0], value]);
                               }}
-                              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
+                              className="w-full p-2 border border-solid border-gray-300  focus:ring-2 focus:ring-primary focus:border-primary"
                             />
                           </div>
                         </div>
@@ -287,7 +286,7 @@ export default function ProductFilter({
                                 value,
                               ]);
                             }}
-                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                            className="w-full h-2 bg-gray-200  appearance-none cursor-pointer slider"
                           />
                           <div className="flex justify-between text-xs text-gray-500 mt-1">
                             <span>${localFilters.priceRange[0]}</span>
@@ -298,16 +297,16 @@ export default function ProductFilter({
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex space-x-3 pt-4 border-t border-gray-200">
+                    <div className="flex space-x-3 pt-4 border-t border-solid border-gray-200">
                       <button
                         onClick={clearAllFilters}
-                        className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                        className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700  hover:bg-gray-200 transition-colors font-medium"
                       >
                         Reset
                       </button>
                       <button
                         onClick={applyFilters}
-                        className="flex-1 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium"
+                        className="flex-1 px-4 py-2.5 bg-primary text-white  hover:bg-primary/90 transition-colors font-medium"
                       >
                         Apply
                       </button>
@@ -342,10 +341,10 @@ export default function ProductFilter({
           <div className="flex items-center space-x-3">
             {/* View Mode Toggle */}
             {onViewModeChange && (
-              <div className="flex items-center bg-gray-100 rounded-lg p-1">
+              <div className="flex items-center bg-gray-100  p-1">
                 <button
                   onClick={() => onViewModeChange('grid')}
-                  className={`p-2 rounded-md transition-all ${
+                  className={`p-2  transition-all ${
                     viewMode === 'grid' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
@@ -353,7 +352,7 @@ export default function ProductFilter({
                 </button>
                 <button
                   onClick={() => onViewModeChange('list')}
-                  className={`p-2 rounded-md transition-all ${
+                  className={`p-2  transition-all ${
                     viewMode === 'list' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
@@ -366,9 +365,8 @@ export default function ProductFilter({
             <div className="relative">
               <button
                 onClick={() => setIsSortOpen(!isSortOpen)}
-                className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 font-medium px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200"
+                className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 font-medium px-4 py-2 border border-solid border-gray-300  hover:bg-gray-50 transition-all duration-200"
               >
-                <SortAsc className="w-4 h-4" />
                 <span className="hidden sm:inline">Sort:</span>
                 <span>{selectedSortLabel}</span>
                 <ChevronDown className={`w-4 h-4 transition-transform ${isSortOpen ? 'rotate-180' : ''}`} />
@@ -376,7 +374,7 @@ export default function ProductFilter({
 
               {/* Sort Dropdown */}
               {isSortOpen && (
-                <div className="absolute top-full right-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-xl z-50">
+                <div className="absolute top-full right-0 mt-2 w-56 bg-white border border-solid border-gray-200  shadow-xl z-50">
                   <div className="py-2">
                     {sortOptions.map((option) => (
                       <button
@@ -387,7 +385,7 @@ export default function ProductFilter({
                         }}
                         className={`w-full text-left px-4 py-3 text-sm hover:bg-gray-50 transition-colors ${
                           filters.sortBy === option.value
-                            ? 'bg-blue-50 text-primary font-medium border-r-2 border-primary'
+                            ? 'bg-white text-primary font-medium border-r-2 border-solid border-primary'
                             : 'text-gray-700'
                         }`}
                       >

@@ -6,6 +6,7 @@ import { AlertCircle, ArrowRight, Loader2, User } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 
+import { Button } from '@/app/_components/ui';
 import { useAuth } from '@/hooks/useAuth';
 
 function LoginContent() {
@@ -104,9 +105,6 @@ function LoginContent() {
       <div className="max-w-md w-full space-y-8">
         {/* Header */}
         <div className="text-center">
-          <div className="mx-auto h-42 w-42 rounded-full flex items-center justify-center mb-6">
-            <img src="/logo.svg" alt="CaseHub Logo" className="w-42 h-42" />
-          </div>
           <h2 className="text-3xl font-bungee font-bold text-gray-900 mb-2">Welcome Back</h2>
           <p className="text-gray-600">Sign in to access your account and orders</p>
         </div>
@@ -149,10 +147,10 @@ function LoginContent() {
           </div>
 
           {/* Login Button */}
-          <button
+          <Button
             onClick={handleLogin}
             disabled={loginLoading}
-            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-text bg-secondary hover:bg-secondary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {loginLoading ? (
               <Loader2 className="h-5 w-5 animate-spin" />
@@ -162,7 +160,7 @@ function LoginContent() {
                 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </>
             )}
-          </button>
+          </Button>
         </div>
 
         {/* Info Section */}

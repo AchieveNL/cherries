@@ -2,12 +2,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
-import { AddToCartButton, ProductPrice, ProductProvider, useProduct } from '@shopify/hydrogen-react';
+import { AddToCartButton, ProductPrice, ProductProvider, useCart, useProduct } from '@shopify/hydrogen-react';
 import { AlertCircle, Award, CheckCircle, Heart, MessageCircle, Minus, Plus, Star, Users } from 'lucide-react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 import Breadcrumb from './Breadcrumb';
 import { ArrowButton } from './icons/shared';
+import { useWishlist } from './layout/context/wishList';
 import ProductFAQ from './ProductFAQ';
 import ProductGallery from './ProductGallery';
 import ProductReviews from './ProductReviews';
@@ -76,8 +77,77 @@ function ProductContent() {
   console.log('Product options with full data:', product?.options);
   console.log('Variant selected options:', selectedVariant?.selectedOptions);
   const [quantity, setQuantity] = useState(1);
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const [activeTab, setActiveTab] = useState('description');
+
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const { status, lines, totalQuantity } = useCart();
+
+  // Wishlist integration
+  const { addItem, removeItem, isInWishlist } = useWishlist();
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+
+  // Check if product is in wishlist
+  const isWishlisted = product?.id ? isInWishlist(product.id) : false;
+
+  // Handle wishlist toggle
+  const handleWishlistToggle = async () => {
+    if (!product?.id) return;
+
+    setWishlistLoading(true);
+    try {
+      if (isWishlisted) {
+        removeItem(product.id);
+      } else {
+        addItem(product);
+      }
+    } catch (error) {
+      console.error('Failed to update wishlist:', error);
+    } finally {
+      setWishlistLoading(false);
+    }
+  };
+
+  // Add this state to track previous line count
+  const [previousLineCount, setPreviousLineCount] = useState(0);
+
+  const justClicked = React.useRef(false);
+
+  const [previousTotalQuantity, setPreviousTotalQuantity] = useState(0);
+
+  // Monitor cart changes using total quantity
+  React.useEffect(() => {
+    console.log('=== Cart Quantity Debug ===');
+    console.log('Status:', status);
+    console.log('Current total quantity:', totalQuantity);
+    console.log('Previous total quantity:', previousTotalQuantity);
+    console.log('Is adding to cart:', isAddingToCart);
+    console.log('============================');
+
+    // Only initialize quantity when cart first loads AND we're not currently adding to cart
+    if (totalQuantity && previousTotalQuantity === 0 && !isAddingToCart) {
+      setPreviousTotalQuantity(totalQuantity);
+      return;
+    }
+
+    // Detect successful addition by quantity increase
+    if (status === 'idle' && totalQuantity && totalQuantity > previousTotalQuantity && isAddingToCart) {
+      console.log('✅ Item quantity increased - addition successful');
+      setIsAddingToCart(false);
+      setShowSuccessMessage(true);
+      setPreviousTotalQuantity(totalQuantity);
+
+      setTimeout(() => {
+        setShowSuccessMessage(false);
+      }, 3000);
+    }
+
+    // Reset loading state if stuck
+    if (status === 'idle' && isAddingToCart && totalQuantity === previousTotalQuantity) {
+      console.log('🔄 Resetting stuck loading state - no quantity change detected');
+      setIsAddingToCart(false);
+    }
+  }, [status, totalQuantity, previousTotalQuantity, isAddingToCart]);
 
   // Extract data from metafields with proper null checks
   const metafields = product?.metafields || [];
@@ -148,7 +218,7 @@ function ProductContent() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
         <div className="text-center space-y-4">
-          <div className="animate-spin  h-12 w-12 border-2 border-primary border-t-transparent mx-auto"></div>
+          <div className="animate-spin h-12 w-12 border-2 border-primary border-t-transparent mx-auto"></div>
           <p className="text-text/60 font-medium">Loading product...</p>
         </div>
       </div>
@@ -190,15 +260,15 @@ function ProductContent() {
           <div className="space-y-8 flex-1">
             {/* Product Header */}
             <header className="space-y-6">
-              <div className="flex  space-y-4 justify-between items-center">
-                <div>
+              <div className="flex space-y-4 justify-between items-start">
+                <div className="flex-1">
                   <h1 className="text-3xl xl:text-4xl font-bold font-bungee text-text leading-tight tracking-tight">
                     {product.title}
                   </h1>
 
                   {/* Rating & Reviews */}
                   {rating && (
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-4 mt-4">
                       <div className="flex items-center space-x-1">{renderStars(rating)}</div>
                       <span className="text-text/70 font-medium">{rating.toFixed(1)}</span>
                       {reviewCount && (
@@ -210,8 +280,18 @@ function ProductContent() {
                   )}
                 </div>
 
-                <button onClick={() => setIsWishlisted(!isWishlisted)} className="p-2  rounded-full">
-                  <Heart className={`w-7 h-7 ${isWishlisted ? 'fill-primary' : 'text-primary'}`} />
+                {/* Wishlist Button */}
+                <button
+                  onClick={handleWishlistToggle}
+                  disabled={wishlistLoading}
+                  className="p-3  hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                >
+                  <Heart
+                    className={`w-7 h-7 transition-colors ${
+                      isWishlisted ? 'fill-primary text-primary' : 'text-primary hover:text-primary'
+                    }`}
+                  />
                 </button>
               </div>
 
@@ -232,7 +312,7 @@ function ProductContent() {
                             currency: selectedVariant.compareAtPrice.currencyCode || 'USD',
                           }).format(parseFloat(selectedVariant.compareAtPrice.amount || '0'))}
                         </span>
-                        <div className="text-xs bg-primary px-2 py-0.5  font-medium">
+                        <div className="text-xs text-white bg-primary px-2 py-0.5 font-medium">
                           Save{' '}
                           {Math.round(
                             ((parseFloat(selectedVariant.compareAtPrice.amount || '0') -
@@ -256,23 +336,22 @@ function ProductContent() {
                 onOptionChange={setSelectedOption}
                 isOptionInStock={isOptionInStock}
               />
-              <hr className="border-gray-200 border-2" />
               <div className="flex flex-col items-start justify-between">
                 <label className="text-base font-semibold text-text">Quantity</label>
-                <div className="flex items-center   border-2 border-gray-200">
+                <div className="flex items-center border-2 border-gray-200">
                   <button
                     onClick={() => handleQuantityChange(-1)}
-                    className="p-3 text-text/70 hover:text-text   transition-colors disabled:opacity-50"
+                    className="p-3 text-text/70 hover:text-text transition-colors disabled:opacity-50"
                     disabled={quantity <= 1}
                   >
                     <Minus className="w-5 h-5" />
                   </button>
-                  <span className="px-3 py-3 border-gray-200  border-x-2  font-bold text-xl text-text min-w-[3.5rem] text-center">
+                  <span className="px-3 py-3 border-gray-200 border-x-2 font-bold text-xl text-text min-w-[3.5rem] text-center">
                     {quantity}
                   </span>
                   <button
                     onClick={() => handleQuantityChange(1)}
-                    className="p-3 text-text/70 hover:text-text  transition-colors"
+                    className="p-3 text-text/70 hover:text-text transition-colors"
                   >
                     <Plus className="w-5 h-5" />
                   </button>
@@ -284,30 +363,56 @@ function ProductContent() {
                 <AddToCartButton
                   variantId={selectedVariant?.id || ''}
                   quantity={quantity}
-                  className="w-2/3 bg-primary  text-white py-4 px-8   transition-all duration-300 font-bold text-lg disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:transform-none"
-                  disabled={!selectedVariant?.availableForSale}
+                  className="w-2/3 bg-primary text-white py-4 px-8 transition-all duration-300 font-bold text-lg disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:transform-none"
+                  disabled={!selectedVariant?.availableForSale || isAddingToCart}
+                  onClick={() => {
+                    console.log('🔵 Add to cart clicked - setting loading state');
+                    setIsAddingToCart(true);
+                    setShowSuccessMessage(false);
+                  }}
                 >
                   {selectedVariant?.availableForSale ? (
                     <span className="flex items-center justify-center space-x-4">
-                      <span>Add {quantity} to Cart</span>
-                      <ArrowButton className="" />
+                      {isAddingToCart ? (
+                        <>
+                          <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
+                          <span>Adding...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Add {quantity} to Cart</span>
+                          <ArrowButton className="" />
+                        </>
+                      )}
                     </span>
                   ) : (
                     'Out of Stock'
                   )}
                 </AddToCartButton>
+
+                {/* Success Message */}
+                {showSuccessMessage && (
+                  <div className="w-2/3 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-md flex items-center space-x-3 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
+                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                    <div className="flex-1">
+                      <p className="font-medium">Added to cart!</p>
+                      <p className="text-sm text-green-600">
+                        {quantity} {quantity === 1 ? 'item' : 'items'} added successfully
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 <span className="self-center text-sm w-2/3">Estimated delivery from June 24th</span>
               </div>
             </header>
 
-            <section className="  ">
+            <section className="">
               <div className="space-y-6">
                 {/* Product Details Tabs */}
-                <div className="  mb-16">
+                <div className="mb-16">
                   {/* Tab Navigation */}
                   <div className="flex space-x-8 border-b border-gray-200">
-                    {' '}
-                    {/* Add this border-b */}
                     {[
                       { id: 'description', label: 'Description', icon: MessageCircle },
                       { id: 'reviews', label: 'Reviews', icon: Star },
@@ -319,8 +424,9 @@ function ProductContent() {
                         style={{
                           borderBottom: activeTab === tab.id ? '2px solid #830016' : '2px solid transparent',
                         }}
-                        className={`pb-3 px-5
-text-black text-sm font-medium transition-colors ${activeTab === tab.id ? '' : 'text-gray-500 hover:text-black'}`}
+                        className={`pb-3 px-5 text-black text-sm font-medium transition-colors ${
+                          activeTab === tab.id ? '' : 'text-gray-500 hover:text-black'
+                        }`}
                       >
                         <span>{tab.label}</span>
                       </button>
@@ -339,7 +445,7 @@ text-black text-sm font-medium transition-colors ${activeTab === tab.id ? '' : '
 
             {/* Key Features */}
             {features.length > 0 && (
-              <section className="bg-white  border border-gray-100 shadow-sm p-6">
+              <section className="bg-white border border-gray-100 shadow-sm p-6">
                 <h3 className="text-xl font-semibold text-text mb-4 flex items-center space-x-2">
                   <Award className="w-5 h-5 text-primary" />
                   <span>Key Benefits</span>
@@ -348,7 +454,7 @@ text-black text-sm font-medium transition-colors ${activeTab === tab.id ? '' : '
                   {features.map((feature: string, index: number) => (
                     <div
                       key={index}
-                      className="flex items-start space-x-3 p-4  bg-primary/5 border border-primary/20 hover:bg-primary/10 transition-colors"
+                      className="flex items-start space-x-3 p-4 bg-primary/5 border border-primary/20 hover:bg-primary/10 transition-colors"
                     >
                       <CheckCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                       <span className="text-text font-medium">{feature}</span>
@@ -361,7 +467,7 @@ text-black text-sm font-medium transition-colors ${activeTab === tab.id ? '' : '
             {/* Important Notice */}
             {(product.tags?.includes('requires-note') ||
               metafields.some((field) => field?.key === 'important_notice')) && (
-              <section className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200  p-6 shadow-sm">
+              <section className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 p-6 shadow-sm">
                 <div className="flex items-start space-x-4">
                   <div className="flex-shrink-0 w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
                     <AlertCircle className="w-6 h-6 text-amber-600" />
@@ -379,7 +485,9 @@ text-black text-sm font-medium transition-colors ${activeTab === tab.id ? '' : '
           </div>
         </div>
       </div>
-      <RecommendedProducts />
+
+      {/* Recommended Products with proper props */}
+      <RecommendedProducts productId={product.id} limit={4} intent="RELATED" />
     </div>
   );
 }

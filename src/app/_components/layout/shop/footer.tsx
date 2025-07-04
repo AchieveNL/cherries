@@ -1,7 +1,16 @@
+'use client';
+
 /* eslint-disable react/jsx-no-undef */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import { Facebook, Youtube } from 'lucide-react';
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
+
+// Types for collections
+interface FooterCollectionItem {
+  name: string;
+  href: string;
+}
 
 // Custom Twitter/X and TikTok icons as simple SVGs since they're not in lucide-react
 const TwitterIcon = ({ className }: { className: string }) => (
@@ -16,12 +25,65 @@ const TikTokIcon = ({ className }: { className: string }) => (
   </svg>
 );
 
-export function Footer() {
+// Hook to fetch collections for footer
+function useFooterCollections() {
+  const [collections, setCollections] = useState<FooterCollectionItem[]>([]);
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/collections')
+      .then((res) => res.json())
+      .then((data) => {
+        const dropdownItems = data.collections
+          .filter((c: any) => c.handle && c.title)
+          .map((c: any) => ({
+            name: c.title,
+            href: `/collections/${c.handle}`,
+          }));
+        dropdownItems.push({
+          name: 'All Collections',
+          href: '/collections',
+        });
+        setCollections(dropdownItems);
+        setError(false);
+      })
+      .catch((err) => {
+        setError(true);
+        console.log('Error Collection Fetch Footer :', err);
+        // Fallback to static data
+        setCollections([
+          { name: 'iPhone Cases', href: '/collections/iphone' },
+          { name: 'Samsung Cases', href: '/collections/samsung' },
+        ]);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  return { collections, loading, error };
+}
+
+// Loading skeleton component for shop links
+function ShopLinksLoading() {
   return (
-    <footer className="relative py-16 px-4">
-      <div className="container relative z-10  mx-auto">
+    <ul className="space-y-4">
+      {[1, 2, 3].map((index) => (
+        <li key={index}>
+          <div className="h-6 bg-gray-200 rounded animate-pulse w-24"></div>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+export function Footer() {
+  const { collections, loading, error } = useFooterCollections();
+
+  return (
+    <footer className="relative py-16 px-4 pb-0">
+      <div className="container relative z-10 mx-auto">
         {/* Main Footer Content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-64">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-16">
           {/* Logo and Social Links */}
           <div className="space-y-6 ">
             <div className="flex items-center space-x-2">
@@ -48,27 +110,42 @@ export function Footer() {
           </div>
 
           <div className="ml-8"></div>
-          {/* Shop Links */}
 
+          {/* Dynamic Shop Links */}
           <div className="ml-8">
             <h3 className="text-xl font-bungee font-semibold text-gray-900 mb-6">Shop</h3>
-            <ul className=" space-y-4">
-              <li>
-                <a href="/phone-cases" className="text-gray-600 hover:text-gray-900 transition-colors text-lg">
-                  Phone Cases
-                </a>
-              </li>
-              <li>
-                <a href="/power-banks" className="text-gray-600 hover:text-gray-900 transition-colors text-lg">
-                  Power Banks
-                </a>
-              </li>
-              <li>
-                <a href="/chargers" className="text-gray-600 hover:text-gray-900 transition-colors text-lg">
-                  Chargers
-                </a>
-              </li>
-            </ul>
+            {loading ? (
+              <ShopLinksLoading />
+            ) : error ? (
+              <ul className="space-y-4">
+                <li>
+                  <a href="/collections" className="text-gray-600 hover:text-gray-900 transition-colors text-lg">
+                    All Collections
+                  </a>
+                </li>
+                <li>
+                  <a href="/products" className="text-gray-600 hover:text-gray-900 transition-colors text-lg">
+                    All Products
+                  </a>
+                </li>
+              </ul>
+            ) : (
+              <ul className="space-y-4">
+                {collections.map((collection) => (
+                  <li key={collection.name}>
+                    <a href={collection.href} className="text-gray-600 hover:text-gray-900 transition-colors text-lg">
+                      {collection.name}
+                    </a>
+                  </li>
+                ))}
+                {/* Always include "All Products" link */}
+                <li>
+                  <a href="/products" className="text-gray-600 hover:text-gray-900 transition-colors text-lg">
+                    All Products
+                  </a>
+                </li>
+              </ul>
+            )}
           </div>
 
           {/* Terms Links */}
@@ -125,29 +202,32 @@ export function Footer() {
             </ul>
           </div>
         </div>
-
-        {/* Bottom Footer */}
-        <div className=" text-white  pt-8">
-          <div className="flex  flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <p className=" text-lg">© 2025 Cherries All rights reserved</p>
-            <p className=" text-lg">
-              Developed by{' '}
-              <a className="hover:text-primary" href="https://www.achieve.nl/" target="__blank">
-                Achieve.nl
-              </a>
-            </p>
-          </div>
-        </div>
       </div>
-      {/* Hero frame image */}
-      <div className="absolute bottom-0 left-0 w-full z-0">
+
+      {/* Hero frame image positioned at the very bottom */}
+      <div className="relative w-full">
         <Image
-          src="/bg-red-footer.png"
+          src="/bg-red-footer.webp"
           alt="Hero Frame"
           width={1767}
           height={551}
-          className="w-full h-auto max-h-[120px] sm:max-h-[200px] lg:max-h-none object-cover object-top"
+          className="w-full h-auto object-cover"
         />
+
+        {/* Bottom Footer - positioned over the red background */}
+        <div className="absolute inset-0 flex items-center">
+          <div className="container font-bungee mx-auto px-4 translate-y-32">
+            <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 ">
+              <p className="text-white text-lg">© 2025 Cherries All rights reserved</p>
+              <p className="text-white text-lg">
+                Developed by{' '}
+                <a className="hover:text-secondary transition-colors" href="https://www.achieve.nl/" target="_blank">
+                  Achieve.nl
+                </a>
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </footer>
   );

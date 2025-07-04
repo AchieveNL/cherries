@@ -122,7 +122,6 @@ const CUSTOMER_STORE_CREDIT_QUERY = `#graphql
     customer {
       storeCreditAccounts(first: 5) {
         nodes {
-          id
           balance {
             amount
             currencyCode
@@ -198,9 +197,8 @@ const CREATE_ADDRESS_MUTATION = `#graphql
         address1
         address2
         city
-        province
-        zip
         territoryCode
+        zip
         phoneNumber
         formatted
       }
@@ -224,9 +222,8 @@ const UPDATE_ADDRESS_MUTATION = `#graphql
         address1
         address2
         city
-        province
+        territoryCode
         zip
-        country
         phoneNumber
         formatted
       }

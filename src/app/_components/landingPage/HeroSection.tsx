@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 
 import { Button } from '../ui';
 import AnnouncementBanner from './AnnouncementBanner';
@@ -20,13 +21,15 @@ const HeroSection = () => {
           <h1 className="text-4xl  md:text-[74px] font-bungee font-bold text-gray-900 mb-12 tracking-tight">
             CHERRIES FRESH COLLECTION
           </h1>
-          <Button className="mx-auto  w-[187px] h-[52px] text-[21px]" showArrow>
-            Shop Now
-          </Button>
+          <Link href="/products">
+            <Button className="mx-auto  w-[187px] h-[52px] text-[21px]" showArrow>
+              Shop Now
+            </Button>
+          </Link>
         </div>
 
         {/* Images Section */}
-        <div className="flex justify-center items-end gap-6 flex-wrap px-4 max-w-8xl mx-auto">
+        <div className="flex justify-center items-center gap-6 flex-wrap px-4 max-w-8xl mx-auto">
           {images.map((image) => (
             <div key={image.id} className="flex-shrink-0">
               <Image src={image.src} alt={image.alt} width={image.width} height={image.height} className=" " />

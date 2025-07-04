@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import { ProductCard, ProductFilters, ProductsHeader } from '@/app/_components/products';
 import { EmptyState, Pagination } from '@/app/_components/ui';
@@ -18,6 +18,28 @@ export default function ProductsPageComponent({
 }: ProductsPageProps) {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const { filters, setFilters, filteredProducts, filteredCount } = useProductFilters(products);
+
+  // Use ref to store the latest setFilters function to avoid stale closures
+  const setFiltersRef = useRef(setFilters);
+  setFiltersRef.current = setFilters;
+
+  // Create truly stable callback that doesn't depend on setFilters directly
+  const handleFiltersChange = useCallback((newFilters: any) => {
+    setFiltersRef.current(newFilters);
+  }, []); // Empty dependency array makes this truly stable
+
+  // Create stable callback for clearing filters
+  const handleClearFilters = useCallback(() => {
+    setFiltersRef.current({
+      search: '',
+      category: '',
+      priceRange: [0, 1000],
+      vendor: '',
+      availability: 'all',
+      sortBy: 'featured',
+      collections: [],
+    });
+  }, []); // Empty dependency array makes this truly stable
 
   if (!products || products.length === 0) {
     return (
@@ -44,7 +66,7 @@ export default function ProductsPageComponent({
         {/* Pass all required props to ProductFilter */}
         <ProductFilter
           filters={filters}
-          onFiltersChange={setFilters}
+          onFiltersChange={handleFiltersChange}
           products={products}
           collections={collections}
           currentCollection={currentCollection}
@@ -58,7 +80,7 @@ export default function ProductsPageComponent({
             <div className="lg:col-span-1">
               <ProductFilters
                 filters={filters}
-                onFiltersChange={setFilters}
+                onFiltersChange={handleFiltersChange}
                 products={products}
                 collections={collections}
                 currentCollection={currentCollection}
@@ -72,7 +94,7 @@ export default function ProductsPageComponent({
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`p-2  transition-colors ${
+                    className={`p-2 transition-colors ${
                       viewMode === 'grid' ? 'bg-secondary text-primary' : 'text-gray-600 hover:bg-gray-100'
                     }`}
                   >
@@ -87,7 +109,7 @@ export default function ProductsPageComponent({
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
-                    className={`p-2  transition-colors ${
+                    className={`p-2 transition-colors ${
                       viewMode === 'list' ? 'bg-secondary text-primary' : 'text-gray-600 hover:bg-gray-100'
                     }`}
                   >
@@ -101,7 +123,6 @@ export default function ProductsPageComponent({
                     </svg>
                   </button>
                 </div>
-
                 {/* Results info */}
                 <div className="text-sm text-gray-600">
                   {filteredCount !== products.length ? (
@@ -119,16 +140,7 @@ export default function ProductsPageComponent({
                   title="No products match your filters"
                   description="Try adjusting your search or filter criteria"
                   actionText="Clear all filters"
-                  onAction={() =>
-                    setFilters({
-                      search: '',
-                      category: '',
-                      priceRange: [0, 1000], // Use a reasonable max price
-                      vendor: '',
-                      availability: 'all',
-                      sortBy: 'featured',
-                    })
-                  }
+                  onAction={handleClearFilters}
                 />
               ) : (
                 <>
@@ -141,7 +153,6 @@ export default function ProductsPageComponent({
                       <ProductCard key={product.id} product={product} viewMode={viewMode} />
                     ))}
                   </div>
-
                   {/* Pagination */}
                   <div className="mt-8">
                     <Pagination hasNextPage={hasNextPage} hasPreviousPage={hasPreviousPage} />

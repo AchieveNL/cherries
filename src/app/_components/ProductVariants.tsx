@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Money } from '@shopify/hydrogen-react';
+import { ChevronDown } from 'lucide-react';
 
 import type { ProductVariant } from '@shopify/hydrogen-react/storefront-api-types';
 
@@ -72,9 +73,34 @@ const getColorValue = (colorName: string): string => {
     magenta: '#ff00ff',
     mint: '#98fb98',
     lavender: '#e6e6fa',
+
+    // Phone colors
+    'space gray': '#4a4a4a',
+    'space grey': '#4a4a4a',
+    'midnight green': '#004953',
+    'pacific blue': '#1f4788',
+    'sierra blue': '#a7c1d9',
+    'alpine green': '#576856',
+    'deep purple': '#5c2e7e',
+    'gold rose': '#e6c7c2',
+    starlight: '#faf7f2',
+    midnight: '#1d1d1f',
+    'product red': '#bf0013',
   };
 
   return colorMap[colorName.toLowerCase()] || '#d1d5db';
+};
+
+// Helper function to determine if option is color-related
+const isColorOption = (optionName: string): boolean => {
+  const colorKeywords = ['color', 'colour', 'finish'];
+  return colorKeywords.some((keyword) => optionName.toLowerCase().includes(keyword));
+};
+
+// Helper function to determine if option is model/size related
+const isModelOption = (optionName: string): boolean => {
+  const modelKeywords = ['model', 'size', 'capacity', 'storage', 'version', 'type'];
+  return modelKeywords.some((keyword) => optionName.toLowerCase().includes(keyword));
 };
 
 export default function ProductVariants({
@@ -88,66 +114,204 @@ export default function ProductVariants({
     return null;
   }
 
-  return (
-    <div className="space-y-6">
-      {/* Color Options */}
-      {options.map((option) => (
-        <div key={option.name} className="space-y-3">
-          {/* option.name */}
-          <h3 className="text-base font-medium text-black uppercase tracking-wide">Select Colour</h3>
-          <div className="flex items-center space-x-3">
-            {option.values.map((value) => {
-              const isSelected = selectedOptions[option.name] === value;
-              const isAvailable = isOptionInStock(option.name, value);
-              const colorValue = getColorValue(value);
+  // Helper function to check if it's a default title that should be hidden
+  const isDefaultTitle = (optionName: string): boolean => {
+    if (!optionName || typeof optionName !== 'string') return true;
 
-              return (
-                <button
-                  key={value}
-                  onClick={() => onOptionChange(option.name, value)}
-                  disabled={!isAvailable}
+    const defaultTitles = [
+      'title',
+      'default',
+      'Default Title',
+      'option',
+      'variant',
+      'default title',
+      'default variant',
+      'untitled',
+      'no title',
+    ];
+
+    const normalizedName = optionName.toLowerCase().trim();
+
+    // Check for exact matches or if the name contains default keywords
+    return defaultTitles.some(
+      (defaultTitle) => normalizedName === defaultTitle || normalizedName.includes(defaultTitle)
+    );
+  };
+
+  // Helper function to format option title
+  const formatOptionTitle = (optionName: string): string => {
+    // If it's a default title, return empty string (will hide the heading)
+    if (isDefaultTitle(optionName)) {
+      return '';
+    }
+
+    // Otherwise, return "Select {OptionName}"
+    return `Select ${optionName}`;
+  };
+
+  const renderColorOption = (option: OptionWithValues) => {
+    const title = formatOptionTitle(option.name);
+
+    return (
+      <div key={option.name} className="space-y-3">
+        {title && <h3 className="text-base font-medium text-black uppercase tracking-wide">{title}</h3>}
+        <div className="flex items-center space-x-3 flex-wrap gap-2">
+          {option.values.map((value) => {
+            const isSelected = selectedOptions[option.name] === value;
+            const isAvailable = isOptionInStock(option.name, value);
+            const colorValue = getColorValue(value);
+
+            return (
+              <button
+                key={value}
+                onClick={() => onOptionChange(option.name, value)}
+                disabled={!isAvailable}
+                className={`
+                  relative transition-all duration-300 group
+                  ${isSelected ? 'ring-2 ring-primary ring-offset-2' : ''}
+                  ${!isAvailable ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110'}
+                `}
+                title={value}
+              >
+                <div
                   className={`
-                    relative transition-all duration-300
-                    ${isSelected ? 'ring-2 ring-primary ring-offset-2' : ''}
-                    ${!isAvailable ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110'}
+                    w-10 h-10 border-2 border-solid  transition-all duration-300 relative
+                    ${isSelected ? 'border-primary shadow-lg' : 'border-gray-300'}
+                    ${colorValue === '#ffffff' ? 'shadow-inner' : ''}
                   `}
-                  title={value}
+                  style={{ backgroundColor: colorValue }}
                 >
-                  <div
-                    className={`
-                      w-8 h-8 border-2 transition-all duration-300 relative
-                      ${isSelected ? 'border-primary ' : 'border-gray-300'}
-                      ${colorValue === '#ffffff' ? 'shadow-inner' : ''}
-                    `}
-                    style={{ backgroundColor: colorValue }}
-                  >
-                    {/* {isSelected && ( */}
-                    {/*   <div className="absolute inset-0 flex items-center justify-center"> */}
-                    {/*     <Check */}
-                    {/*       className={`w-3 h-3 ${colorValue === '#ffffff' || colorValue === '#f5f5dc' || colorValue === '#fffdd0' || colorValue === '#fffff0' ? 'text-gray-800' : 'text-white'} drop-shadow`} */}
-                    {/*     /> */}
-                    {/*   </div> */}
-                    {/* )} */}
-                  </div>
-                  {!isAvailable && <div className="absolute inset-0 bg-gray-200 bg-opacity-50 "></div>}
-                </button>
+                  {!isAvailable && <div className="absolute inset-0 bg-gray-200 bg-opacity-50 rounded-full"></div>}
+                </div>
+                {/* Color name tooltip on hover */}
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                  {value}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  const renderModelOption = (option: OptionWithValues) => {
+    const title = formatOptionTitle(option.name);
+    const selectedValue = selectedOptions[option.name];
+
+    return (
+      <div key={option.name} className="space-y-3">
+        {title && <h3 className="text-base font-medium text-black uppercase tracking-wide">{title}</h3>}
+        <div className="relative">
+          <select
+            value={selectedValue || ''}
+            onChange={(e) => onOptionChange(option.name, e.target.value)}
+            className="w-full appearance-none bg-white border-solid border-2 border-primary  px-4 py-3 pr-10 text-text focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+          >
+            <option value="" disabled>
+              Choose {option.name.toLowerCase()}...
+            </option>
+            {option.values.map((value) => {
+              const isAvailable = isOptionInStock(option.name, value);
+              return (
+                <option
+                  key={value}
+                  value={value}
+                  disabled={!isAvailable}
+                  className={!isAvailable ? 'text-gray-400' : ''}
+                >
+                  {value} {!isAvailable ? '(Out of Stock)' : ''}
+                </option>
               );
             })}
+          </select>
+          {/* Custom dropdown arrow */}
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+            <ChevronDown className="w-5 h-5 text-gray-400" />
           </div>
         </div>
-      ))}
+      </div>
+    );
+  };
 
-      {/* Current Selection */}
-      {/* {selectedVariant && ( */}
-      {/*   <div className="bg-gray-50  p-4"> */}
-      {/*     <div className="flex items-center justify-between"> */}
-      {/*       <div> */}
-      {/*         <div className="font-medium text-gray-900">{selectedVariant.title}</div> */}
-      {/*         <Money data={selectedVariant.price} className="text-lg font-bold text-primary" /> */}
-      {/*       </div> */}
-      {/*     </div> */}
-      {/*   </div> */}
-      {/* )} */}
+  const renderGenericOption = (option: OptionWithValues) => {
+    const title = formatOptionTitle(option.name);
+
+    return (
+      <div key={option.name} className="space-y-3">
+        {title && <h3 className="text-base font-medium text-black uppercase tracking-wide">{title}</h3>}
+        <div className="flex flex-wrap gap-2">
+          {option.values.map((value) => {
+            const isSelected = selectedOptions[option.name] === value;
+            const isAvailable = isOptionInStock(option.name, value);
+            const isDefault = isDefaultTitle(value);
+
+            return isDefault ? null : (
+              <button
+                key={value}
+                onClick={() => onOptionChange(option.name, value)}
+                disabled={!isAvailable}
+                className={`
+                  px-3 py-2 border border-solid  text-sm font-medium transition-all duration-200
+                  ${
+                    isSelected
+                      ? 'border-primary bg-primary text-white'
+                      : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                  }
+                  ${!isAvailable ? 'opacity-50 cursor-not-allowed' : ''}
+                `}
+              >
+                {value}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="space-y-6">
+      {options.map((option) => {
+        if (isColorOption(option.name)) {
+          return renderColorOption(option);
+        } else if (isModelOption(option.name)) {
+          return renderModelOption(option);
+        } else {
+          return renderGenericOption(option);
+        }
+      })}
+
+      {/* Current Selection Summary */}
+      {selectedVariant && !isDefaultTitle(selectedVariant.title) && (
+        <>
+          <div className="bg-gray-50  p-4 border border-solid">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-medium text-gray-900">{selectedVariant.title}</div>
+                {(() => {
+                  const filteredOptions = Object.entries(selectedOptions)
+                    .filter(([key, value]) => !isDefaultTitle(key) && !isDefaultTitle(value))
+                    .map(([key, value]) => `${key}: ${value}`);
+
+                  return (
+                    filteredOptions.length > 0 && (
+                      <div className="text-sm text-gray-600 mt-1">{filteredOptions.join(' • ')}</div>
+                    )
+                  );
+                })()}
+              </div>
+              <div className="text-right">
+                <Money data={selectedVariant.price} className="text-lg font-bold text-primary" />
+                {selectedVariant.compareAtPrice && (
+                  <Money data={selectedVariant.compareAtPrice} className="text-sm text-gray-500 line-through" />
+                )}
+              </div>
+            </div>
+          </div>
+          <hr className="border-gray-200 border-2 border-solid" />
+        </>
+      )}
     </div>
   );
 }

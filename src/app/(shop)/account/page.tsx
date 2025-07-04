@@ -52,6 +52,12 @@ interface CustomerData {
   storeCreditAccounts: CustomerStoreCreditAccount[];
 }
 
+interface AddressFormState extends CustomerAddressInput {
+  // Add display-only fields for the form
+  provinceName?: string; // For display in the form
+  countryName?: string; // For display in the form
+}
+
 export default function AccountPage() {
   const router = useRouter();
   const { isAuthenticated, isLoading, customer, logout } = useAuth();
@@ -69,7 +75,7 @@ export default function AccountPage() {
   const [editingProfile, setEditingProfile] = useState(false);
   const [profileForm, setProfileForm] = useState<CustomerUpdateInput>({});
   const [showAddressForm, setShowAddressForm] = useState(false);
-  const [addressForm, setAddressForm] = useState<CustomerAddressInput>({});
+  const [addressForm, setAddressForm] = useState<AddressFormState>({});
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -157,7 +163,26 @@ export default function AccountPage() {
   const handleCreateAddress = async () => {
     try {
       setError(null);
-      const newAddress = await createCustomerAddress(addressForm);
+
+      // Create the input using only valid CustomerAddressInput fields
+      const shopifyAddressInput: CustomerAddressInput = {};
+
+      // Only include fields that exist in CustomerAddressInput
+      if (addressForm.firstName) shopifyAddressInput.firstName = addressForm.firstName;
+      if (addressForm.lastName) shopifyAddressInput.lastName = addressForm.lastName;
+      if (addressForm.company) shopifyAddressInput.company = addressForm.company;
+      if (addressForm.address1) shopifyAddressInput.address1 = addressForm.address1;
+      if (addressForm.address2) shopifyAddressInput.address2 = addressForm.address2;
+      if (addressForm.city) shopifyAddressInput.city = addressForm.city;
+      if (addressForm.zip) shopifyAddressInput.zip = addressForm.zip;
+      if (addressForm.phoneNumber) shopifyAddressInput.phoneNumber = addressForm.phoneNumber;
+      if (addressForm.territoryCode) shopifyAddressInput.territoryCode = addressForm.territoryCode;
+      if (addressForm.zoneCode) shopifyAddressInput.zoneCode = addressForm.zoneCode;
+
+      console.log('Creating address with:', shopifyAddressInput);
+
+      const newAddress = await createCustomerAddress(shopifyAddressInput);
+
       if (newAddress) {
         setCustomerData((prev) => ({
           ...prev,
@@ -166,9 +191,9 @@ export default function AccountPage() {
         setShowAddressForm(false);
         setAddressForm({});
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create address:', error);
-      setError('Failed to create address. Please try again.');
+      setError(`Failed to create address: ${error.message}`);
     }
   };
 
@@ -237,9 +262,15 @@ export default function AccountPage() {
 
   const { profile, addresses, orders, storeCreditAccounts } = customerData;
 
-  const handleCountryChange = (e: any) => {
+  const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedCode = e.target.value;
-    setAddressForm((prev) => ({ ...prev, territoryCode: selectedCode }));
+    const selectedCountry = countries.find((country) => country.code === selectedCode);
+
+    setAddressForm((prev) => ({
+      ...prev,
+      territoryCode: selectedCode,
+      countryName: selectedCountry?.name || '',
+    }));
   };
 
   return (
@@ -327,7 +358,7 @@ export default function AccountPage() {
                   <item.icon className="h-5 w-5 mr-3" />
                   {item.label}
                   {item.count !== null && item.count > 0 && (
-                    <span className="ml-auto bg-gray-200 text-gray-700 rounded-full text-xs px-2 py-1">
+                    <span className="ml-auto bg-secondary text-primary rounded-full text-xs px-2 py-1">
                       {item.count}
                     </span>
                   )}
@@ -569,8 +600,16 @@ export default function AccountPage() {
                           <label className="block text-sm font-medium text-gray-700">State/Province</label>
                           <input
                             type="text"
-                            value={addressForm.province || ''}
-                            onChange={(e) => setAddressForm((prev) => ({ ...prev, province: e.target.value }))}
+                            value={addressForm.provinceName || ''}
+                            onChange={(e) =>
+                              setAddressForm((prev) => ({
+                                ...prev,
+                                provinceName: e.target.value,
+                                // You can map this to zoneCode if you have a mapping function
+                                zoneCode: e.target.value,
+                              }))
+                            }
+                            placeholder="e.g., California, Ontario"
                             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                           />
                         </div>
@@ -587,14 +626,13 @@ export default function AccountPage() {
                           <label className="block text-sm font-medium text-gray-700">Country</label>
                           <select
                             id="country-select"
-                            value={addressForm.territoryCode || ''} // Ensure value matches a valid option or is empty
+                            value={addressForm.territoryCode || ''}
                             onChange={handleCountryChange}
                             className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
                           >
                             <option value="" disabled>
                               Select a country
-                            </option>{' '}
-                            {/* Placeholder option */}
+                            </option>
                             {countries.map((country) => (
                               <option key={country.code} value={country.code}>
                                 {country.name}

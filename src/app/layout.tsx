@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 
 import './globals.css';
 
-import { Bungee, Poppins } from 'next/font/google';
+import { Bungee, Poppins, Roboto } from 'next/font/google';
 
 import { Footer } from './_components/layout/shop/footer';
 import { Header } from './_components/layout/shop/header';
@@ -20,6 +20,12 @@ const bungee = Bungee({
   variable: '--font-bungee',
 });
 
+const roboto = Roboto({
+  subsets: ['latin'],
+  weight: ['100', '300', '400', '500', '700', '900'],
+  variable: '--font-roboto',
+});
+
 export const metadata: Metadata = {
   title: `TypeScript starter for Next.js by João Pedro Schmitz`,
   description: `TypeScript starter for Next.js that includes all you need to build amazing apps`,
@@ -28,10 +34,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${poppins.variable} ${bungee.variable} ${poppins.className}`}>
+      <body className={`${poppins.variable} ${bungee.variable} ${roboto.variable} ${poppins.className}`}>
         <Providers>
           <Header />
-          {children}
+          <div className="pt-24 font-roboto">{children}</div>
           <Footer />
         </Providers>
       </body>

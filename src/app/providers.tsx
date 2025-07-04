@@ -3,8 +3,33 @@
 import { CartProvider, ShopifyProvider } from '@shopify/hydrogen-react';
 import { ReactNode } from 'react';
 
+import { useAuth } from '@/hooks/useAuth';
+import { WishlistProvider } from './_components/layout/context/wishList';
+
 interface ProvidersProps {
   children: ReactNode;
+}
+
+function CartProviderWithAuth({ children }: { children: ReactNode }) {
+  const { isAuthenticated } = useAuth();
+
+  const customerAccessToken = isAuthenticated ? localStorage.getItem('shopify_customer_token') : undefined;
+
+  return (
+    <CartProvider
+      // Key forces CartProvider to re-mount when auth state changes
+      key={isAuthenticated ? 'authenticated' : 'anonymous'}
+      customerAccessToken={customerAccessToken}
+      onCreateComplete={() => {
+        console.log('Cart created with customer token:', !!customerAccessToken);
+      }}
+      onBuyerIdentityUpdateComplete={() => {
+        console.log('Buyer identity updated');
+      }}
+    >
+      {children}
+    </CartProvider>
+  );
 }
 
 export default function Providers({ children }: ProvidersProps) {
@@ -14,9 +39,11 @@ export default function Providers({ children }: ProvidersProps) {
       storefrontToken={process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN!}
       storefrontApiVersion="2025-04"
       countryIsoCode="US"
-      languageIsoCode="NL"
+      languageIsoCode="EN"
     >
-      <CartProvider>{children}</CartProvider>
+      <CartProviderWithAuth>
+        <WishlistProvider>{children}</WishlistProvider>
+      </CartProviderWithAuth>
     </ShopifyProvider>
   );
 }
