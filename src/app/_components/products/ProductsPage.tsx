@@ -1,14 +1,16 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { Suspense, useCallback, useMemo, useState } from 'react';
 
-import { ProductCard, ProductFilters, ProductsHeader } from '@/app/_components/products';
+import { ProductCard, ProductsHeader } from '@/app/_components/products';
 import { EmptyState, Pagination } from '@/app/_components/ui';
 import { useProductFilters } from '@/hooks/useFilters';
-import { ProductsPageProps } from '@/types';
+import { useUrlFilters } from '@/hooks/useUrlFilters';
+import { FilterState, ProductsPageProps } from '@/types';
 import ProductFilter from './ProductFilter';
 
-export default function ProductsPageComponent({
+// Separate component that uses useSearchParams
+function ProductsContent({
   products,
   collections,
   currentCollection,
@@ -17,29 +19,29 @@ export default function ProductsPageComponent({
   hasPreviousPage,
 }: ProductsPageProps) {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const { filters, setFilters, filteredProducts, filteredCount } = useProductFilters(products);
 
-  // Use ref to store the latest setFilters function to avoid stale closures
-  const setFiltersRef = useRef(setFilters);
-  setFiltersRef.current = setFilters;
+  // Initial filter state - useMemo to prevent recreation on every render
+  const initialFilters: FilterState = useMemo(
+    () => ({
+      search: '',
+      category: '',
+      priceRange: [0, 1000] as [number, number],
+      vendor: '',
+      availability: 'all' as const,
+      sortBy: 'featured' as const,
+      collections: [],
+    }),
+    []
+  );
 
-  // Create truly stable callback that doesn't depend on setFilters directly
-  const handleFiltersChange = useCallback((newFilters: any) => {
-    setFiltersRef.current(newFilters);
-  }, []); // Empty dependency array makes this truly stable
+  // Use URL-synchronized filters
+  const { filters, updateFilters } = useUrlFilters(initialFilters);
+  const { filteredProducts, filteredCount } = useProductFilters(products);
 
   // Create stable callback for clearing filters
   const handleClearFilters = useCallback(() => {
-    setFiltersRef.current({
-      search: '',
-      category: '',
-      priceRange: [0, 1000],
-      vendor: '',
-      availability: 'all',
-      sortBy: 'featured',
-      collections: [],
-    });
-  }, []); // Empty dependency array makes this truly stable
+    updateFilters(initialFilters);
+  }, [updateFilters, initialFilters]);
 
   if (!products || products.length === 0) {
     return (
@@ -63,32 +65,23 @@ export default function ProductsPageComponent({
           <ProductsHeader currentCollection={currentCollection} totalProducts={totalProducts} />
         </div>
 
-        {/* Pass all required props to ProductFilter */}
         <ProductFilter
           filters={filters}
-          onFiltersChange={handleFiltersChange}
+          onFiltersChange={updateFilters}
           products={products}
           collections={collections}
           currentCollection={currentCollection}
           totalProducts={totalProducts}
           filteredCount={filteredCount}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
         />
 
         <div className="container mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             {/* Filters Sidebar */}
-            <div className="lg:col-span-1">
-              <ProductFilters
-                filters={filters}
-                onFiltersChange={handleFiltersChange}
-                products={products}
-                collections={collections}
-                currentCollection={currentCollection}
-              />
-            </div>
-
             {/* Products Grid */}
-            <div className="lg:col-span-3">
+            <div className="col-span-full">
               {/* View Mode Controls */}
               <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center space-x-2">
@@ -123,16 +116,6 @@ export default function ProductsPageComponent({
                     </svg>
                   </button>
                 </div>
-                {/* Results info */}
-                <div className="text-sm text-gray-600">
-                  {filteredCount !== products.length ? (
-                    <span>
-                      Showing {filteredCount} of {products.length} products
-                    </span>
-                  ) : (
-                    <span>{products.length} products</span>
-                  )}
-                </div>
               </div>
 
               {filteredProducts.length === 0 ? (
@@ -146,14 +129,13 @@ export default function ProductsPageComponent({
                 <>
                   <div
                     className={`grid gap-6 ${
-                      viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3' : 'grid-cols-1'
+                      viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-4' : 'grid-cols-1'
                     }`}
                   >
                     {filteredProducts.map((product) => (
                       <ProductCard key={product.id} product={product} viewMode={viewMode} />
                     ))}
                   </div>
-                  {/* Pagination */}
                   <div className="mt-8">
                     <Pagination hasNextPage={hasNextPage} hasPreviousPage={hasPreviousPage} />
                   </div>
@@ -164,5 +146,36 @@ export default function ProductsPageComponent({
         </div>
       </div>
     </div>
+  );
+}
+
+// Loading component
+function ProductsLoading() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+      <div className="container mx-auto px-4 py-8">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="bg-white rounded-lg shadow p-4">
+                <div className="h-48 bg-gray-200 rounded mb-4"></div>
+                <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Main component with Suspense boundary
+export default function ProductsPageComponent(props: ProductsPageProps) {
+  return (
+    <Suspense fallback={<ProductsLoading />}>
+      <ProductsContent {...props} />
+    </Suspense>
   );
 }

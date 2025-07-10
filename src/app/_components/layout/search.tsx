@@ -220,7 +220,7 @@ function SimpleSearchModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
   const totalResults = results.products.length + results.pages.length + results.collections.length;
 
   return (
-    <div className="fixed font-roboto inset-0 z-50 bg-black bg-opacity-50 backdrop-blur-sm">
+    <div className="fixed font-roboto inset-0 z-50 bg-black bg-opacity-50 backdrop-blur-sm" onClick={onClose}>
       <div className="flex justify-center items-start pt-20 px-4">
         <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-96 overflow-hidden">
           {/* Search Header */}
@@ -341,7 +341,7 @@ function SimpleSearchModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                             </h4>
                             <div className="flex items-center space-x-2 mt-1">
                               {product.vendor && <span className="text-sm text-gray-500">{product.vendor}</span>}
-                              <span className="text-sm font-medium text-green-600">
+                              <span className="text-sm font-medium text-text">
                                 ${product.priceRange.minVariantPrice.amount}
                               </span>
                             </div>

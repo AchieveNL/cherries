@@ -18,26 +18,23 @@ export interface CustomerAccessToken {
   accessToken: string;
   expiresAt: string;
 }
-export interface LoginResponse {
+
+export interface BaseResponse {
   success: boolean;
-  customerAccessToken?: CustomerAccessToken;
-  customer?: CustomerProfile;
   errors?: Array<{
     field: string[];
     message: string;
     code?: string;
   }>;
 }
-
-export interface RegisterResponse {
-  success: boolean;
+export interface LoginResponse extends BaseResponse {
   customerAccessToken?: CustomerAccessToken;
   customer?: CustomerProfile;
-  errors?: Array<{
-    field: string[];
-    message: string;
-    code?: string;
-  }>;
+}
+
+export interface RegisterResponse extends BaseResponse {
+  customerAccessToken?: CustomerAccessToken;
+  customer?: CustomerProfile;
 }
 
 export interface RecoverResponse {

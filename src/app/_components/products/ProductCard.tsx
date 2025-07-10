@@ -188,17 +188,22 @@ export default function ProductCard({ product, viewMode = 'grid', newProductDays
     productProviderProps.initialVariantId = firstVariant.id;
   }
 
+  // Product URL for navigation
+  const productUrl = `/products/${product.handle}`;
+
   // LIST VIEW LAYOUT
   if (viewMode === 'list') {
     return (
       <ProductProvider {...productProviderProps}>
-        <div className="bg-white overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group rounded-lg ">
+        <div className="bg-white overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group rounded-lg">
           <div className="flex">
             {/* Product Image/Video - Left Side */}
-            <div
-              className="relative w-48 h-48 flex-shrink-0 overflow-hidden bg-gray-100"
+            <Link
+              href={productUrl}
+              className="relative w-48 h-48 flex-shrink-0 overflow-hidden bg-gray-100 block"
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
+              aria-label={`View ${product.title} details`}
             >
               {/* Main Image */}
               {firstImage && firstImage.url ? (
@@ -252,11 +257,11 @@ export default function ProductCard({ product, viewMode = 'grid', newProductDays
               <div className="absolute top-3 left-3 flex flex-col space-y-2 z-20">
                 {/* Sale Badge */}
                 {isOnSale && (
-                  <div className="bg-secondary text-primary text-xs font-bold px-2 py-1 ">-{discountPercentage}%</div>
+                  <div className="bg-secondary text-primary text-xs font-bold px-2 py-1">-{discountPercentage}%</div>
                 )}
 
                 {/* NEW Badge */}
-                {showNewBadge && <div className="bg-primary text-white text-xs font-bold px-2 py-1 ">NEW</div>}
+                {showNewBadge && <div className="bg-primary text-white text-xs font-bold px-2 py-1">NEW</div>}
               </div>
 
               {/* Availability Badge */}
@@ -265,16 +270,16 @@ export default function ProductCard({ product, viewMode = 'grid', newProductDays
                   Out of Stock
                 </div>
               )}
-            </div>
+            </Link>
 
             {/* Product Info - Right Side */}
             <div className="flex-1 p-6 flex flex-col justify-between">
               <div>
                 {/* Title */}
                 <h3 className="font-semibold font-bungee text-lg text-gray-900 mb-2">
-                  <a href={`/products/${product.handle}`} className="hover:text-primary transition-colors">
+                  <Link href={productUrl} className="hover:text-primary transition-colors">
                     {product.title}
-                  </a>
+                  </Link>
                 </h3>
 
                 {/* Description */}
@@ -357,16 +362,17 @@ export default function ProductCard({ product, viewMode = 'grid', newProductDays
     );
   }
 
-  // GRID VIEW LAYOUT (default)  w-[317px]
+  // GRID VIEW LAYOUT (default)
   return (
     <ProductProvider {...productProviderProps}>
-      <div className="bg-white overflow-hidden transition-all duration-300 group ">
+      <div className="bg-white overflow-hidden transition-all duration-300 group">
         {/* Product Image/Video */}
-
-        <div
-          className="relative aspect-square overflow-hidden bg-gray-100"
+        <Link
+          href={productUrl}
+          className="relative aspect-square overflow-hidden bg-gray-100 block"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
+          aria-label={`View ${product.title} details`}
         >
           {/* Main Image */}
           {firstImage && firstImage.url ? (
@@ -427,7 +433,7 @@ export default function ProductCard({ product, viewMode = 'grid', newProductDays
 
             {/* Availability Badge */}
             {!firstVariant?.availableForSale && (
-              <div className="bg-primary text-white text-xs font-medium px-4 py-2 ">Out of Stock</div>
+              <div className="bg-primary text-white text-xs font-medium px-4 py-2">Out of Stock</div>
             )}
           </div>
 
@@ -439,7 +445,7 @@ export default function ProductCard({ product, viewMode = 'grid', newProductDays
           )}
 
           {/* Add to Cart Button - Center on Hover */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-30">
             <div className="flex flex-col items-center space-y-2">
               {firstVariant?.id ? (
                 <>
@@ -448,7 +454,7 @@ export default function ProductCard({ product, viewMode = 'grid', newProductDays
                     quantity={1}
                     disabled={!firstVariant?.availableForSale || isAddingToCart}
                     className="bg-primary text-white hover:bg-primary/90 py-3 px-6 transition-all duration-200 font-medium disabled:bg-primary disabled:cursor-not-allowed flex items-center space-x-2 shadow-lg transform hover:scale-105"
-                    onClick={() => {
+                    onClick={(e) => {
                       setIsAddingToCart(true);
                       setShowSuccessMessage(false);
                     }}
@@ -484,14 +490,15 @@ export default function ProductCard({ product, viewMode = 'grid', newProductDays
               )}
             </div>
           </div>
-        </div>
+        </Link>
+
         {/* Product Info */}
         <div className="p-4">
           {/* Title */}
           <h3 className="font-semibold font-bungee text-gray-900 mb-2 line-clamp-2">
-            <a href={`/products/${product.handle}`} className="hover:text-primary transition-colors">
+            <Link href={productUrl} className="hover:text-primary transition-colors">
               {product.title}
-            </a>
+            </Link>
           </h3>
 
           {/* Price */}

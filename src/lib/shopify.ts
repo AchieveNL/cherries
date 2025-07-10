@@ -8,27 +8,73 @@ import type {
 } from '@shopify/hydrogen-react/storefront-api-types';
 import type { PartialDeep } from 'type-fest';
 
-// Create Shopify client
-export const client = createStorefrontClient({
-  storeDomain: process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN!,
-  storefrontApiVersion: '2025-04',
-  privateStorefrontToken: process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN!,
-  contentType: 'json',
-});
+const storeDomain = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN;
+const storefrontToken = process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN_FRONT;
+
+if (!storeDomain) {
+  console.error('❌ Missing NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN environment variable');
+}
+
+if (!storefrontToken) {
+  console.error('❌ Missing SHOPIFY_STOREFRONT_ACCESS_TOKEN environment variable');
+}
+
+// Only create client if we have the required environment variables
+let client: ReturnType<typeof createStorefrontClient> | null = null;
+
+if (storeDomain && storefrontToken) {
+  try {
+    client = createStorefrontClient({
+      storeDomain: storeDomain,
+      storefrontApiVersion: '2025-04',
+      privateStorefrontToken: storefrontToken,
+      contentType: 'json',
+    });
+    console.log('✅ Shopify client created successfully');
+  } catch (error) {
+    console.error('❌ Failed to create Shopify client:', error);
+  }
+}
+
+export { client };
 
 // Helper function for making requests
-async function shopifyRequest<T>(query: string, variables: Record<string, any> = {}): Promise<T | null> {
+export async function shopifyRequest<T>(query: string, variables: Record<string, any> = {}): Promise<T | null> {
   try {
+    // Check if client is properly initialized
+    if (!client) {
+      console.error('Shopify client not initialized. Check your environment variables:');
+      console.error('- NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN:', storeDomain ? '✅ Set' : '❌ Missing');
+      console.error('- SHOPIFY_STOREFRONT_ACCESS_TOKEN:', storefrontToken ? '✅ Set' : '❌ Missing');
+      return null;
+    }
+
+    // Get headers safely
+    let headers: Record<string, string>;
+    try {
+      headers = client.getPrivateTokenHeaders();
+    } catch (headerError) {
+      console.error('Failed to get private token headers:', headerError);
+      return null;
+    }
+
+    // Make the request
     const response = await fetch(client.getStorefrontApiUrl(), {
       body: JSON.stringify({
         query,
         variables,
       }),
-      headers: client.getPrivateTokenHeaders(),
+      headers: {
+        ...headers,
+        'Content-Type': 'application/json',
+      },
       method: 'POST',
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`HTTP ${response.status}: ${response.statusText}`);
+      console.error('Response body:', errorText);
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
 

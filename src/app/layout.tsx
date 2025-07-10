@@ -4,6 +4,7 @@ import './globals.css';
 
 import { Bungee, Poppins, Roboto } from 'next/font/google';
 
+import CustomCursor from './_components/animation/CustomCursor';
 import { Footer } from './_components/layout/shop/footer';
 import { Header } from './_components/layout/shop/header';
 import Providers from './providers';
@@ -29,6 +30,11 @@ const roboto = Roboto({
 export const metadata: Metadata = {
   title: `TypeScript starter for Next.js by João Pedro Schmitz`,
   description: `TypeScript starter for Next.js that includes all you need to build amazing apps`,
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon-16x16.png',
+    apple: '/apple-touch-icon.png',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -37,7 +43,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${poppins.variable} ${bungee.variable} ${roboto.variable} ${poppins.className}`}>
         <Providers>
           <Header />
-          <div className="pt-24 font-roboto">{children}</div>
+          <div className="pt-32 md:pt-24 font-roboto">{children}</div>
+          {/* Only show custom cursor on desktop */}
+          <div className="hidden md:block">
+            <CustomCursor />
+          </div>
           <Footer />
         </Providers>
       </body>

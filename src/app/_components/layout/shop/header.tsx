@@ -16,7 +16,7 @@ import { ArrowRight, ChevronDown, Heart, Menu, Minus, Package, Plus, ShoppingCar
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { AccountIcon, LanguageIcon, MarketplaceIcon, SearchIcon, ShoppingIcon } from '@/app/_components/icons/header';
+import { AccountIcon, LanguageIcon, Logo, MarketplaceIcon, ShoppingIcon } from '@/app/_components/icons/header';
 import { Button } from '../../ui';
 import { useWishlist } from '../context/wishList';
 import HeaderSearch from '../search';
@@ -25,6 +25,17 @@ interface CollectionItem {
   name: string;
   href: string;
 }
+
+interface StaticPage {
+  name: string;
+  href: string;
+}
+
+// Static pages array
+const staticPages: StaticPage[] = [
+  { name: 'ABOUT US', href: '/about' },
+  { name: 'FAQs', href: '/faq' },
+];
 
 // Custom hook to safely use cart data
 function useSafeCart() {
@@ -232,18 +243,59 @@ export function Header() {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 font-bungee border bg-white transition-shadow duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-50 font-roboto border bg-white transition-shadow duration-300 ${
           hasScrolled ? 'shadow-lg' : 'shadow-none'
         }`}
       >
         <div className="container mx-auto px-4">
+          {/* Mobile Top Bar - Languages and Static Pages */}
+          <div className="lg:hidden flex items-center justify-between md:py-3 border-b border-gray-100">
+            {/* Languages Dropdown */}
+            <div className="relative group">
+              <button className="flex items-center space-x-2 text-gray-700 hover:text-primary transition-colors font-medium py-2 text-sm">
+                <LanguageIcon />
+                <span>LANGUAGE</span>
+                <ChevronDown className="w-3 h-3 group-hover:rotate-180 transition-transform" />
+              </button>
+              <div className="absolute top-full left-0 mt-2 w-32 bg-white shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                <div className="p-2">
+                  <a
+                    href="/en"
+                    className="block px-3 py-2 text-xs text-gray-700 hover:bg-gradient-to-r  hover:text-primary transition-all duration-200"
+                  >
+                    English
+                  </a>
+                  <a
+                    href="/es"
+                    className="block px-3 py-2 text-xs text-gray-700 hover:bg-gradient-to-r  hover:text-primary transition-all duration-200"
+                  >
+                    Spanish
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* Static Pages Links */}
+            <div className="flex items-center space-x-4">
+              {staticPages.map((page) => (
+                <Link
+                  key={page.name}
+                  href={page.href}
+                  className="text-gray-700 hover:text-primary transition-colors font-medium"
+                >
+                  {page.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+
           {/* Main header */}
           <div className="flex items-center justify-between py-6">
             {/* Left Side - Shop Navigation */}
             <div className="flex items-center">
               {/* Mobile Menu Button */}
               <button
-                className="lg:hidden p-2 hover:bg-gray-100  transition-colors mr-2"
+                className="lg:hidden p-2 hover:bg-gray-100 transition-colors mr-2"
                 onClick={handleMenuToggle}
                 aria-label="Toggle mobile menu"
               >
@@ -251,12 +303,12 @@ export function Header() {
               </button>
 
               {/* Desktop Shop Navigation */}
-              <nav className="hidden  lg:flex items-center">
+              <nav className="hidden lg:flex items-center">
                 {navItems.map((item) => (
                   <div key={item.name} className="relative group">
                     <a
                       href={item.href}
-                      className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors font-medium py-2 px-3"
+                      className="flex items-center space-x-2 text-gray-700 hover:text-primary transition-colors font-medium py-2 px-3"
                     >
                       <item.icon className="w-7 h-7" />
                       <span>{item.name}</span>
@@ -265,13 +317,13 @@ export function Header() {
                       )}
                     </a>
                     {item.hasDropdown && item.dropdownItems && (
-                      <div className="absolute top-full left-0 mt-2 w-56 bg-white  shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                      <div className="absolute top-full left-0 mt-2 w-56 bg-white shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
                         <div className="p-3">
                           {item.dropdownItems.map((dropdownItem) => (
                             <a
                               key={dropdownItem.name}
                               href={dropdownItem.href}
-                              className="block px-4 py-3 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-red-50 hover:to-purple-50 hover:text-red-600  transition-all duration-200"
+                              className="block px-4 py-3 text-sm text-gray-700 hover:bg-gradient-to-r  hover:text-primary transition-all duration-200"
                             >
                               {dropdownItem.name}
                             </a>
@@ -282,63 +334,71 @@ export function Header() {
                   </div>
                 ))}
               </nav>
-
-              {/* Mobile Shop Link */}
-              <div className="lg:hidden">
-                <a
-                  href="/products"
-                  className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors font-medium py-2"
-                >
-                  <Package className="w-4 h-4" />
-                  <span>Shop</span>
-                </a>
-              </div>
             </div>
 
             {/* Center - Logo */}
             <div className="absolute left-1/2 transform -translate-x-1/2">
               <a href="/" className="flex items-center space-x-3">
-                <Image src="/logo.svg" alt="CaseHub Logo" className="w-10 h-10" />
+                <Logo className="md:w-full md:h-10 h-8 w-full" />
               </a>
             </div>
 
-            {/* Right Side - Search, Account, Wishlist, Cart */}
-            <div className="flex items-center space-x-3">
+            {/* Right Side - Static Pages, Search, Account, Wishlist, Cart */}
+            <div className="flex items-center space-x-1">
+              {/* Desktop Static Pages */}
+              <div className="hidden lg:flex items-center space-x-4 mr-4">
+                {staticPages.map((page) => (
+                  <Link
+                    key={page.name}
+                    href={page.href}
+                    className="text-gray-700 hover:text-primary transition-colors font-medium text-sm"
+                  >
+                    {page.name}
+                  </Link>
+                ))}
+              </div>
+
               {/* Search */}
               <HeaderSearch />
+
               {/* Wishlist */}
               <Link
                 href="/wishlist"
-                className="p-2 hover:bg-gray-100  transition-colors relative group"
+                className="p-2 hover:bg-gray-100 md:block hidden transition-colors relative group"
                 aria-label={`Wishlist with ${wishlistCount} items`}
               >
-                <Heart className="w-7 h-7 mx-2  transition-colors" />
+                <Heart className="w-7 h-7 mx-2 transition-colors" />
                 {wishlistCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-primary text-white text-xs  w-5 h-5 flex items-center justify-center font-medium">
+                  <span className="absolute -top-1 -right-1 bg-primary text-white text-xs w-5 h-5 flex items-center justify-center font-medium">
                     {wishlistCount > 99 ? '99+' : wishlistCount}
                   </span>
                 )}
               </Link>
+
               {/* Account */}
-              <Link href="/account" className="p-2  hover:bg-gray-100  transition-colors group" aria-label="Account">
-                <AccountIcon className="w-7 h-7 ml-2    transition-colors" />
+              <Link
+                href="/account"
+                className="p-2 hover:bg-gray-100 md:block hidden transition-colors group"
+                aria-label="Account"
+              >
+                <AccountIcon className="w-7 h-7  ml-2 transition-colors" />
               </Link>
 
               {/* Cart */}
               <button
-                className="p-2 hover:bg-gray-100  transition-colors relative group"
+                className="p-2 hover:bg-gray-100 transition-colors relative group"
                 onClick={handleCartToggle}
                 aria-label={`Shopping cart with ${cartItemCount} items`}
               >
-                <ShoppingIcon className="w-7 h-7  mx-2  transition-colors" />
+                <ShoppingIcon className="w-7 h-7 md:mx-2 transition-colors" />
                 {cartItemCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-primary text-white text-xs  w-5 h-5 flex items-center justify-center font-medium ">
+                  <span className="absolute -top-1 -right-1 bg-primary text-white text-xs w-5 h-5 flex items-center justify-center font-medium">
                     {cartItemCount > 99 ? '99+' : cartItemCount}
                   </span>
                 )}
                 {/* Debug indicator - remove in production */}
                 {process.env.NODE_ENV === 'development' && (
-                  <span className="absolute -bottom-1 -right-1 bg-blue-500 text-white text-[10px]  w-4 h-4 flex items-center justify-center">
+                  <span className="absolute -bottom-1 -right-1 bg-blue-500 text-white text-[10px] w-4 h-4 flex items-center justify-center">
                     {status === 'updating' ? 'U' : status === 'idle' ? 'I' : '?'}
                   </span>
                 )}
@@ -354,10 +414,10 @@ export function Header() {
                   <div key={item.name}>
                     <a
                       href={item.href}
-                      className="flex items-center justify-between px-3 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-red-50 hover:to-purple-50 hover:text-red-600  transition-all duration-200"
+                      className="flex items-center justify-between px-3 py-3 text-gray-700 hover:text-primary transition-all duration-200"
                     >
                       <div className="flex items-center space-x-3">
-                        <item.icon className="w-5 h-5" />
+                        <item.icon />
                         <span className="font-medium">{item.name}</span>
                       </div>
                       {item.hasDropdown && <ChevronDown className="w-4 h-4" />}
@@ -368,7 +428,7 @@ export function Header() {
                           <a
                             key={dropdownItem.name}
                             href={dropdownItem.href}
-                            className="block px-3 py-2 text-sm text-gray-600 hover:text-red-600 hover:bg-red-50  transition-colors"
+                            className="block px-3 py-2 text-sm text-gray-600 hover:text-primary hover:bg-red-50 transition-colors"
                           >
                             {dropdownItem.name}
                           </a>
@@ -382,17 +442,30 @@ export function Header() {
                 <div className="border-t border-gray-100 pt-4 mt-4">
                   <Link
                     href="/wishlist"
-                    className="flex items-center justify-between px-3 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-red-50 hover:to-purple-50 hover:text-red-600  transition-all duration-200"
+                    className="flex items-center justify-between px-3 py-3 text-gray-700 hover:bg-gradient-to-r  hover:text-primary transition-all duration-200"
                   >
                     <div className="flex items-center space-x-3">
                       <Heart className="w-5 h-5" />
                       <span className="font-medium">Wishlist</span>
                     </div>
                     {wishlistCount > 0 && (
-                      <span className="bg-red-500 text-white text-xs  w-5 h-5 flex items-center justify-center font-medium">
+                      <span className="bg-primary text-white text-xs w-5 h-5 flex items-center justify-center font-medium">
                         {wishlistCount > 99 ? '99+' : wishlistCount}
                       </span>
                     )}
+                  </Link>
+                </div>
+                {/* Account */}
+
+                <div className="border-t border-gray-100 pt-4 mt-4">
+                  <Link
+                    href="/account"
+                    className="flex items-center justify-between px-3 py-3 text-gray-700 hover:bg-gradient-to-r  hover:text-primary transition-all duration-200"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <AccountIcon className="transition-colors" />
+                      <span className="font-medium">Account</span>
+                    </div>
                   </Link>
                 </div>
               </nav>
@@ -441,12 +514,12 @@ function CartLineItemMini() {
 
   return (
     <div
-      className={`flex items-center space-x-3 p-4  transition-all duration-300 border border-gray-100 ${
+      className={`flex items-center space-x-3 p-4 transition-all duration-300 border border-gray-100 ${
         isRemoving ? 'opacity-50 scale-95' : 'hover:shadow-md hover:border-gray-200'
       }`}
     >
       {/* Product Image */}
-      <div className="flex-shrink-0 w-16 h-16  overflow-hidden bg-gray-200 shadow-sm">
+      <div className="flex-shrink-0 w-16 h-16 overflow-hidden bg-gray-200 shadow-sm">
         {merchandise.image?.url ? (
           <Image
             alt={merchandise.image.altText || productTitle}
@@ -470,7 +543,7 @@ function CartLineItemMini() {
 
         {/* Quantity and Price */}
         <div className="flex items-center justify-between mt-3">
-          <div className="flex items-center border border-gray-300  overflow-hidden shadow-sm">
+          <div className="flex items-center border border-gray-300 overflow-hidden shadow-sm">
             <CartLineQuantityAdjustButton
               adjust="decrease"
               className="p-2 hover:bg-red-50 hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -497,7 +570,7 @@ function CartLineItemMini() {
       <button
         onClick={handleRemove}
         disabled={isRemoving}
-        className="p-2 hover:bg-red-50 hover:text-primary  transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="p-2 hover:bg-red-50 hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         aria-label="Remove item from cart"
       >
         <X className="w-4 h-4" />
@@ -543,7 +616,7 @@ function CartSlideout({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
           <h2 className="text-lg font-bold text-gray-900">Shopping Cart ({validLines.length})</h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100  transition-colors shadow-sm"
+            className="p-2 hover:bg-gray-100 transition-colors shadow-sm"
             aria-label="Close cart"
           >
             <X className="w-5 h-5" />
@@ -555,7 +628,7 @@ function CartSlideout({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
           {status === 'updating' || status === 'creating' ? (
             <div className="flex-1 flex items-center justify-center">
               <div className="flex flex-col items-center space-y-3">
-                <div className="animate-spin  h-8 w-8 border-b-2 border-red-600"></div>
+                <div className="animate-spin h-8 w-8 border-b-2 border-primary"></div>
                 <p className="text-sm text-gray-600">Updating cart...</p>
               </div>
             </div>
@@ -567,7 +640,7 @@ function CartSlideout({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
               <Link
                 href="/products"
                 onClick={onClose}
-                className="bg-primary text-white px-6 py-3   transition-all duration-200 font-semibold shadow-lg"
+                className="bg-primary text-white px-6 py-3 transition-all duration-200 font-semibold shadow-lg"
               >
                 Shop Now
               </Link>
@@ -600,7 +673,7 @@ function CartSlideout({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
 
                 {/* Checkout Button */}
                 <Button
-                  className="w-full bg-primary text-white py-4 px-4  transition-all duration-200 font-bold flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105"
+                  className="w-full bg-primary text-white py-4 px-4 transition-all duration-200 font-bold flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105"
                   onClick={() => (window.location.href = '/cart')}
                 >
                   <span>Secure Checkout</span>

@@ -4,6 +4,7 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import { Facebook, Youtube } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 // Types for collections
@@ -195,9 +196,12 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href="/orders" className="text-gray-600 hover:text-gray-900 transition-colors text-lg">
+                <Link
+                  href="/account?tab=orders"
+                  className="text-gray-600 hover:text-gray-900 transition-colors text-lg"
+                >
                   Orders
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -221,8 +225,16 @@ export function Footer() {
               <p className="text-white text-lg">© 2025 Cherries All rights reserved</p>
               <p className="text-white text-lg">
                 Developed by{' '}
-                <a className="hover:text-secondary transition-colors" href="https://www.achieve.nl/" target="_blank">
-                  Achieve.nl
+                <a
+                  className="group relative inline-flex items-center gap-2 hover:text-secondary transition-colors duration-300"
+                  href="https://www.achieve.nl/"
+                  target="_blank"
+                >
+                  <span className="relative">
+                    Achieve.nl
+                    {/* Animated underline */}
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-secondary transition-all duration-300 group-hover:w-full"></span>
+                  </span>
                 </a>
               </p>
             </div>

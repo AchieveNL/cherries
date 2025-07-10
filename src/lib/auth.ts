@@ -56,6 +56,7 @@ const CUSTOMER_CREATE = `#graphql
 
 // Helper function for making requests
 async function shopifyRequest<T>(query: string, variables: Record<string, any> = {}): Promise<T> {
+  if (!client) return Promise.reject(new Error('Shopify client is not initialized'));
   try {
     const response = await fetch(client.getStorefrontApiUrl(), {
       body: JSON.stringify({

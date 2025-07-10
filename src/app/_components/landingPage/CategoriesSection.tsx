@@ -1,18 +1,53 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import Image from 'next/image';
 import Link from 'next/link';
+import { useEffect, useRef, useState } from 'react';
 
+import { getCollections } from '@/lib/shopify'; // Adjust the import path as needed
 import { Button } from '../ui';
 
+// Skeleton component for loading categories
+const CategorySkeleton = () => (
+  <div className="h-8 md:h-16 bg-gray-200 animate-pulse  mx-auto w-48 md:w-64 mb-2 md:mb-4"></div>
+);
+
+// Image skeleton component
+const ImageSkeleton = ({ className, width, height }: { className: string; width: string; height: string }) => (
+  <div className={className} style={{ width, height }}>
+    <div className="w-full h-full bg-gray-200 animate-pulse rounded-lg shadow-lg"></div>
+  </div>
+);
+
+interface Category {
+  id: string;
+  title: string;
+  handle: string;
+}
+
 const CategoriesSection = () => {
-  const categories = ['PHONE CHARGER', 'SMARTWATCH', 'PHONE CASE', 'POWER BANK', 'FLASH DRIVE', 'CORDS'];
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLDivElement>(null);
+  const categoriesRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLDivElement>(null);
+  const imagesRef = useRef<HTMLDivElement>(null);
+
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isVisible, setIsVisible] = useState({
+    section: false,
+    title: false,
+    categories: false,
+    button: false,
+    images: false,
+  });
 
   const images = [
     {
       id: 1,
       src: '/landingPage/categories/img-1.webp',
       alt: 'Model 1',
-      className: 'absolute top-16 left-4 md:top-24 md:left-12',
+      className: 'absolute top-[10vh] left-[5%] md:top-[15vh] md:left-[8%] z-[1]',
       width: 298,
       height: 307,
       mobileWidth: 150,
@@ -22,7 +57,7 @@ const CategoriesSection = () => {
       id: 2,
       src: '/landingPage/categories/img-2.webp',
       alt: 'Model 2',
-      className: 'absolute top-32 right-4 md:top-52 md:right-12',
+      className: 'absolute top-[20vh] right-[5%] md:top-[5vh] md:right-[8%] z-[1]',
       width: 314,
       height: 406,
       mobileWidth: 160,
@@ -32,7 +67,7 @@ const CategoriesSection = () => {
       id: 3,
       src: '/landingPage/categories/img-3.webp',
       alt: 'Model 3',
-      className: 'absolute bottom-40 left-6 md:bottom-40 md:left-40',
+      className: 'absolute bottom-[25vh] left-[8%] md:bottom-[10vh] md:left-[15%] z-[1]',
       width: 279,
       height: 313,
       mobileWidth: 140,
@@ -42,7 +77,7 @@ const CategoriesSection = () => {
       id: 4,
       src: '/landingPage/categories/img-4.webp',
       alt: 'Model 4',
-      className: 'absolute bottom-8 right-8 md:bottom-0 md:right-32',
+      className: 'absolute bottom-[10vh] right-[8%] md:bottom-[15vh] md:right-[12%] z-[1]',
       width: 285,
       height: 388,
       mobileWidth: 145,
@@ -50,75 +85,225 @@ const CategoriesSection = () => {
     },
   ];
 
+  // Intersection Observer setup
+  useEffect(() => {
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px',
+    };
+
+    const observers = new Map();
+
+    const createObserver = (ref: React.RefObject<HTMLElement>, key: string, delay = 0) => {
+      if (!ref.current) return;
+
+      const observer = new IntersectionObserver(([entry]) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => {
+            setIsVisible((prev) => ({ ...prev, [key]: true }));
+          }, delay);
+        }
+      }, observerOptions);
+
+      observer.observe(ref.current);
+      observers.set(key, observer);
+    };
+
+    // Create observers with staggered delays
+    createObserver(sectionRef, 'section', 0);
+    createObserver(titleRef, 'title', 200);
+    createObserver(categoriesRef, 'categories', 400);
+    createObserver(buttonRef, 'button', 600);
+    createObserver(imagesRef, 'images', 300);
+
+    return () => {
+      observers.forEach((observer) => observer.disconnect());
+    };
+  }, []);
+
+  // Fetch categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoading(true);
+        const response = await getCollections({
+          first: 6, // Get first 6 collections
+          sortKey: 'TITLE',
+          reverse: false,
+        });
+
+        // Transform collections to categories
+        const transformedCategories: Category[] = response.collections.slice(0, 6).map((collection) => ({
+          id: collection.id || '',
+          title: collection.title?.toUpperCase() || 'CATEGORY',
+          handle: collection.handle || '',
+        }));
+
+        setCategories(transformedCategories);
+      } catch (err: any) {
+        console.error('Error fetching categories:', err);
+        setError(err.message);
+
+        // Fallback to static categories
+        const fallbackCategories: Category[] = [
+          { id: '1', title: 'PHONE CHARGER', handle: 'phone-charger' },
+          { id: '2', title: 'SMARTWATCH', handle: 'smartwatch' },
+          { id: '3', title: 'PHONE CASE', handle: 'phone-case' },
+          { id: '4', title: 'POWER BANK', handle: 'power-bank' },
+          { id: '5', title: 'FLASH DRIVE', handle: 'flash-drive' },
+          { id: '6', title: 'CORDS', handle: 'cords' },
+        ];
+        setCategories(fallbackCategories);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
   return (
-    <section className="min-h-screen relative overflow-hidden py-8">
-      <div className="container mx-auto px-4 md:px-8">
-        <div className="relative max-w-8xl mx-auto">
-          {/* Center Content */}
-          <div className="text-center py-32 md:py-72 relative z-10">
-            <p className="text-sm md:text-[34px] text-text mb-4 md:mb-6">Explore Our Categories</p>
-
-            <div className="space-y-2 md:space-y-4 mb-6 md:mb-8">
-              {categories.map((category) => (
-                <h2
-                  key={category}
-                  className="text-xl sm:text-2xl md:text-4xl lg:text-[56px]  text-text font-medium leading-tight cursor-pointer transition-colors duration-300"
-                >
-                  {category}
-                </h2>
-              ))}
-            </div>
-
-            <Link href="/products" className="inline-block">
-              <Button
-                showArrow
-                className="px-6 py-3 md:px-8 md:py-3 font-medium mx-auto transition-all duration-300 hover:scale-105"
-              >
-                Shop Now
-              </Button>
-            </Link>
-          </div>
-
-          {/* Floating Images - Hidden on very small screens, scaled on mobile */}
-          <div className="hidden sm:block">
-            {images.map((image) => (
+    <section ref={sectionRef} className="min-h-screen relative overflow-hidden py-8">
+      {/* Fixed Background Images - Independent of content */}
+      <div className="hidden sm:block">
+        {loading
+          ? // Image skeletons with fixed positioning
+            images.map((image, index) => (
+              <ImageSkeleton
+                key={`img-skeleton-${image.id}`}
+                className={image.className}
+                width={`clamp(${image.mobileWidth}px, 8vw + ${image.mobileWidth}px, ${image.width}px)`}
+                height={`clamp(${image.mobileHeight}px, 8vw + ${image.mobileHeight}px, ${image.height}px)`}
+              />
+            ))
+          : // Fixed positioned images
+            images.map((image, index) => (
               <div
                 key={image.id}
-                className={image.className}
+                className={`${image.className} transition-all duration-700 ease-out`}
                 style={{
                   width: `clamp(${image.mobileWidth}px, 8vw + ${image.mobileWidth}px, ${image.width}px)`,
                   height: `clamp(${image.mobileHeight}px, 8vw + ${image.mobileHeight}px, ${image.height}px)`,
+                  transitionDelay: `${index * 200}ms`,
                 }}
               >
                 <Image
                   src={image.src}
                   alt={image.alt}
                   fill
-                  className="object-cover  shadow-lg hover:scale-110 transition-transform duration-300"
+                  className="object-cover shadow-lg  transition-transform duration-300 "
                   sizes="(max-width: 768px) 160px, (max-width: 1200px) 250px, 300px"
                 />
               </div>
             ))}
+      </div>
+
+      <div className="container mx-auto px-4 md:px-8">
+        <div className="relative max-w-8xl mx-auto">
+          {/* Center Content */}
+          <div className="text-center py-32 md:py-72 relative z-10">
+            {/* Title */}
+            <div
+              ref={titleRef}
+              className={`transition-all duration-1000 ease-out ${
+                isVisible.title ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
+              }`}
+            >
+              <p className="text-sm md:text-[34px] text-text mb-4 md:mb-6">Explore Our Categories</p>
+            </div>
+
+            {/* Categories */}
+            <div
+              ref={categoriesRef}
+              className={`space-y-2 md:space-y-8 mb-6 md:mb-8 transition-all duration-1000 ease-out ${
+                isVisible.categories ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-12'
+              }`}
+            >
+              {loading
+                ? // Skeleton loading state
+                  Array.from({ length: 6 }).map((_, index) => (
+                    <div
+                      key={`skeleton-${index}`}
+                      className="transition-all duration-500"
+                      style={{ transitionDelay: `${index * 100}ms` }}
+                    >
+                      <CategorySkeleton />
+                    </div>
+                  ))
+                : // Loaded categories
+                  categories.map((category, index) => (
+                    <Link key={category.id} href={`/collections/${category.handle}`} className="block">
+                      <h2
+                        className={`text-xl sm:text-2xl md:text-4xl lg:text-[56px] text-text font-medium leading-tight cursor-pointer transition-all duration-500 hover:text-primary  ${
+                          isVisible.categories
+                            ? 'opacity-100 transform translate-x-0'
+                            : 'opacity-0 transform translate-x-4'
+                        }`}
+                        style={{ transitionDelay: `${index * 150}ms` }}
+                      >
+                        {category.title}
+                      </h2>
+                    </Link>
+                  ))}
+            </div>
+
+            {/* Error State */}
+            {error && !loading && (
+              <div className="text-center py-4 mb-4">
+                <p className="text-orange-600 text-sm">Failed to load categories. Showing default content.</p>
+              </div>
+            )}
+
+            {/* Button */}
+            <div
+              ref={buttonRef}
+              className={`transition-all duration-1000 ease-out ${
+                isVisible.button
+                  ? 'opacity-100 transform translate-y-0 scale-100'
+                  : 'opacity-0 transform translate-y-8 scale-95'
+              }`}
+            >
+              <Link href="/products" className="inline-block">
+                <Button
+                  showArrow
+                  className="px-6 py-3 md:px-8 md:py-3 font-medium mx-auto transition-all duration-300  hover:shadow-lg"
+                >
+                  Shop Now
+                </Button>
+              </Link>
+            </div>
+
+            {/* Loading indicator */}
+            {loading && (
+              <div className="text-center py-4">
+                <p className="text-gray-600 text-sm">Loading categories...</p>
+              </div>
+            )}
           </div>
 
-          {/* Mobile-only simplified images grid */}
-          <div className="sm:hidden absolute inset-0 z-0 opacity-30">
+          {/* Mobile-only simplified images grid - Fixed positioning */}
+          <div className="sm:hidden fixed inset-0 z-0 opacity-30 pointer-events-none">
             <div className="grid grid-cols-2 gap-4 p-4 h-full">
               {images.slice(0, 4).map((image, index) => (
                 <div
                   key={`mobile-${image.id}`}
-                  className={`relative  overflow-hidden ${
+                  className={`relative overflow-hidden  transition-all duration-500 ${
                     index === 0 ? 'mt-8' : index === 1 ? 'mt-16' : index === 2 ? 'mb-8' : 'mb-16'
-                  }`}
+                  } ${isVisible.section ? 'opacity-30 transform scale-100' : 'opacity-0 transform scale-95'}`}
+                  style={{ transitionDelay: `${index * 150}ms` }}
                 >
-                  <Image
-                    src={image.src}
-                    alt={image.alt}
-                    width={120}
-                    height={120}
-                    className="object-cover w-full h-full"
-                    unoptimized
-                  />
+                  {loading ? (
+                    <div className="w-full h-full bg-gray-200 animate-pulse "></div>
+                  ) : (
+                    <Image
+                      src={image.src}
+                      alt={image.alt}
+                      width={120}
+                      height={120}
+                      className="object-cover w-full h-full"
+                      unoptimized
+                    />
+                  )}
                 </div>
               ))}
             </div>

@@ -1,4 +1,3 @@
-// app/api/collections/route.ts
 import { NextResponse } from 'next/server';
 
 import { getCollections } from '@/lib/shopify';

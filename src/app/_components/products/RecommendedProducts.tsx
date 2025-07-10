@@ -241,18 +241,6 @@ const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
             ))}
           </div>
         )}
-
-        {/* View All Button - only show if we have products and might have more */}
-        {!isLoading && products.length >= limit && (
-          <div className="text-center mt-8">
-            <a
-              href="/products"
-              className="bg-black text-white px-8 py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors inline-block"
-            >
-              VIEW ALL PRODUCTS
-            </a>
-          </div>
-        )}
       </div>
     </section>
   );

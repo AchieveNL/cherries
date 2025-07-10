@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
-import { ChevronDown, Mail, MessageCircle, Package, Phone, RefreshCw, Search, Shield, Truck } from 'lucide-react';
+import { ChevronDown, MessageCircle, Package, RefreshCw, Search, Shield, Truck } from 'lucide-react';
 import { useState } from 'react';
 
-import { Button } from '../_components/ui';
+import SubscribeSection from '../_components/landingPage/SubscribeSection';
 
 interface FAQItem {
   id: string;
@@ -23,39 +24,6 @@ export default function FAQPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [openItems, setOpenItems] = useState<Set<string>>(new Set());
-
-  const categories: FAQCategory[] = [
-    {
-      id: 'all',
-      name: 'All Questions',
-      icon: <MessageCircle className="w-5 h-5" />,
-      color: 'bg-gray-100 text-gray-700',
-    },
-    {
-      id: 'orders',
-      name: 'Orders & Payment',
-      icon: <Package className="w-5 h-5" />,
-      color: 'bg-secondary text-primary',
-    },
-    {
-      id: 'shipping',
-      name: 'Shipping & Delivery',
-      icon: <Truck className="w-5 h-5" />,
-      color: 'bg-primary text-white',
-    },
-    {
-      id: 'returns',
-      name: 'Returns & Exchanges',
-      icon: <RefreshCw className="w-5 h-5" />,
-      color: 'bg-secondary text-primary',
-    },
-    {
-      id: 'products',
-      name: 'Product Info',
-      icon: <Shield className="w-5 h-5" />,
-      color: 'bg-primary text-white',
-    },
-  ];
 
   const faqItems: FAQItem[] = [
     // Orders & Payment
@@ -220,10 +188,13 @@ export default function FAQPage() {
       <section className="relative py-20 bg-gradient-to-br from-gray-50 via-white to-gray-50">
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-5xl md:text-6xl font-bungee font-bold text-gray-900 mb-6 tracking-wide">FAQ</h1>
+            <h1 className="text-5xl md:text-6xl font-bungee font-bold text-text mb-6 tracking-wide">
+              frequently asked questions
+            </h1>
             <div className="w-16 h-1 bg-primary mx-auto mb-8"></div>
             <p className="text-xl text-gray-600 leading-relaxed mb-12">
-              Find answers to the most frequently asked questions about our products, shipping, returns, and more.
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
+              dolore magna reprehenderit.
             </p>
 
             {/* Search Bar */}
@@ -243,28 +214,6 @@ export default function FAQPage() {
         </div>
       </section>
 
-      {/* Category Filter */}
-      <section className="py-12 bg-secondary">
-        <div className="container mx-auto px-4 max-w-7xl">
-          <div className="flex flex-wrap justify-center gap-4">
-            {categories.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => setSelectedCategory(category.id)}
-                className={`flex items-center space-x-2 px-6 py-3 rounded-full font-medium transition-all duration-300 ${
-                  selectedCategory === category.id
-                    ? 'bg-primary text-white shadow-lg scale-105'
-                    : category.color + ' hover:scale-105 hover:shadow-md'
-                }`}
-              >
-                {category.icon}
-                <span>{category.name}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* FAQ Items */}
       <section className="py-20">
         <div className="container mx-auto px-4 max-w-4xl">
@@ -279,11 +228,11 @@ export default function FAQPage() {
               {filteredFAQs.map((item) => (
                 <div
                   key={item.id}
-                  className="border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
+                  className="border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
                 >
                   <button
                     onClick={() => toggleItem(item.id)}
-                    className="w-full text-left p-6 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset bg-white hover:bg-gray-50 transition-colors duration-200"
+                    className="w-full text-left p-6  bg-white  transition-colors duration-200"
                   >
                     <div className="flex justify-between items-center">
                       <h3 className="text-lg font-bold text-gray-900 pr-4">{item.question}</h3>
@@ -296,7 +245,7 @@ export default function FAQPage() {
                   </button>
 
                   {openItems.has(item.id) && (
-                    <div className="px-6 pb-6 bg-secondary">
+                    <div className="px-6 pb-6">
                       <p className="text-gray-700 leading-relaxed">{item.answer}</p>
                     </div>
                   )}
@@ -307,41 +256,8 @@ export default function FAQPage() {
         </div>
       </section>
 
-      {/* Contact Support Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4 max-w-4xl text-center">
-          <h2 className="text-3xl font-bungee font-bold text-gray-900 mb-4 tracking-wide">STILL HAVE QUESTIONS?</h2>
-          <div className="w-24 h-1 bg-primary mx-auto mb-8"></div>
-          <p className="text-xl text-gray-600 mb-12 leading-relaxed">
-            Our customer support team is here to help you with any questions not covered in our FAQ.
-          </p>
-
-          <div className="grid md:grid-cols-2 gap-8 mb-12">
-            <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow duration-300">
-              <Mail className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Email Support</h3>
-              <p className="text-gray-600 mb-4">Get detailed answers via email</p>
-              <p className="text-primary font-medium">support@casehub.com</p>
-              <p className="text-sm text-gray-500 mt-2">Response within 24 hours</p>
-            </div>
-
-            <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow duration-300">
-              <Phone className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Phone Support</h3>
-              <p className="text-gray-600 mb-4">Speak directly with our team</p>
-              <p className="text-primary font-medium">1-800-CASEHUB</p>
-              <p className="text-sm text-gray-500 mt-2">Mon-Fri 9AM-6PM EST</p>
-            </div>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button className="bg-primary hover:bg-primary/90">Contact Support</Button>
-            <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-white">
-              Browse Products
-            </Button>
-          </div>
-        </div>
-      </section>
+      {/* Subscribe  Section */}
+      <SubscribeSection />
     </div>
   );
 }
