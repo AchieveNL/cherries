@@ -402,11 +402,10 @@ function HeaderSearch() {
     <>
       <button
         onClick={() => setIsSearchOpen(true)}
-        className="flex items-center space-x-2  p-2 hover:bg-gray-100 transition-colors"
+        className="  group  p-2  transition-colors"
         aria-label="Open search"
       >
-        <SearchIcon className="w-6 h-6" />
-        <span className="hidden sm:inline text-gray-700 font-medium">Search</span>
+        <SearchIcon className="w-6 h-6 mt-1 group-hover:text-primary" />
       </button>
 
       <SimpleSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />

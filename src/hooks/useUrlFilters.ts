@@ -8,53 +8,10 @@ export function useUrlFilters(initialFilters: FilterState) {
   const searchParams = useSearchParams();
   const [filters, setFilters] = useState<FilterState>(initialFilters);
 
-  // Parse filters from URL on mount
+  // Update local state when initialFilters change (from server)
   useEffect(() => {
-    const urlFilters: Partial<FilterState> = {};
-
-    // Parse search parameter
-    const search = searchParams.get('search');
-    if (search) urlFilters.search = search;
-
-    // Parse category parameter
-    const category = searchParams.get('category');
-    if (category) urlFilters.category = category;
-
-    // Parse vendor parameter
-    const vendor = searchParams.get('vendor');
-    if (vendor) urlFilters.vendor = vendor;
-
-    // Parse availability parameter
-    const availability = searchParams.get('availability');
-    if (availability && ['all', 'inStock', 'outOfStock'].includes(availability)) {
-      urlFilters.availability = availability as FilterState['availability'];
-    }
-
-    // Parse sort parameter
-    const sortBy = searchParams.get('sortBy');
-    if (sortBy && ['featured', 'newest', 'oldest', 'priceAsc', 'priceDesc', 'nameAsc', 'nameDesc'].includes(sortBy)) {
-      urlFilters.sortBy = sortBy as FilterState['sortBy'];
-    }
-
-    // Parse price range
-    const minPrice = searchParams.get('minPrice');
-    const maxPrice = searchParams.get('maxPrice');
-    if (minPrice || maxPrice) {
-      urlFilters.priceRange = [
-        minPrice ? parseInt(minPrice) : initialFilters.priceRange[0],
-        maxPrice ? parseInt(maxPrice) : initialFilters.priceRange[1],
-      ];
-    }
-
-    // Parse collections
-    const collections = searchParams.get('collections');
-    if (collections) {
-      urlFilters.collections = collections.split(',');
-    }
-
-    // Merge URL filters with initial filters
-    setFilters((prev) => ({ ...prev, ...urlFilters }));
-  }, [searchParams, initialFilters]);
+    setFilters(initialFilters);
+  }, [initialFilters]);
 
   // Update URL when filters change
   const updateFilters = useCallback(
@@ -63,6 +20,10 @@ export function useUrlFilters(initialFilters: FilterState) {
 
       // Create URL search params
       const params = new URLSearchParams();
+
+      // Reset pagination when filters change (except for pagination-only changes)
+      const currentPage = searchParams.get('page');
+      const shouldResetPage = JSON.stringify(newFilters) !== JSON.stringify(filters);
 
       // Add non-default values to URL
       if (newFilters.search) params.set('search', newFilters.search);
@@ -81,11 +42,17 @@ export function useUrlFilters(initialFilters: FilterState) {
         params.set('collections', newFilters.collections.join(','));
       }
 
+      // Keep current page if no filter changes, otherwise reset to page 1
+      if (!shouldResetPage && currentPage) {
+        params.set('page', currentPage);
+      }
+      // If shouldResetPage is true, we don't set page parameter (defaults to 1)
+
       // Update URL without page refresh
       const newUrl = params.toString() ? `?${params.toString()}` : window.location.pathname;
-      router.replace(newUrl, { scroll: false });
+      router.push(newUrl); // Use push instead of replace for proper history
     },
-    [router]
+    [router, searchParams, filters]
   );
 
   return { filters, updateFilters };

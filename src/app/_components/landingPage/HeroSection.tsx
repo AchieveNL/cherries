@@ -1,16 +1,19 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import AnnouncementBanner from '../animation/AnnouncementBanner';
 import { Button } from '../ui';
 
 const HeroSection = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState(0);
   const [dragEnd, setDragEnd] = useState(0);
+
+  // Use ref to track if user recently interacted
+  const lastInteractionRef = useRef(0);
+  const INTERACTION_PAUSE_DURATION = 5000; // 5 seconds pause after interaction
 
   // Desktop images - for grid display
   const desktopImages = [
@@ -30,26 +33,32 @@ const HeroSection = () => {
     { id: 5, src: '/landingPage/Hero/mobile/hero-mobile-5.png', alt: 'Mobile Image 5', width: 350, height: 400 },
   ];
 
-  // Auto-play functionality - uses mobile images length for consistency
+  // Continuous auto-play functionality with smart pausing
   useEffect(() => {
-    if (!isAutoPlaying) return;
-
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % mobileImages.length);
+      const now = Date.now();
+      const timeSinceLastInteraction = now - lastInteractionRef.current;
+
+      // Only auto-advance if enough time has passed since last interaction
+      if (timeSinceLastInteraction >= INTERACTION_PAUSE_DURATION) {
+        setCurrentSlide((prev) => (prev + 1) % mobileImages.length);
+      }
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [isAutoPlaying, mobileImages.length]);
+  }, [mobileImages.length]);
 
   const goToSlide = (index: number) => {
     setCurrentSlide(index);
-    setIsAutoPlaying(false);
+    // Record interaction time but don't stop auto-play permanently
+    lastInteractionRef.current = Date.now();
   };
 
   // Touch and mouse drag handlers
   const handleDragStart = (e: React.TouchEvent | React.MouseEvent) => {
     setIsDragging(true);
-    setIsAutoPlaying(false);
+    // Record interaction time
+    lastInteractionRef.current = Date.now();
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     setDragStart(clientX);
   };
@@ -81,6 +90,16 @@ const HeroSection = () => {
     setDragEnd(0);
   };
 
+  // Pause auto-play when user hovers over mobile slider (optional UX improvement)
+  const handleMouseEnter = () => {
+    lastInteractionRef.current = Date.now();
+  };
+
+  const handleMouseLeave = () => {
+    // Reset interaction time when mouse leaves to resume auto-play sooner
+    lastInteractionRef.current = Date.now() - INTERACTION_PAUSE_DURATION + 2000; // Resume in 2 seconds
+  };
+
   return (
     <>
       <div className="py-16">
@@ -106,7 +125,7 @@ const HeroSection = () => {
         </div>
 
         {/* Mobile Slider */}
-        <div className="md:hidden relative px-4">
+        <div className="md:hidden relative px-4" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
           <div
             className="relative overflow-hidden rounded-lg cursor-grab active:cursor-grabbing"
             onTouchStart={handleDragStart}

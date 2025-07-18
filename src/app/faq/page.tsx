@@ -2,6 +2,7 @@
 'use client';
 
 import { ChevronDown, MessageCircle, Package, RefreshCw, Search, Shield, Truck } from 'lucide-react';
+import Image from 'next/image';
 import { useState } from 'react';
 
 import SubscribeSection from '../_components/landingPage/SubscribeSection';

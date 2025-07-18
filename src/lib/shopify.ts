@@ -97,8 +97,8 @@ function normalizePageInfo(pageInfo: any) {
   return {
     hasNextPage: pageInfo?.hasNextPage || false,
     hasPreviousPage: pageInfo?.hasPreviousPage || false,
-    startCursor: pageInfo?.startCursor || undefined,
-    endCursor: pageInfo?.endCursor || undefined,
+    startCursor: pageInfo?.startCursor || null,
+    endCursor: pageInfo?.endCursor || null,
   };
 }
 
@@ -282,6 +282,7 @@ const PRODUCT_QUERY = `#graphql
         {namespace: "custom", key: "return_policy"}
         {namespace: "custom", key: "video_url"}
         {namespace: "custom", key: "size_guide"}
+        {namespace: "custom", key: "faqs"}
       ]) {
         id
         namespace
@@ -301,8 +302,8 @@ const PRODUCT_QUERY = `#graphql
 `;
 
 const PRODUCTS_QUERY = `#graphql
-  query Products($first: Int!, $sortKey: ProductSortKeys!, $reverse: Boolean!, $query: String) {
-    products(first: $first, sortKey: $sortKey, reverse: $reverse, query: $query) {
+ query Products($first: Int, $last: Int, $after: String, $before: String, $sortKey: ProductSortKeys!, $reverse: Boolean!, $query: String) {
+  products(first: $first, last: $last, after: $after, before: $before, sortKey: $sortKey, reverse: $reverse, query: $query) {
       pageInfo {
         hasNextPage
         hasPreviousPage
@@ -687,8 +688,24 @@ const PRODUCT_RECOMMENDATIONS_QUERY = `#graphql
 // ===========================
 
 const COLLECTIONS_QUERY = `#graphql
-  query Collections($first: Int!, $sortKey: CollectionSortKeys, $reverse: Boolean, $query: String) {
-    collections(first: $first, sortKey: $sortKey, reverse: $reverse, query: $query) {
+  query Collections(
+    $first: Int,
+    $last: Int,
+    $after: String,
+    $before: String,
+    $sortKey: CollectionSortKeys,
+    $reverse: Boolean,
+    $query: String
+  ) {
+    collections(
+      first: $first,
+      last: $last,
+      after: $after,
+      before: $before,
+      sortKey: $sortKey,
+      reverse: $reverse,
+      query: $query
+    ) {
       pageInfo {
         hasNextPage
         hasPreviousPage
@@ -943,11 +960,17 @@ export async function getProduct(handle: string): Promise<PartialDeep<Product, {
 
 export async function getProducts({
   first = 20,
+  last,
+  after,
+  before,
   sortKey = 'CREATED_AT',
   reverse = true,
   query = '',
 }: {
   first?: number;
+  last?: number;
+  after?: string;
+  before?: string;
   sortKey?:
     | 'BEST_SELLING'
     | 'CREATED_AT'
@@ -970,12 +993,21 @@ export async function getProducts({
     endCursor?: string;
   };
 }> {
-  const data = await shopifyRequest<{ products: ProductConnection }>(PRODUCTS_QUERY, {
-    first,
+  const variables: any = {
     sortKey,
     reverse,
     query,
-  });
+  };
+
+  if (before) {
+    variables.before = before;
+    variables.last = last || first || 20;
+  } else {
+    variables.after = after;
+    variables.first = first || 20;
+  }
+
+  const data = await shopifyRequest<{ products: ProductConnection }>(PRODUCTS_QUERY, variables);
 
   return {
     products: data?.products.nodes || [],
@@ -1029,12 +1061,18 @@ export async function getProductRecommendations(
 // ===========================
 
 export async function getCollections({
-  first = 20,
+  first,
+  last,
+  after,
+  before,
   sortKey = 'TITLE',
   reverse = false,
   query = '',
 }: {
   first?: number;
+  last?: number;
+  after?: string;
+  before?: string;
   sortKey?: 'TITLE' | 'ID' | 'UPDATED_AT' | 'RELEVANCE';
   reverse?: boolean;
   query?: string;
@@ -1043,22 +1081,32 @@ export async function getCollections({
   pageInfo: {
     hasNextPage: boolean;
     hasPreviousPage: boolean;
-    startCursor?: string;
-    endCursor?: string;
+    startCursor: string | undefined;
+    endCursor: string | undefined;
   };
   totalCount: number;
 }> {
-  const data = await shopifyRequest<{ collections: CollectionConnection }>(COLLECTIONS_QUERY, {
-    first,
+  // Ensure we have either first or last, but not both
+  const variables: any = {
     sortKey,
     reverse,
     query,
-  });
+  };
+
+  if (before) {
+    variables.before = before;
+    variables.last = last || first || 20;
+  } else {
+    variables.after = after;
+    variables.first = first || 20;
+  }
+
+  const data = await shopifyRequest<{ collections: CollectionConnection }>(COLLECTIONS_QUERY, variables);
 
   return {
     collections: data?.collections.nodes || [],
     pageInfo: normalizePageInfo(data?.collections.pageInfo),
-    totalCount: data?.collections.nodes?.length || 0, // Fixed: calculate from nodes length
+    totalCount: data?.collections.nodes?.length || 0,
   };
 }
 

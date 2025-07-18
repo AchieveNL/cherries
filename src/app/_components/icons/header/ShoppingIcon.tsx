@@ -2,11 +2,14 @@ import * as React from 'react';
 import { SVGProps } from 'react';
 
 const SvgComponent = (props: SVGProps<SVGSVGElement>) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={24} height={21} fill="none" {...props}>
+  <svg xmlns="http://www.w3.org/2000/svg" width={24} height={24} fill="none" {...props}>
     <path
-      fill="#000"
-      d="M7.875 21a1.75 1.75 0 1 0 0-3.5 1.75 1.75 0 0 0 0 3.5ZM20.125 21a1.75 1.75 0 1 0 0-3.5 1.75 1.75 0 0 0 0 3.5ZM7.425 13.125h14.293l2.1-10.5H5.572L5.11 0H0v1.75h3.641l2.625 14.875h15.609v-1.75H7.734l-.309-1.75Z"
+      stroke="currentColor"
+      strokeLinejoin="round"
+      strokeWidth={1.5}
+      d="M4 9h16l-.835 9.181A2 2 0 0 1 17.174 20H6.826a2 2 0 0 1-1.991-1.819L4 9Z"
     />
+    <path stroke="currentColor" strokeLinecap="round" strokeWidth={1.5} d="M8 11V8a4 4 0 0 1 8 0v3" />
   </svg>
 );
 export { SvgComponent as ShoppingIcon };

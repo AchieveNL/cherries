@@ -242,7 +242,7 @@ export default function ProductGallery({ product, selectedVariant }: ProductGall
     <>
       <div className="space-y-6">
         {/* Main Image Container */}
-        <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 group shadow-lg border border-gray-100">
+        <div className="relative aspect-square h-[50rem] overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 group shadow-lg border border-gray-100">
           {/* Main Image */}
           <div
             className={`relative w-full h-full transition-transform duration-500 ease-out cursor-zoom-in ${

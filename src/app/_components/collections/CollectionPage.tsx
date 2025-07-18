@@ -1,13 +1,16 @@
 'use client';
 
 import { Image } from '@shopify/hydrogen-react';
-import { ArrowLeft, ChevronDown, Filter, Grid, List } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { ArrowLeft, Filter } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useMemo, useState } from 'react';
 
-import { ProductCard, ProductFilters } from '@/app/_components/products';
+import { ProductCard } from '@/app/_components/products';
 import { EmptyState, Pagination } from '@/app/_components/ui';
 import { useProductFilters } from '@/hooks/useFilters';
+import { useUrlFilters } from '@/hooks/useUrlFilters';
+import { FilterState } from '@/types';
+import ProductFilter from '../products/ProductFilter';
 
 import type { Collection, Product } from '@shopify/hydrogen-react/storefront-api-types';
 import type { PartialDeep } from 'type-fest';
@@ -30,35 +33,25 @@ export default function CollectionPage({
   hasPreviousPage,
 }: CollectionPageProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [showSortDropdown, setShowSortDropdown] = useState(false);
 
-  const { filters, setFilters, filteredProducts } = useProductFilters(products);
+  // Initial filter state - useMemo to prevent recreation on every render
+  const initialFilters: FilterState = useMemo(
+    () => ({
+      search: '',
+      category: '',
+      priceRange: [0, 1000] as [number, number],
+      vendor: '',
+      availability: 'all' as const,
+      sortBy: 'featured' as const,
+      collections: [],
+    }),
+    []
+  );
 
-  const sortOptions = [
-    { value: 'featured', label: 'Featured' },
-    { value: 'newest', label: 'Newest' },
-    { value: 'oldest', label: 'Oldest' },
-    { value: 'price-asc', label: 'Price: Low to High' },
-    { value: 'price-desc', label: 'Price: High to Low' },
-    { value: 'name-asc', label: 'Name: A to Z' },
-    { value: 'name-desc', label: 'Name: Z to A' },
-    { value: 'best-selling', label: 'Best Selling' },
-  ];
-
-  const currentSort = sortOptions.find((option) => option.value === searchParams.get('sort')) || sortOptions[0];
-
-  const handleSortChange = (sortValue: string) => {
-    const params = new URLSearchParams(searchParams);
-    if (sortValue === 'featured') {
-      params.delete('sort');
-    } else {
-      params.set('sort', sortValue);
-    }
-    params.delete('page'); // Reset to first page
-    router.push(`/collections/${collection.handle}?${params.toString()}`);
-  };
+  // Use URL-synchronized filters
+  const { filters, updateFilters } = useUrlFilters(initialFilters);
+  const { filteredProducts, filteredCount } = useProductFilters(products, filters);
 
   if (!collection) {
     return (
@@ -125,7 +118,7 @@ export default function CollectionPage({
           </nav>
 
           {/* Collection Hero */}
-          <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 mb-8">
+          <div className="bg-white  overflow-hidden shadow-sm border border-gray-100 mb-8">
             <div className="relative h-48 md:h-64 lg:h-80">
               {collection.image?.url ? (
                 <Image
@@ -153,7 +146,7 @@ export default function CollectionPage({
                     {collection.description || `Discover our curated ${collection.title?.toLowerCase()} collection`}
                   </p>
                   <div className="flex items-center space-x-4 text-sm">
-                    <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full backdrop-blur-sm">
+                    <span className="bg-white bg-opacity-20 px-3 py-1  backdrop-blur-sm">
                       {totalProducts} {totalProducts === 1 ? 'Product' : 'Products'}
                     </span>
                   </div>
@@ -178,114 +171,46 @@ export default function CollectionPage({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Filters Sidebar */}
-          <div className="lg:col-span-1">
-            <ProductFilters
-              filters={filters}
-              onFiltersChange={setFilters}
-              products={products}
-              collections={collections}
-              currentCollection={collection}
+        {/* Product Filter */}
+        <ProductFilter
+          filters={filters}
+          onFiltersChange={updateFilters}
+          products={products}
+          collections={collections}
+          currentCollection={collection}
+          totalProducts={totalProducts}
+          filteredCount={filteredCount}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+        />
+
+        {/* Products Grid */}
+        <div className="col-span-full">
+          {filteredProducts.length === 0 ? (
+            <EmptyState
+              title="No products match your filters"
+              description="Try adjusting your search or filter criteria to find what you're looking for."
+              actionText="Clear all filters"
+              onAction={() => updateFilters(initialFilters)}
             />
-          </div>
-
-          {/* Products Grid */}
-          <div className="lg:col-span-3">
-            {/* Controls */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-              <div className="text-sm text-gray-600">
-                {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} found
+          ) : (
+            <>
+              <div
+                className={`grid gap-6 ${
+                  viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'
+                }`}
+              >
+                {filteredProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} viewMode={viewMode} />
+                ))}
               </div>
 
-              <div className="flex items-center space-x-4">
-                {/* Sort Dropdown */}
-                <div className="relative">
-                  <button
-                    onClick={() => setShowSortDropdown(!showSortDropdown)}
-                    className="flex items-center space-x-2 bg-gray-50 hover:bg-gray-100 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
-                  >
-                    <span>Sort: {currentSort.label}</span>
-                    <ChevronDown className="w-4 h-4" />
-                  </button>
-
-                  {showSortDropdown && (
-                    <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-48">
-                      {sortOptions.map((option) => (
-                        <button
-                          key={option.value}
-                          onClick={() => {
-                            handleSortChange(option.value);
-                            setShowSortDropdown(false);
-                          }}
-                          className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors first:rounded-t-lg last:rounded-b-lg ${
-                            currentSort.value === option.value ? 'text-primary font-medium' : 'text-gray-700'
-                          }`}
-                        >
-                          {option.label}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* View Mode Toggle */}
-                <div className="flex items-center bg-gray-100 rounded-lg p-1">
-                  <button
-                    onClick={() => setViewMode('grid')}
-                    className={`p-2 rounded-md transition-colors ${
-                      viewMode === 'grid' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                    aria-label="Grid view"
-                  >
-                    <Grid className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => setViewMode('list')}
-                    className={`p-2 rounded-md transition-colors ${
-                      viewMode === 'list' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                    aria-label="List view"
-                  >
-                    <List className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {filteredProducts.length === 0 ? (
-              <EmptyState
-                title="No products match your filters"
-                description="Try adjusting your search or filter criteria to find what you're looking for."
-                actionText="Clear all filters"
-                onAction={() =>
-                  setFilters({
-                    search: '',
-                    category: '',
-                    priceRange: [0, 100],
-                    vendor: '',
-                    availability: 'all',
-                    sortBy: 'featured',
-                  })
-                }
-              />
-            ) : (
-              <>
-                <div
-                  className={`grid gap-6 ${
-                    viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3' : 'grid-cols-1'
-                  }`}
-                >
-                  {filteredProducts.map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                </div>
-
-                {/* Pagination */}
+              {/* Pagination */}
+              <div className="mt-8">
                 <Pagination hasNextPage={hasNextPage} hasPreviousPage={hasPreviousPage} />
-              </>
-            )}
-          </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

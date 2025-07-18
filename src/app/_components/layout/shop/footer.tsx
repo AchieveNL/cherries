@@ -81,7 +81,7 @@ export function Footer() {
   const { collections, loading, error } = useFooterCollections();
 
   return (
-    <footer className="relative py-16 px-4 pb-0">
+    <footer className="relative py-16  pb-0">
       <div className="container relative z-10 mx-auto">
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-16">
@@ -113,8 +113,8 @@ export function Footer() {
           <div className="ml-8"></div>
 
           {/* Dynamic Shop Links */}
-          <div className="ml-8">
-            <h3 className="text-xl font-bungee font-semibold text-gray-900 mb-6">Shop</h3>
+          <div className="md:ml-8">
+            <h3 className="text-xl font-semibold text-gray-900 mb-6">Shop</h3>
             {loading ? (
               <ShopLinksLoading />
             ) : error ? (
@@ -151,7 +151,7 @@ export function Footer() {
 
           {/* Terms Links */}
           <div>
-            <h3 className="text-xl font-bungee font-semibold text-gray-900 mb-6">Terms</h3>
+            <h3 className="text-xl  font-semibold text-gray-900 mb-6">Terms</h3>
             <ul className="space-y-4">
               <li>
                 <a href="/terms" className="text-gray-600 hover:text-gray-900 transition-colors text-lg">
@@ -183,7 +183,7 @@ export function Footer() {
 
           {/* Customer Service Links */}
           <div>
-            <h3 className="text-xl font-bungee font-semibold text-gray-900 mb-6">Customer Service</h3>
+            <h3 className="text-xl  font-semibold text-gray-900 mb-6">Customer Service</h3>
             <ul className="space-y-4">
               <li>
                 <a href="/about" className="text-gray-600 hover:text-gray-900 transition-colors text-lg">
@@ -210,17 +210,11 @@ export function Footer() {
 
       {/* Hero frame image positioned at the very bottom */}
       <div className="relative w-full">
-        <Image
-          src="/bg-red-footer.webp"
-          alt="Hero Frame"
-          width={1767}
-          height={551}
-          className="w-full h-auto object-cover"
-        />
+        <Image src="/animation.gif" alt="Hero Frame" width={1767} height={591} className="w-full h-auto object-cover" />
 
         {/* Bottom Footer - positioned over the red background */}
         <div className="absolute inset-0 flex items-center">
-          <div className="container font-bungee mx-auto px-4 translate-y-32">
+          <div className="container  mx-auto px-4 translate-y-32">
             <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 ">
               <p className="text-white text-lg">© 2025 Cherries All rights reserved</p>
               <p className="text-white text-lg">

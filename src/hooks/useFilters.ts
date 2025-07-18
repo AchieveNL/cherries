@@ -25,11 +25,23 @@ const defaultFilters: FilterState = {
   collections: [],
 };
 
-export function useProductFilters(products: PartialDeep<Product, { recurseIntoArrays: true }>[]) {
-  // Manage filter state internally
-  const [filters, setFilters] = useState<FilterState>(defaultFilters);
+// Updated hook to accept external filters OR use internal state
+export function useProductFilters(
+  products: PartialDeep<Product, { recurseIntoArrays: true }>[],
+  externalFilters?: FilterState | null
+) {
+  // Use internal state only if no external filters provided
+  const [internalFilters, setInternalFilters] = useState<FilterState>(defaultFilters);
+
+  // Use external filters if provided and not null, otherwise use internal state
+  const filters = externalFilters !== null ? externalFilters || internalFilters : internalFilters;
 
   const filteredProducts = useMemo(() => {
+    // If externalFilters is null, return original products (no filtering)
+    if (externalFilters === null) {
+      return products;
+    }
+
     let filtered = [...products];
 
     // Apply search filter
@@ -104,11 +116,11 @@ export function useProductFilters(products: PartialDeep<Product, { recurseIntoAr
     });
 
     return filtered;
-  }, [products, filters]);
+  }, [products, filters, externalFilters]);
 
   return {
     filters,
-    setFilters,
+    setFilters: setInternalFilters, // Only return setter for internal filters
     filteredProducts,
     filteredCount: filteredProducts.length,
   };

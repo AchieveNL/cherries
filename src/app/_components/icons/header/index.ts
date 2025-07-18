@@ -4,3 +4,4 @@ export { LanguageIcon } from './LanguageIcon';
 export { MarketplaceIcon } from './MarketplaceIcon';
 export { AccountIcon } from './AccountIcon';
 export { Logo } from './Logo';
+export { Menu } from './Menu';

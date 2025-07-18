@@ -163,7 +163,7 @@ const LatestProducts = () => {
                   style={{ transitionDelay: `${index * 300}ms` }}
                 >
                   {/* Fixed container with consistent dimensions */}
-                  <div className="relative overflow-hidden mb-4 w-full h-[460px] bg-gray-100 rounded-lg">
+                  <div className="relative overflow-hidden mb-4 w-full h-[460px]">
                     <Image
                       src={product.image}
                       alt={product.alt}
@@ -178,7 +178,7 @@ const LatestProducts = () => {
                     />
 
                     {/* Overlay for better interaction feedback */}
-                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
+                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 " />
 
                     {/* Optional: Add a subtle "View Product" indicator */}
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">

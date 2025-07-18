@@ -11,22 +11,45 @@ interface SearchParams {
   page?: string;
   sort?: string;
   search?: string;
+  after?: string; // Add cursor parameters
+  before?: string;
 }
 
 export default async function Collections({ searchParams }: { searchParams: SearchParams }) {
-  const page = Number(searchParams?.page) || 1;
+  const currentPage = Number(searchParams?.page) || 1;
   const itemsPerPage = 12;
   const sortKey = searchParams?.sort === 'updated' ? 'UPDATED_AT' : 'TITLE';
   const search = searchParams?.search || '';
 
   try {
-    const { collections, pageInfo, totalCount } = await getCollections({
-      first: itemsPerPage,
-      sortKey,
+    // Build fetch parameters with cursor support
+    const fetchParams: {
+      sortKey: 'TITLE' | 'ID' | 'UPDATED_AT' | 'RELEVANCE';
+      reverse: boolean;
+      query: string;
+      first?: number;
+      last?: number;
+      after?: string;
+      before?: string;
+    } = {
+      sortKey: (searchParams?.sort === 'updated' ? 'UPDATED_AT' : 'TITLE') as 'TITLE' | 'UPDATED_AT',
       reverse: sortKey === 'UPDATED_AT',
       query: search,
-    });
-    console.log('Collections Data:', collections);
+      ...(searchParams.after && { after: searchParams.after }),
+      ...(searchParams.before && { before: searchParams.before }),
+    };
+
+    // Use proper cursor logic
+    if (searchParams.before) {
+      fetchParams.last = itemsPerPage;
+    } else {
+      fetchParams.first = itemsPerPage;
+    }
+
+    const { collections, pageInfo, totalCount } = await getCollections(fetchParams);
+
+    // Calculate total pages (note: this is approximate since Shopify doesn't provide exact totals)
+    const totalPages = Math.ceil(totalCount / itemsPerPage);
 
     return (
       <CollectionsPage
@@ -34,6 +57,10 @@ export default async function Collections({ searchParams }: { searchParams: Sear
         totalCollections={totalCount}
         hasNextPage={pageInfo.hasNextPage}
         hasPreviousPage={pageInfo.hasPreviousPage}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        pageInfo={pageInfo}
+        currentCursor={searchParams.after || searchParams.before}
       />
     );
   } catch (error) {

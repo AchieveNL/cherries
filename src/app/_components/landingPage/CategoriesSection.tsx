@@ -34,6 +34,7 @@ const CategoriesSection = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [isVisible, setIsVisible] = useState({
     section: false,
     title: false,
@@ -162,9 +163,13 @@ const CategoriesSection = () => {
     fetchCategories();
   }, []);
 
+  const handleImageClick = (index: number) => {
+    setSelectedImageIndex(selectedImageIndex === index ? null : index);
+  };
+
   return (
     <section ref={sectionRef} className="min-h-screen relative overflow-hidden py-8">
-      {/* Fixed Background Images - Independent of content */}
+      {/* Fixed Background Images - Desktop only */}
       <div className="hidden sm:block">
         {loading
           ? // Image skeletons with fixed positioning
@@ -191,7 +196,7 @@ const CategoriesSection = () => {
                   src={image.src}
                   alt={image.alt}
                   fill
-                  className="object-cover shadow-lg  transition-transform duration-300 "
+                  className="object-cover shadow-lg transition-transform duration-300"
                   sizes="(max-width: 768px) 160px, (max-width: 1200px) 250px, 300px"
                 />
               </div>
@@ -201,7 +206,60 @@ const CategoriesSection = () => {
       <div className="container mx-auto px-4 md:px-8">
         <div className="relative max-w-8xl mx-auto">
           {/* Center Content */}
-          <div className="text-center py-32 md:py-72 relative z-10">
+          <div className="text-center relative z-10">
+            {/* Mobile Stacked Images - In content flow */}
+            <div className="sm:hidden flex flex-col items-center justify-center py-12">
+              {/* Mobile Images Stack */}
+              <div className="relative mb-8 flex items-center justify-center">
+                <div className="relative flex items-center justify-center">
+                  {/* Stack of images - Centered container */}
+                  <div className="relative w-52 h-52 flex items-center justify-center">
+                    {images.map((image, index) => (
+                      <div
+                        key={`mobile-stack-${image.id}`}
+                        className={`absolute w-52 h-52  cursor-pointer transition-all duration-500 ease-out ${
+                          selectedImageIndex === index ? 'z-30 scale-110 shadow-2xl' : 'hover:scale-105'
+                        } ${
+                          isVisible.section
+                            ? 'opacity-100 transform translate-y-0'
+                            : 'opacity-0 transform translate-y-4'
+                        }`}
+                        style={{
+                          transform:
+                            selectedImageIndex === index
+                              ? `translate(-50%, -50%) translateY(-${index * 8}px) scale(1.1)`
+                              : selectedImageIndex !== null && selectedImageIndex !== index
+                                ? `translate(-50%, -50%) translateY(-${index * 12}px) scale(0.95)`
+                                : `translate(-50%, -50%) translateY(-${index * 24}px)`,
+                          zIndex: selectedImageIndex === index ? 30 : 20 - index,
+                          transitionDelay: `${index * 100}ms`,
+                          left: '50%',
+                          top: '50%',
+                        }}
+                        onClick={() => handleImageClick(index)}
+                      >
+                        {loading ? (
+                          <div className="w-full h-full bg-gray-200 animate-pulse rounded-lg"></div>
+                        ) : (
+                          <Image
+                            src={image.src}
+                            alt={image.alt}
+                            width={192}
+                            height={192}
+                            className="object-cover w-full h-full rounded-lg"
+                            unoptimized
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Desktop spacing */}
+            <div className="hidden sm:block md:py-32 py-72"></div>
+
             {/* Title */}
             <div
               ref={titleRef}
@@ -279,34 +337,6 @@ const CategoriesSection = () => {
                 <p className="text-gray-600 text-sm">Loading categories...</p>
               </div>
             )}
-          </div>
-
-          {/* Mobile-only simplified images grid - Fixed positioning */}
-          <div className="sm:hidden fixed inset-0 z-0 opacity-30 pointer-events-none">
-            <div className="grid grid-cols-2 gap-4 p-4 h-full">
-              {images.slice(0, 4).map((image, index) => (
-                <div
-                  key={`mobile-${image.id}`}
-                  className={`relative overflow-hidden  transition-all duration-500 ${
-                    index === 0 ? 'mt-8' : index === 1 ? 'mt-16' : index === 2 ? 'mb-8' : 'mb-16'
-                  } ${isVisible.section ? 'opacity-30 transform scale-100' : 'opacity-0 transform scale-95'}`}
-                  style={{ transitionDelay: `${index * 150}ms` }}
-                >
-                  {loading ? (
-                    <div className="w-full h-full bg-gray-200 animate-pulse "></div>
-                  ) : (
-                    <Image
-                      src={image.src}
-                      alt={image.alt}
-                      width={120}
-                      height={120}
-                      className="object-cover w-full h-full"
-                      unoptimized
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </div>

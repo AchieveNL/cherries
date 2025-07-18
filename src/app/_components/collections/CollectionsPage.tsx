@@ -15,6 +15,15 @@ interface CollectionsPageProps {
   totalCollections: number;
   hasNextPage: boolean;
   hasPreviousPage: boolean;
+  currentPage?: number;
+  totalPages?: number;
+  pageInfo?: {
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+    startCursor: string | undefined;
+    endCursor: string | undefined;
+  };
+  currentCursor?: string;
 }
 
 interface CollectionCardProps {
@@ -25,7 +34,7 @@ interface CollectionCardProps {
 function CollectionCard({ collection, viewMode }: CollectionCardProps) {
   if (viewMode === 'list') {
     return (
-      <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group">
+      <div className="bg-white  overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group">
         <div className="flex">
           {/* Image */}
           <div className="w-48 h-32 flex-shrink-0 relative overflow-hidden bg-gray-100">
@@ -127,6 +136,10 @@ export default function CollectionsPage({
   totalCollections,
   hasNextPage,
   hasPreviousPage,
+  pageInfo,
+  currentPage = 1,
+  totalPages = 1,
+  currentCursor,
 }: CollectionsPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -264,7 +277,14 @@ export default function CollectionsPage({
             </div>
 
             {/* Pagination */}
-            <Pagination hasNextPage={hasNextPage} hasPreviousPage={hasPreviousPage} />
+            <Pagination
+              hasNextPage={hasNextPage}
+              hasPreviousPage={hasPreviousPage}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              pageInfo={pageInfo}
+              currentCursor={currentCursor}
+            />
           </>
         )}
       </div>

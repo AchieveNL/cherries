@@ -293,11 +293,11 @@ function CartSummary() {
       </div>
 
       <div className="space-y-4">
-        <Button className="w-full" showArrow>
-          <CartCheckoutButton>
-            <span>Checkout</span>
-          </CartCheckoutButton>
-        </Button>
+        <CartCheckoutButton className="w-full">
+          <Button className="w-full" showArrow>
+            Checkout
+          </Button>
+        </CartCheckoutButton>
 
         <div className="text-center">
           <div className="inline-flex items-center space-x-2 text-sm">
