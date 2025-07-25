@@ -4,6 +4,7 @@ import { CartProvider, ShopifyProvider } from '@shopify/hydrogen-react';
 import { ReactNode } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
+import { AnalyticsProvider } from './_components/layout/context/AnalyticsProvider';
 import { WishlistProvider } from './_components/layout/context/wishList';
 
 interface ProvidersProps {
@@ -41,9 +42,11 @@ export default function Providers({ children }: ProvidersProps) {
       countryIsoCode="US"
       languageIsoCode="EN"
     >
-      <CartProviderWithAuth>
-        <WishlistProvider>{children}</WishlistProvider>
-      </CartProviderWithAuth>
+      <AnalyticsProvider>
+        <CartProviderWithAuth>
+          <WishlistProvider>{children}</WishlistProvider>
+        </CartProviderWithAuth>
+      </AnalyticsProvider>
     </ShopifyProvider>
   );
 }

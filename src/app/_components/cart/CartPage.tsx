@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable @typescript-eslint/no-use-before-define */
 'use client';
 
@@ -10,10 +11,13 @@ import {
   useCart,
   useCartLine,
 } from '@shopify/hydrogen-react';
-import { ShoppingCart } from 'lucide-react';
+import { Heart, ShoppingCart } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useCallback, useState } from 'react';
 
+import { CartIcon } from '../icons/shared';
+import { useWishlist } from '../layout/context/wishList';
 import Button from '../ui/Button';
 
 function CartPageContent() {
@@ -36,9 +40,9 @@ function CartPageContent() {
             <h1 className="text-3xl font-bold text-gray-900 mb-4">Your cart is empty</h1>
             <p className="text-gray-600 mb-8 text-lg">Looks like you haven&apos;t added any items yet</p>
 
-            <a href="/products">
+            <Link href="/products">
               <Button className="mx-auto">Start Shopping</Button>
-            </a>
+            </Link>
           </div>
         </div>
       </div>
@@ -50,8 +54,11 @@ function CartPageContent() {
       <div className="max-w-8xl container mx-auto px-4 py-8">
         <div className="flex items-center justify-between border-b border-gray-200 pb-4">
           <h1 className="text-2xl font-bold text-gray-900 uppercase tracking-wide">MY CART({lines.length})</h1>
-          <a href="/products" className="text-red-700 hover:text-red-800 font-medium underline">
-            Continue Shopping
+          <a href="/products">
+            <Button variant="black" showArrow className="flex items-center space-x-2">
+              <CartIcon className="mr-2" />
+              Continue Shopping
+            </Button>
           </a>
         </div>
 
@@ -85,9 +92,20 @@ function CartPageContent() {
 function CartLineItemCompact() {
   const { merchandise, quantity, id } = useCartLine();
   const { linesRemove } = useCart();
+  const { addItem, removeItem, isInWishlist } = useWishlist();
   const [isRemoving, setIsRemoving] = useState(false);
+  const [isAddingToWishlist, setIsAddingToWishlist] = useState(false);
 
-  // Move useCallback before any early returns
+  // Define variables first
+  if (!merchandise || !id) return null;
+
+  const safeQuantity = quantity ?? 0;
+  const priceAmount = merchandise.price?.amount ? Number(merchandise.price.amount) : 0;
+  const currencyCode = merchandise.price?.currencyCode || 'USD';
+  const productId = merchandise.product?.id;
+  const isInWishlistAlready = productId ? isInWishlist(productId) : false;
+
+  // Move useCallback after variable definitions
   const handleRemove = useCallback(async () => {
     if (isRemoving || !id) return;
 
@@ -100,11 +118,61 @@ function CartLineItemCompact() {
     }
   }, [id, linesRemove, isRemoving]);
 
-  if (!merchandise || !id) return null;
+  const handleToggleWishlist = useCallback(async () => {
+    if (isAddingToWishlist || !merchandise || !merchandise.product) return;
 
-  const safeQuantity = quantity ?? 0;
-  const priceAmount = merchandise.price?.amount ? Number(merchandise.price.amount) : 0;
-  const currencyCode = merchandise.price?.currencyCode || 'USD';
+    setIsAddingToWishlist(true);
+    try {
+      const productId = merchandise.product.id;
+
+      if (isInWishlistAlready) {
+        // Remove from wishlist
+        removeItem(productId!);
+      } else {
+        // Add to wishlist
+        const productForWishlist = {
+          id: merchandise.product.id,
+          handle: merchandise.product.handle,
+          title: merchandise.product.title,
+          description: merchandise.product.description,
+          createdAt: merchandise.product.createdAt,
+          variants: {
+            nodes: [
+              {
+                id: merchandise.id,
+                price: merchandise.price,
+                compareAtPrice: merchandise.compareAtPrice,
+                availableForSale: merchandise.availableForSale,
+                selectedOptions: merchandise.selectedOptions,
+                title: merchandise.title,
+              },
+            ],
+          },
+          images: merchandise.image
+            ? {
+                nodes: [merchandise.image],
+              }
+            : { nodes: [] },
+        };
+
+        // Add to wishlist with the specific variant ID
+        addItem(productForWishlist, merchandise.id);
+      }
+    } catch (error) {
+      console.error('Failed to toggle wishlist:', error);
+    } finally {
+      setIsAddingToWishlist(false);
+    }
+  }, [merchandise, addItem, removeItem, isAddingToWishlist, isInWishlistAlready]);
+
+  const handleMoveToWishlist = useCallback(async () => {
+    if (isRemoving || isAddingToWishlist || !id || isInWishlistAlready) return;
+
+    // First add to wishlist
+    await handleToggleWishlist();
+    // Then remove from cart
+    await handleRemove();
+  }, [handleToggleWishlist, handleRemove, isRemoving, isAddingToWishlist, id, isInWishlistAlready]);
 
   const getVariantAttributes = (): Array<{ name: string; value: string }> => {
     const attributes: Array<{ name: string; value: string }> = [];
@@ -168,9 +236,23 @@ function CartLineItemCompact() {
         <div className="flex-1">
           <div className="flex mb-4 flex-col">
             <div>
-              <h3 className="font-bold mb-4 font-bungee text-gray-900 text-lg uppercase tracking-wide">
-                {merchandise.product?.title}
-              </h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold font-bungee text-gray-900 text-lg uppercase tracking-wide">
+                  {merchandise.product?.title}
+                </h3>
+
+                {/* Wishlist button next to title */}
+                <button
+                  onClick={handleToggleWishlist}
+                  disabled={isAddingToWishlist}
+                  className={`p-2 rounded-full transition-colors ${
+                    isInWishlistAlready ? 'text-primary hover:text-primary' : 'text-gray-400 hover:text-primary'
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  title={isInWishlistAlready ? 'Remove from wishlist' : 'Add to wishlist'}
+                >
+                  <Heart className={`w-7 h-7 ${isInWishlistAlready ? 'fill-current' : ''}`} />
+                </button>
+              </div>
 
               {/* Product attributes */}
               <div className="space-y-1 text-sm">
@@ -236,26 +318,29 @@ function CartLineItemCompact() {
 
           <hr className="border-gray-200 border-2 my-6" />
 
-          {/* Remove Button */}
-          <button
-            onClick={handleRemove}
-            disabled={isRemoving}
-            className="bg-red-800 text-white px-6 py-2 text-sm font-medium hover:bg-red-900 transition-colors uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label="Remove item from cart"
-          >
-            {isRemoving ? 'Removing...' : 'Remove'}
-          </button>
+          {/* Action Buttons */}
+          <div className="flex justify-end space-x-3">
+            {!isInWishlistAlready && (
+              <button
+                onClick={handleMoveToWishlist}
+                disabled={isRemoving || isAddingToWishlist}
+                className="flex items-center space-x-2 bg-gray-100 text-gray-700 px-6 py-2 text-sm font-medium hover:bg-gray-200 transition-colors uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="Move to wishlist"
+              >
+                <Heart className="w-4 h-4" />
+                <span>{isAddingToWishlist ? 'Moving...' : 'Move to Wishlist'}</span>
+              </button>
+            )}
 
-          {/* Alternative: Use Hydrogen's built-in remove functionality */}
-          {/*
-          <CartLineQuantityAdjustButton
-            adjust="remove"
-            className="bg-red-800 text-white px-6 py-2 text-sm font-medium hover:bg-red-900 transition-colors uppercase tracking-wide"
-            aria-label="Remove item from cart"
-          >
-            Remove
-          </CartLineQuantityAdjustButton>
-          */}
+            <button
+              onClick={handleRemove}
+              disabled={isRemoving}
+              className="bg-red-800 text-white px-6 py-2 text-sm font-medium hover:bg-red-900 transition-colors uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Remove item from cart"
+            >
+              {isRemoving ? 'Removing...' : 'Remove'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -273,16 +358,14 @@ function CartSummary() {
         </div>
 
         <div className="flex justify-between text-text">
-          <span>Shipping</span>
+          <span>Delivery</span>
           <CartCost amountType="duty" />
         </div>
 
         <div className="flex justify-between text-text">
-          <span>Tax</span>
+          <span>Incl. 21% VAT</span>
           <CartCost amountType="tax" />
         </div>
-
-        <p className="text-[11px] text-gray-600">Will Be Calculated According To Your Delivery Address</p>
 
         <div className="border-t border-gray-200 pt-4">
           <div className="flex justify-between text-xl font-bold text-gray-900">
@@ -292,7 +375,7 @@ function CartSummary() {
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-2">
         <CartCheckoutButton className="w-full">
           <Button className="w-full" showArrow>
             Checkout
@@ -300,9 +383,12 @@ function CartSummary() {
         </CartCheckoutButton>
 
         <div className="text-center">
-          <div className="inline-flex items-center space-x-2 text-sm">
+          <div className="inline-flex border-solid border-gray-200 border px-2 items-center space-x-2 text-sm">
             <span>Pay With</span>
-            <Image src="/cart/paypal.png" width={101} height={39} alt="PayPal Logo" />
+            <Image src="/cart/visa.png" width={56} height={33} alt="Visa Logo" />
+            <Image src="/cart/mastercard.png" width={48} height={37} alt="MasterCard Logo" />
+            <Image src="/cart/deal.png" width={40} height={35} alt="Deal Logo" />
+            <Image src="/cart/paypal.png" width={101.28} height={39} alt="PayPal Logo" />
           </div>
         </div>
       </div>

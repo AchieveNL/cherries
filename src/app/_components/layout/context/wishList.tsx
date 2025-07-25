@@ -8,8 +8,10 @@ import type { PartialDeep } from 'type-fest';
 // Define the wishlist item type
 export interface WishlistItem {
   id: string;
+  variantId: string;
   handle: string;
   title: string;
+  description?: string;
   price?: {
     amount: string;
     currencyCode: string;
@@ -29,7 +31,7 @@ export interface WishlistItem {
 
 interface WishlistContextType {
   items: WishlistItem[];
-  addItem: (product: PartialDeep<Product, { recurseIntoArrays: true }>) => void;
+  addItem: (product: PartialDeep<Product, { recurseIntoArrays: true }>, selectedVariantId?: string) => void;
   removeItem: (productId: string) => void;
   isInWishlist: (productId: string) => boolean;
   clearWishlist: () => void;
@@ -51,7 +53,9 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       const stored = localStorage.getItem(WISHLIST_STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        setItems(Array.isArray(parsed) ? parsed : []);
+        // Validate that items have required fields, especially variantId
+        const validItems = Array.isArray(parsed) ? parsed.filter((item) => item.id && item.variantId) : [];
+        setItems(validItems);
       }
     } catch (error) {
       console.warn('Failed to load wishlist from localStorage:', error);
@@ -72,27 +76,50 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   }, [items, isLoading]);
 
   // Helper function to convert product to wishlist item
-  const convertToWishlistItem = (product: PartialDeep<Product, { recurseIntoArrays: true }>): WishlistItem => {
-    // Get first variant for price info
-    const firstVariant = product.variants?.nodes?.[0] || (Array.isArray(product.variants) ? product.variants[0] : null);
+  const convertToWishlistItem = (
+    product: PartialDeep<Product, { recurseIntoArrays: true }>,
+    selectedVariantId?: string
+  ): WishlistItem => {
+    // Find the selected variant or use the first available variant
+    let targetVariant;
+
+    if (selectedVariantId) {
+      // Look for the specific variant ID
+      targetVariant = product.variants?.nodes?.find((variant) => variant?.id === selectedVariantId);
+    }
+
+    // Fallback to first available variant or just first variant
+    if (!targetVariant) {
+      targetVariant =
+        product.variants?.nodes?.find((variant) => variant?.availableForSale) ||
+        product.variants?.nodes?.[0] ||
+        (Array.isArray(product.variants) ? product.variants[0] : null);
+    }
 
     // Get first image
     const firstImage = product.images?.nodes?.[0] || (Array.isArray(product.images) ? product.images[0] : null);
 
+    // Ensure we have a variant ID
+    if (!targetVariant?.id) {
+      throw new Error('Cannot add product to wishlist: No valid variant found');
+    }
+
     return {
       id: product.id || '',
+      variantId: targetVariant.id,
       handle: product.handle || '',
       title: product.title || '',
-      price: firstVariant?.price
+      description: product.description || '',
+      price: targetVariant?.price
         ? {
-            amount: firstVariant.price.amount || '0',
-            currencyCode: firstVariant.price.currencyCode || 'USD',
+            amount: targetVariant.price.amount || '0',
+            currencyCode: targetVariant.price.currencyCode || 'USD',
           }
         : undefined,
-      compareAtPrice: firstVariant?.compareAtPrice
+      compareAtPrice: targetVariant?.compareAtPrice
         ? {
-            amount: firstVariant.compareAtPrice.amount || '0',
-            currencyCode: firstVariant.compareAtPrice.currencyCode || 'USD',
+            amount: targetVariant.compareAtPrice.amount || '0',
+            currencyCode: targetVariant.compareAtPrice.currencyCode || 'USD',
           }
         : undefined,
       image: firstImage?.url
@@ -101,25 +128,30 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
             altText: firstImage.altText || product.title || '',
           }
         : undefined,
-      availableForSale: firstVariant?.availableForSale ?? true,
+      availableForSale: targetVariant?.availableForSale ?? true,
       createdAt: product.createdAt || new Date().toISOString(),
       addedToWishlistAt: new Date().toISOString(),
     };
   };
 
-  const addItem = (product: PartialDeep<Product, { recurseIntoArrays: true }>) => {
+  const addItem = (product: PartialDeep<Product, { recurseIntoArrays: true }>, selectedVariantId?: string) => {
     if (!product.id) return;
 
-    setItems((prevItems) => {
-      // Check if item already exists
-      if (prevItems.some((item) => item.id === product.id)) {
-        return prevItems;
-      }
+    try {
+      setItems((prevItems) => {
+        // Check if item already exists (by product ID)
+        if (prevItems.some((item) => item.id === product.id)) {
+          return prevItems;
+        }
 
-      // Add new item
-      const newItem = convertToWishlistItem(product);
-      return [...prevItems, newItem];
-    });
+        // Add new item
+        const newItem = convertToWishlistItem(product, selectedVariantId);
+        return [...prevItems, newItem];
+      });
+    } catch (error) {
+      console.error('Failed to add item to wishlist:', error);
+      // You might want to show a toast notification here
+    }
   };
 
   const removeItem = (productId: string) => {

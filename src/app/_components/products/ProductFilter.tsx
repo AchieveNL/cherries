@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { ChevronDown, Grid, List, Search, X } from 'lucide-react';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PartialDeep } from 'type-fest';
 
+// Import analytics for search tracking
+import { trackSearch } from '@/lib/analytics';
 import { Collection, FilterState, Product } from '@/types';
 
 // Type guards to ensure data integrity
@@ -41,6 +43,10 @@ export default function ProductFilter({
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [localFilters, setLocalFilters] = useState(filters);
   const [searchValue, setSearchValue] = useState(filters.search || '');
+
+  // Analytics refs for debouncing
+  const searchAnalyticsTimeoutRef = useRef<NodeJS.Timeout>();
+  const lastTrackedSearchRef = useRef<string>('');
 
   // Filter and validate products
   const products = useMemo(() => {
@@ -92,6 +98,36 @@ export default function ProductFilter({
   useEffect(() => {
     setSearchValue(filters.search || '');
   }, [filters.search]);
+
+  // Track search analytics when search actually happens (with debounce)
+  useEffect(() => {
+    const currentSearch = filters.search?.trim();
+
+    if (currentSearch && currentSearch.length >= 2 && currentSearch !== lastTrackedSearchRef.current) {
+      // Clear existing timeout
+      if (searchAnalyticsTimeoutRef.current) {
+        clearTimeout(searchAnalyticsTimeoutRef.current);
+      }
+
+      // Set new timeout for analytics tracking
+      searchAnalyticsTimeoutRef.current = setTimeout(() => {
+        try {
+          console.log('🔍 Tracking search analytics:', currentSearch, 'Results:', filteredCount);
+          trackSearch(currentSearch, filteredCount);
+          lastTrackedSearchRef.current = currentSearch;
+        } catch (error) {
+          console.warn('Failed to track search analytics:', error);
+        }
+      }, 1000); // 1 second delay to ensure user finished typing
+    }
+
+    // Cleanup timeout on unmount
+    return () => {
+      if (searchAnalyticsTimeoutRef.current) {
+        clearTimeout(searchAnalyticsTimeoutRef.current);
+      }
+    };
+  }, [filters.search, filteredCount]);
 
   const sortOptions = [
     { value: 'featured', label: 'Featured' },
@@ -150,6 +186,9 @@ export default function ProductFilter({
     setLocalFilters(clearedFilters);
     setSearchValue('');
     onFiltersChange(clearedFilters);
+
+    // Reset analytics tracking
+    lastTrackedSearchRef.current = '';
   }, [filterOptions.maxPrice, onFiltersChange]);
 
   // Immediate filter changes for certain actions
@@ -161,7 +200,7 @@ export default function ProductFilter({
     [filters, onFiltersChange]
   );
 
-  // Handle search functionality
+  // Handle search functionality with analytics preparation
   const handleSearchChange = useCallback((value: string) => {
     setSearchValue(value);
   }, []);
@@ -169,14 +208,33 @@ export default function ProductFilter({
   const handleSearchSubmit = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
+      console.log('🔍 Search submitted:', searchValue, 'Expected results:', filteredCount);
+
+      // Apply search filter immediately
       onFiltersChange({ ...filters, search: searchValue });
+
+      // Track search analytics immediately on submit (don't wait for debounce)
+      if (searchValue.trim().length >= 2) {
+        try {
+          trackSearch(searchValue.trim(), filteredCount);
+          lastTrackedSearchRef.current = searchValue.trim();
+        } catch (error) {
+          console.warn('Failed to track search on submit:', error);
+        }
+      }
     },
-    [filters, searchValue, onFiltersChange]
+    [filters, searchValue, onFiltersChange, filteredCount]
   );
 
   const handleSearchClear = useCallback(() => {
     setSearchValue('');
     onFiltersChange({ ...filters, search: '' });
+
+    // Reset analytics tracking
+    lastTrackedSearchRef.current = '';
+    if (searchAnalyticsTimeoutRef.current) {
+      clearTimeout(searchAnalyticsTimeoutRef.current);
+    }
   }, [filters, onFiltersChange]);
 
   const hasActiveFilters = useMemo(() => {
@@ -212,7 +270,7 @@ export default function ProductFilter({
       <div className="container mx-auto px-4 py-3 md:py-4">
         {/* Mobile Layout - Stacked */}
         <div className="md:hidden space-y-3">
-          {/* Top Row - Search */}
+          {/* Top Row - Search with Analytics */}
           <div className="w-full">
             <form onSubmit={handleSearchSubmit} className="relative">
               <div className="flex">
@@ -272,9 +330,14 @@ export default function ProductFilter({
                 )}
               </div>
 
-              {/* Results Count - Mobile */}
+              {/* Results Count - Mobile with Search Context */}
               <div className="text-xs text-gray-600 min-w-0">
-                {filteredCount !== totalProducts ? (
+                {filters.search ? (
+                  <span className="truncate">
+                    <span className="text-primary font-medium">{filteredCount}</span> results for &quot;{filters.search}
+                    &quot;
+                  </span>
+                ) : filteredCount !== totalProducts ? (
                   <span className="truncate">
                     <span className="text-primary font-medium">{filteredCount}</span> of {totalProducts}
                   </span>
@@ -491,9 +554,13 @@ export default function ProductFilter({
               )}
             </div>
 
-            {/* Results Count */}
+            {/* Results Count with Search Context */}
             <div className="text-sm font-medium text-gray-700">
-              {filteredCount !== totalProducts ? (
+              {filters.search ? (
+                <span>
+                  <span className="text-primary">{filteredCount}</span> results for &quot;{filters.search}&quot;
+                </span>
+              ) : filteredCount !== totalProducts ? (
                 <span>
                   <span className="text-primary">{filteredCount}</span> of {totalProducts} products
                 </span>
@@ -513,7 +580,7 @@ export default function ProductFilter({
             )}
           </div>
 
-          {/* Center - Search Bar */}
+          {/* Center - Search Bar with Analytics */}
           <div className="flex-1 max-w-md mx-auto">
             <form onSubmit={handleSearchSubmit} className="relative">
               <div className="flex">
@@ -589,7 +656,7 @@ export default function ProductFilter({
                 <button
                   onClick={() => onViewModeChange('grid')}
                   className={`p-2  transition-all ${
-                    viewMode === 'grid' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                    viewMode === 'grid' ? 'bg-white text-primary shadow-sm' : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
                   <Grid className="w-4 h-4" />
@@ -597,7 +664,7 @@ export default function ProductFilter({
                 <button
                   onClick={() => onViewModeChange('list')}
                   className={`p-2  transition-all ${
-                    viewMode === 'list' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                    viewMode === 'list' ? 'bg-white text-primary shadow-sm' : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
                   <List className="w-4 h-4" />

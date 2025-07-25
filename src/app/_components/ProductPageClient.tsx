@@ -4,8 +4,9 @@
 
 import { AddToCartButton, ProductPrice, ProductProvider, useCart, useProduct } from '@shopify/hydrogen-react';
 import { AlertCircle, Award, CheckCircle, Heart, MessageCircle, Minus, Plus, Star, Users } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
+import { trackAddToCart, trackProductView } from '@/lib/analytics';
 import Breadcrumb from './Breadcrumb';
 import { ArrowButton } from './icons/shared';
 import { useWishlist } from './layout/context/wishList';
@@ -72,16 +73,28 @@ function safeParseMetafieldValue(metafield: ProductMetafield | null | undefined)
 // Inner component that uses the useProduct hook
 function ProductContent() {
   const { product, selectedVariant, selectedOptions, options, setSelectedOption, isOptionInStock } = useProduct();
-  console.log('Product metafields:', product?.metafields);
-  console.log('Selected variant metafields:', selectedVariant?.metafields);
-  console.log('Product options with full data:', product?.options);
-  console.log('Variant selected options:', selectedVariant?.selectedOptions);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
-
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-  const { status, lines, totalQuantity } = useCart();
+  const { status, lines, totalQuantity, id: cartId } = useCart();
+
+  // Track analytics when product loads
+  useEffect(() => {
+    if (product && selectedVariant) {
+      trackProductView({
+        id: product.id || '',
+        title: product.title || '',
+        price: selectedVariant.price?.amount || '0',
+        vendor: product.vendor || '',
+        productType: product.productType || '',
+        variantId: selectedVariant.id || '',
+        variantTitle: selectedVariant.title || '',
+        sku: selectedVariant.sku || '',
+        quantity: 1,
+      });
+    }
+  }, [product, selectedVariant]);
 
   // Wishlist integration
   const { addItem, removeItem, isInWishlist } = useWishlist();
@@ -110,9 +123,7 @@ function ProductContent() {
 
   // Add this state to track previous line count
   const [previousLineCount, setPreviousLineCount] = useState(0);
-
   const justClicked = React.useRef(false);
-
   const [previousTotalQuantity, setPreviousTotalQuantity] = useState(0);
 
   // Monitor cart changes using total quantity
@@ -133,6 +144,26 @@ function ProductContent() {
     // Detect successful addition by quantity increase
     if (status === 'idle' && totalQuantity && totalQuantity > previousTotalQuantity && isAddingToCart) {
       console.log('✅ Item quantity increased - addition successful');
+
+      // Track add to cart event
+      if (product && selectedVariant && cartId) {
+        trackAddToCart({
+          cartId,
+          product: {
+            id: product.id || '',
+            title: product.title || '',
+            price: selectedVariant.price?.amount || '0',
+            quantity,
+            variantId: selectedVariant.id || '',
+            variantTitle: selectedVariant.title || '',
+            vendor: product.vendor || '',
+            productType: product.productType || '',
+            sku: selectedVariant.sku || '',
+          },
+          totalValue: parseFloat(selectedVariant.price?.amount || '0') * quantity,
+        });
+      }
+
       setIsAddingToCart(false);
       setShowSuccessMessage(true);
       setPreviousTotalQuantity(totalQuantity);
@@ -147,7 +178,7 @@ function ProductContent() {
       console.log('🔄 Resetting stuck loading state - no quantity change detected');
       setIsAddingToCart(false);
     }
-  }, [status, totalQuantity, previousTotalQuantity, isAddingToCart]);
+  }, [status, totalQuantity, previousTotalQuantity, isAddingToCart, product, selectedVariant, cartId, quantity]);
 
   // Extract data from metafields with proper null checks
   const metafields = product?.metafields || [];
@@ -325,7 +356,6 @@ function ProductContent() {
                       </div>
                     )}
                   </div>
-                  <p className="text-dark text-sm">Free shipping on orders over $50</p>
                 </div>
               </div>
               <hr className="border-gray-200 border-2" />

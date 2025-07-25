@@ -1,68 +1,25 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import CollectionsPage from '@/app/_components/collections/CollectionsPage';
 import { getCollections } from '@/lib/shopify';
+
+/* eslint-disable @typescript-eslint/no-unused-vars */
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Collections',
   description: 'Browse our curated collections of products',
 };
 
-interface SearchParams {
-  page?: string;
-  sort?: string;
-  search?: string;
-  after?: string; // Add cursor parameters
-  before?: string;
-}
-
-export default async function Collections({ searchParams }: { searchParams: SearchParams }) {
-  const currentPage = Number(searchParams?.page) || 1;
-  const itemsPerPage = 12;
-  const sortKey = searchParams?.sort === 'updated' ? 'UPDATED_AT' : 'TITLE';
-  const search = searchParams?.search || '';
-
+export default async function Collections() {
   try {
-    // Build fetch parameters with cursor support
-    const fetchParams: {
-      sortKey: 'TITLE' | 'ID' | 'UPDATED_AT' | 'RELEVANCE';
-      reverse: boolean;
-      query: string;
-      first?: number;
-      last?: number;
-      after?: string;
-      before?: string;
-    } = {
-      sortKey: (searchParams?.sort === 'updated' ? 'UPDATED_AT' : 'TITLE') as 'TITLE' | 'UPDATED_AT',
-      reverse: sortKey === 'UPDATED_AT',
-      query: search,
-      ...(searchParams.after && { after: searchParams.after }),
-      ...(searchParams.before && { before: searchParams.before }),
-    };
+    // Load ALL collections on the server - no search/pagination parameters
+    const { collections, totalCount } = await getCollections({
+      sortKey: 'TITLE',
+      reverse: false,
+      query: '', // Empty query to get all collections
+      first: 250, // Increase to get all collections or adjust based on your needs
+    });
 
-    // Use proper cursor logic
-    if (searchParams.before) {
-      fetchParams.last = itemsPerPage;
-    } else {
-      fetchParams.first = itemsPerPage;
-    }
-
-    const { collections, pageInfo, totalCount } = await getCollections(fetchParams);
-
-    // Calculate total pages (note: this is approximate since Shopify doesn't provide exact totals)
-    const totalPages = Math.ceil(totalCount / itemsPerPage);
-
-    return (
-      <CollectionsPage
-        collections={collections}
-        totalCollections={totalCount}
-        hasNextPage={pageInfo.hasNextPage}
-        hasPreviousPage={pageInfo.hasPreviousPage}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        pageInfo={pageInfo}
-        currentCursor={searchParams.after || searchParams.before}
-      />
-    );
+    return <CollectionsPage collections={collections} totalCollections={totalCount} />;
   } catch (error) {
     console.error('Error fetching collections:', error);
     return (

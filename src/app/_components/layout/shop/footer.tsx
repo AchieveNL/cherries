@@ -94,7 +94,7 @@ export function Footer() {
               </div>
             </div>
             {/* Social Media Icons */}
-            <div className="flex ml-12 items-center space-x-4">
+            <div className="flex  items-center space-x-4">
               <a href="#" className="p-2 bg-gray-100 rounded-full ">
                 <TwitterIcon className="w-4 h-4  text-primary" />
               </a>
@@ -113,7 +113,7 @@ export function Footer() {
           <div className="ml-8"></div>
 
           {/* Dynamic Shop Links */}
-          <div className="md:ml-8">
+          <div className="ml-8">
             <h3 className="text-xl font-semibold text-gray-900 mb-6">Shop</h3>
             {loading ? (
               <ShopLinksLoading />
@@ -150,7 +150,7 @@ export function Footer() {
           </div>
 
           {/* Terms Links */}
-          <div>
+          <div className="ml-8">
             <h3 className="text-xl  font-semibold text-gray-900 mb-6">Terms</h3>
             <ul className="space-y-4">
               <li>
@@ -182,7 +182,7 @@ export function Footer() {
           </div>
 
           {/* Customer Service Links */}
-          <div>
+          <div className="ml-8">
             <h3 className="text-xl  font-semibold text-gray-900 mb-6">Customer Service</h3>
             <ul className="space-y-4">
               <li>
@@ -210,7 +210,13 @@ export function Footer() {
 
       {/* Hero frame image positioned at the very bottom */}
       <div className="relative w-full">
-        <Image src="/animation.gif" alt="Hero Frame" width={1767} height={591} className="w-full h-auto object-cover" />
+        <Image
+          src="/animation.gif"
+          alt="Hero Frame"
+          width={1767}
+          height={591}
+          className="w-full h-auto object-cover max-h-40 sm:max-h-60 md:max-h-80"
+        />
 
         {/* Bottom Footer - positioned over the red background */}
         <div className="absolute inset-0 flex items-center">

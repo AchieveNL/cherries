@@ -27,12 +27,16 @@ const HeroSection = () => {
             <h2 className="text-4xl font-bungee lg:text-[73px]  text-text tracking-tight">ABOUT US</h2>
 
             <p className="text-text text-2xl leading-relaxed">
-              Lorem Ipsum Dolor Sit Amet, Consectetur Adipiscing Elit, Sed Do Eiusmod Tempor Incididunt Ut Labore Et
-              Dolore Magna Aliqua. Ut Enim Ad Minim Veniam, Quis Nostrud Exercitation Ullamco Laboris Nisi Ut Aliquip Ex
-              Ea Commodo Consequat. Duis Aute Irure Dolor In Reprehenderit.
+              Cherries is a bold and playful tech accessory brand specializing in  phone cases and chargers that combine
+              eye-catching design with everyday performance. Inspired by retro aesthetics and pixel art, cherries brings
+              a nostalgic yet modern touch to mobile essentials. Our products are made for trendsetters who want
+              protection, power, and personality in one. We believe tech accessories should be more than just
+              functional—they should reflect your unique style. With quality materials, fun design, and reliable
+              charging power, cherries stands out in a market full of plain, forgettable accessories. Whether you’re
+              gaming, working, or scrolling through life, cherries keeps you powered up and looking fresh
             </p>
 
-            <Link href="/about">
+            <Link href="/products">
               <Button className=" mt-8 px-4  text-[21px]" showArrow>
                 Shop Now
               </Button>

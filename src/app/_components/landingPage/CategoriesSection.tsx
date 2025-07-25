@@ -68,7 +68,7 @@ const CategoriesSection = () => {
       id: 3,
       src: '/landingPage/categories/img-3.webp',
       alt: 'Model 3',
-      className: 'absolute bottom-[25vh] left-[8%] md:bottom-[10vh] md:left-[15%] z-[1]',
+      className: 'absolute bottom-[25vh] left-[8%]  md:bottom-[3vh] md:left-[15%] z-[1]',
       width: 279,
       height: 313,
       mobileWidth: 140,
@@ -78,7 +78,7 @@ const CategoriesSection = () => {
       id: 4,
       src: '/landingPage/categories/img-4.webp',
       alt: 'Model 4',
-      className: 'absolute bottom-[10vh] right-[8%] md:bottom-[15vh] md:right-[12%] z-[1]',
+      className: 'absolute bottom-[10vh] right-[8%]  md:bottom-[0vh] md:right-[12%] z-[1]',
       width: 285,
       height: 388,
       mobileWidth: 145,
@@ -168,7 +168,7 @@ const CategoriesSection = () => {
   };
 
   return (
-    <section ref={sectionRef} className="min-h-screen relative overflow-hidden py-8">
+    <section ref={sectionRef} className="md:min-h-screen relative overflow-hidden py-8">
       {/* Fixed Background Images - Desktop only */}
       <div className="hidden sm:block">
         {loading
@@ -213,11 +213,11 @@ const CategoriesSection = () => {
               <div className="relative mb-8 flex items-center justify-center">
                 <div className="relative flex items-center justify-center">
                   {/* Stack of images - Centered container */}
-                  <div className="relative w-52 h-52 flex items-center justify-center">
+                  <div className="relative w-64 h-64 flex items-center justify-center">
                     {images.map((image, index) => (
                       <div
                         key={`mobile-stack-${image.id}`}
-                        className={`absolute w-52 h-52  cursor-pointer transition-all duration-500 ease-out ${
+                        className={`absolute w-64 h-64  cursor-pointer transition-all duration-500 ease-out ${
                           selectedImageIndex === index ? 'z-30 scale-110 shadow-2xl' : 'hover:scale-105'
                         } ${
                           isVisible.section
@@ -239,14 +239,14 @@ const CategoriesSection = () => {
                         onClick={() => handleImageClick(index)}
                       >
                         {loading ? (
-                          <div className="w-full h-full bg-gray-200 animate-pulse rounded-lg"></div>
+                          <div className="w-full h-full bg-gray-200 animate-pulse "></div>
                         ) : (
                           <Image
                             src={image.src}
                             alt={image.alt}
                             width={192}
                             height={192}
-                            className="object-cover w-full h-full rounded-lg"
+                            className="object-cover w-full h-full "
                             unoptimized
                           />
                         )}

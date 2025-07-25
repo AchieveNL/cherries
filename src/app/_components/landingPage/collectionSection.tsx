@@ -3,8 +3,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-import { getCollectionWithProducts } from '@/lib/shopify';
 import { ArrowUp } from '../icons/landingPage/ArrowUp';
+import { useWishlist } from '../layout/context/wishList';
 import { Button } from '../ui';
 
 import type { Product } from '@shopify/hydrogen-react/storefront-api-types';
@@ -14,6 +14,21 @@ interface LandingPageProps {
   collectionHandle?: string;
   maxProducts?: number;
 }
+
+// Heart Icon Component
+const Heart = ({ className }: { className?: string }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    strokeWidth={2}
+    stroke="currentColor"
+    fill="none"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+  </svg>
+);
 
 // Skeleton Components
 const MainProductSkeleton = () => (
@@ -56,6 +71,32 @@ const LandingPage = ({ collectionHandle = 'featured-products', maxProducts = 4 }
   const [isVisible, setIsVisible] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
 
+  const { addItem, removeItem, isInWishlist } = useWishlist();
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+
+  // Get current selected product
+  const selectedProductData = products[selectedProduct];
+
+  // Check if product is in wishlist
+  const isWishlisted = selectedProductData?.id ? isInWishlist(selectedProductData.id) : false;
+
+  const handleWishlistToggle = async () => {
+    if (!selectedProductData?.id) return;
+
+    setWishlistLoading(true);
+    try {
+      if (isWishlisted) {
+        removeItem(selectedProductData.id);
+      } else {
+        addItem(selectedProductData);
+      }
+    } catch (error) {
+      console.error('Failed to update wishlist:', error);
+    } finally {
+      setWishlistLoading(false);
+    }
+  };
+
   // Trigger animations after component mounts
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -64,20 +105,23 @@ const LandingPage = ({ collectionHandle = 'featured-products', maxProducts = 4 }
     return () => clearTimeout(timer);
   }, []);
 
-  // Fetch products from collection
+  // Fetch products from API route
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        const { products: fetchedProducts } = await getCollectionWithProducts(collectionHandle, {
-          first: maxProducts,
-          sortKey: 'COLLECTION_DEFAULT',
-        });
+        const response = await fetch(`/api/collections/${collectionHandle}?maxProducts=${maxProducts}`);
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch products: ${response.status}`);
+        }
+
+        const data = await response.json();
 
         // Filter products that have images and are available
-        const validProducts = fetchedProducts
+        const validProducts = data.products
           .filter(
             (product: PartialDeep<Product, { recurseIntoArrays: true }>) =>
               product.images?.nodes?.length && product.images.nodes.length > 0 && product.availableForSale
@@ -92,7 +136,7 @@ const LandingPage = ({ collectionHandle = 'featured-products', maxProducts = 4 }
         }
       } catch (err) {
         console.error('Error fetching products:', err);
-        setError('Failed to load products');
+        setError(err instanceof Error ? err.message : 'Failed to load products');
       } finally {
         setLoading(false);
       }
@@ -144,8 +188,6 @@ const LandingPage = ({ collectionHandle = 'featured-products', maxProducts = 4 }
     setSelectedProduct(productIndex);
   };
 
-  const selectedProductData = products[selectedProduct];
-
   return (
     <div className="min-h-screen">
       {/* Main Content */}
@@ -159,30 +201,52 @@ const LandingPage = ({ collectionHandle = 'featured-products', maxProducts = 4 }
           >
             <div>
               {/* Dynamic Product Title */}
-              <h1
-                className={`text-5xl lg:text-7xl font-bungee font-black text-gray-900 leading-tight transition-all duration-1200 ease-out delay-200 ${
-                  isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-16'
-                }`}
-              >
-                {!loading && selectedProductData ? (
-                  <>
-                    CHERRIES FRESH
-                    <br />
-                    COLLECTION
-                    <hr className="border-gray-200 border-2 mt-1" />
-                    <span className="text-xl lg:text-2xl font-roboto font-normal ">
-                      {selectedProductData.title?.split(' ').slice(0, 2).join(' ').toUpperCase()}{' '}
-                      {selectedProductData.title?.split(' ').slice(2).join(' ').toUpperCase() || 'COLLECTION'}
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    CHERRIES FRESH
-                    <br />
-                    COLLECTION
-                  </>
-                )}
-              </h1>
+              <div className="flex items-start gap-4">
+                <h1
+                  className={`text-5xl lg:text-7xl font-bungee font-black text-gray-900 leading-tight transition-all duration-1200 ease-out delay-200 ${
+                    isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-16'
+                  }`}
+                >
+                  {!loading && selectedProductData ? (
+                    <>
+                      CHERRIES FRESH
+                      <br />
+                      COLLECTION
+                      <hr className="border-gray-200 border-2 mt-1" />
+                      <span className="text-xl mt-4 flex items-center justify-between lg:text-2xl font-roboto font-normal ">
+                        {selectedProductData.title?.split(' ').slice(0, 2).join(' ').toUpperCase()}{' '}
+                        {selectedProductData.title?.split(' ').slice(2).join(' ').toUpperCase() || 'COLLECTION'}
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleWishlistToggle();
+                          }}
+                          disabled={wishlistLoading}
+                          className={` p-3  transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-110 active:scale-95 ${
+                            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                          }`}
+                          style={{ transitionDelay: '800ms' }}
+                          aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                        >
+                          <Heart
+                            className={`w-7 h-7 transition-colors ${
+                              isWishlisted ? 'fill-primary text-primary' : 'text-primary hover:text-primary'
+                            }`}
+                          />
+                        </button>
+                      </span>
+                      {/* Wishlist Button - Only show when product is loaded */}
+                    </>
+                  ) : (
+                    <>
+                      CHERRIES FRESH
+                      <br />
+                      COLLECTION
+                    </>
+                  )}
+                </h1>
+              </div>
 
               {/* Dynamic Product Price and Discount Info */}
               {!loading && selectedProductData ? (
@@ -215,9 +279,6 @@ const LandingPage = ({ collectionHandle = 'featured-products', maxProducts = 4 }
                       </div>
                     )}
                   </div>
-
-                  {/* Product short description if available */}
-                  <p className="text-base text-gray-600 line-clamp-2">Free shipping on orders over $50</p>
                 </div>
               ) : (
                 <p

@@ -213,12 +213,6 @@ export default function Pagination({
         <span className="hidden sm:inline">Next</span>
         <ChevronRight className="w-4 h-4" />
       </button>
-
-      {/* Pagination type indicator */}
-      <div className="ml-4 text-xs text-gray-500 hidden lg:block">
-        {isClientSide ? 'Client-side pagination' : 'Server-side pagination'}
-        {pageInfo && !isClientSide && <span className="ml-2">(Cursor-based)</span>}
-      </div>
     </div>
   );
 }

@@ -5,27 +5,15 @@ import { useState } from 'react';
 import { Button } from '../ui';
 
 const WhyUsSection = () => {
-  const [activeTab, setActiveTab] = useState('OUR STORY');
+  const [activeTab, setActiveTab] = useState('MISSION');
 
   const tabs = [
-    {
-      id: 'OUR STORY',
-      label: 'OUR STORY',
-      content: {
-        text1:
-          'Lorem Ipsum Dolor Sit Amet, Consectetur Adipiscing Elit, Sed Do Eiusmod Tempor Incididunt Ut Labore Et Dolore Magna Aliqua. Ut Enim Ad Minim Veniam, Quis Nostrud Exercitation Ullamco Laboris Nisi Ut Aliquip Ex Ea Commodo Consequat. Duis Aute Irure Dolor In Reprehenderit.',
-        text2:
-          'Lorem Ipsum Dolor Sit Amet, Consectetur Adipiscing Elit, Sed Do Eiusmod Tempor Incididunt Ut Labore Et Dolore Magna Aliqua. Ut Enim Ad Minim Veniam, Quis Nostrud Exercitation Ullamco Laboris Nisi Ut Aliquip Ex Ea Commodo Consequat. Duis Aute Irure Dolor In Reprehenderit.',
-      },
-    },
     {
       id: 'MISSION',
       label: 'MISSION',
       content: {
         text1:
-          'Our mission is to provide exceptional quality products that inspire confidence and style. We believe in creating meaningful connections with our customers through authentic experiences.',
-        text2:
-          'We are committed to sustainable practices and ethical sourcing, ensuring that every product we offer meets the highest standards of quality and responsibility.',
+          'A world full of disposable products, Cherries chooses meaning. We believe tech accessories should be more than just functional — they should awaken your senses, enhance your style, and tell a story. A subtle scent that evokes memories. A design that stands out without shouting. And quality that lasts for years. Cherries is building an international lifestyle brand where luxury, sustainability, and identity come together.',
       },
     },
     {
@@ -33,9 +21,7 @@ const WhyUsSection = () => {
       label: 'VISION',
       content: {
         text1:
-          'We envision a world where fashion is accessible, sustainable, and empowering for everyone. Our vision drives us to continuously innovate and lead in our industry.',
-        text2:
-          'Through our dedication to excellence and customer satisfaction, we aim to become the premier destination for quality fashion and lifestyle products.',
+          'We create tech accessories for those who expect more. Phone cases with scent, powerful power banks, premium chargers — every detail is carefully considered. Our products are made to last, with attention to the environment and a sharp sense of style. Cherries is for people who choose quality, character, and a touch of individuality.',
       },
     },
   ];
@@ -49,12 +35,12 @@ const WhyUsSection = () => {
           {/* Left Content */}
           <div className="space-y-8">
             {/* Title */}
-            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 tracking-tight">WHY US</h2>
+            <h2 className="text-4xl lg:text-5xl font-bold font-bungee text-gray-900 tracking-tight">WHY US</h2>
 
             {/* Tabs */}
             <div className="flex flex-wrap gap-2">
               {tabs.map((tab) => (
-                <button
+                <Button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={`px-4 py-2 text-sm font-medium transition-colors duration-200 ${
@@ -62,7 +48,7 @@ const WhyUsSection = () => {
                   }`}
                 >
                   {tab.label}
-                </button>
+                </Button>
               ))}
             </div>
 
@@ -76,7 +62,7 @@ const WhyUsSection = () => {
             {/* Shop Now Button */}
             <div className="pt-4">
               <Link href="/products">
-                <Button className="text-white px-6 py-3" showArrow>
+                <Button className="text-white px-12 py-3" showArrow>
                   Shop Now
                 </Button>
               </Link>

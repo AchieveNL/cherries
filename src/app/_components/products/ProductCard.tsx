@@ -6,6 +6,8 @@ import { CheckCircle, Heart, Package, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
+// Import analytics
+import { trackAddToCart } from '@/lib/analytics';
 import { CartIcon, PlusIcon } from '../icons/shared';
 import { useWishlist } from '../layout/context/wishList';
 
@@ -24,7 +26,7 @@ export default function ProductCard({ product, viewMode = 'grid', newProductDays
 
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-  const { status, totalQuantity } = useCart();
+  const { status, totalQuantity, id: cartId } = useCart();
   const [previousTotalQuantity, setPreviousTotalQuantity] = useState(0);
 
   // Wishlist integration
@@ -161,6 +163,27 @@ export default function ProductCard({ product, viewMode = 'grid', newProductDays
 
     // Detect successful addition by quantity increase
     if (status === 'idle' && totalQuantity !== undefined && totalQuantity > previousTotalQuantity && isAddingToCart) {
+      console.log('✅ ProductCard: Item added to cart successfully');
+
+      // Track add to cart analytics
+      if (product && firstVariant && cartId) {
+        trackAddToCart({
+          cartId,
+          product: {
+            id: product.id || '',
+            title: product.title || '',
+            price: firstVariant.price?.amount || '0',
+            quantity: 1, // ProductCard always adds 1 item
+            variantId: firstVariant.id || '',
+            variantTitle: firstVariant.title || '',
+            vendor: product.vendor || '',
+            productType: product.productType || '',
+            sku: firstVariant.sku || '',
+          },
+          totalValue: parseFloat(firstVariant.price?.amount || '0'),
+        });
+      }
+
       setIsAddingToCart(false);
       setShowSuccessMessage(true);
       setPreviousTotalQuantity(totalQuantity);
@@ -174,7 +197,7 @@ export default function ProductCard({ product, viewMode = 'grid', newProductDays
     if (status === 'idle' && isAddingToCart && totalQuantity === previousTotalQuantity) {
       setIsAddingToCart(false);
     }
-  }, [status, totalQuantity, previousTotalQuantity, isAddingToCart]);
+  }, [status, totalQuantity, previousTotalQuantity, isAddingToCart, product, firstVariant, cartId]);
 
   const isOnSale =
     firstVariant?.compareAtPrice &&
@@ -228,6 +251,13 @@ export default function ProductCard({ product, viewMode = 'grid', newProductDays
   // Product URL for navigation
   const productUrl = `/products/${product.handle}`;
 
+  // Handle Add to Cart click with analytics
+  const handleAddToCartClick = () => {
+    console.log('🔵 ProductCard: Add to cart clicked - setting loading state');
+    setIsAddingToCart(true);
+    setShowSuccessMessage(false);
+  };
+
   // LIST VIEW LAYOUT
   if (viewMode === 'list') {
     return (
@@ -249,7 +279,7 @@ export default function ProductCard({ product, viewMode = 'grid', newProductDays
                   alt={firstImage.altText || product.title || 'Product Image'}
                   width={firstImage.width || 192}
                   height={firstImage.height || 192}
-                  className={`w-full h-full scale-150 object-contain group-hover:scale-105 transition-all duration-300 ${
+                  className={`w-full h-full scale-105 object-contain  transition-all duration-300 ${
                     hasVideo && isHovered ? 'opacity-0' : 'opacity-100'
                   }`}
                   sizes="192px"
@@ -316,7 +346,7 @@ export default function ProductCard({ product, viewMode = 'grid', newProductDays
                     handleWishlistToggle();
                   }}
                   disabled={wishlistLoading}
-                  className="p-3 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed pointer-events-auto"
+                  className="p-3  transition-colors disabled:opacity-50 disabled:cursor-not-allowed pointer-events-auto"
                   aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
                 >
                   <Heart
@@ -392,15 +422,13 @@ export default function ProductCard({ product, viewMode = 'grid', newProductDays
                       variantId={firstVariant.id}
                       quantity={1}
                       disabled={!firstVariant?.availableForSale || isAddingToCart}
-                      onClick={(e) => {
-                        setIsAddingToCart(true);
-                        setShowSuccessMessage(false);
-                      }}
-                      className="group relative"
+                      onClick={handleAddToCartClick}
+                      className="group/button relative"
                     >
                       <div
                         className={`
-          flex items-center justify-center space-x-1 h-8 px-3 rounded-lg font-medium
+          flex items-center justify-center space-x-1 h-10 px-6   font-medium
+font-roboto
           transition-all duration-200 ease-in-out
           ${
             !firstVariant?.availableForSale
@@ -419,12 +447,12 @@ export default function ProductCard({ product, viewMode = 'grid', newProductDays
                         ) : showSuccessMessage ? (
                           <CheckCircle className="w-5 h-5 text-secondary animate-in fade-in-0 zoom-in-75 duration-300" />
                         ) : (
-                          <>
-                            <CartIcon />
-                            <PlusIcon />
-                          </>
+                          <>Add To Cart</>
                         )}
                       </div>
+
+                      {/* Shimmer animation overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/button:translate-x-full transition-transform duration-700 ease-out"></div>
                     </AddToCartButton>
                   ) : (
                     <div className="flex items-center justify-center h-8 px-3 rounded-lg bg-gray-100 text-gray-500 border border-gray-200 cursor-not-allowed">
@@ -532,7 +560,7 @@ export default function ProductCard({ product, viewMode = 'grid', newProductDays
                 handleWishlistToggle();
               }}
               disabled={wishlistLoading}
-              className="p-3 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed pointer-events-auto"
+              className="p-3  transition-colors disabled:opacity-50 disabled:cursor-not-allowed pointer-events-auto"
               aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
             >
               <Heart
@@ -572,58 +600,10 @@ export default function ProductCard({ product, viewMode = 'grid', newProductDays
             <Link href={productUrl} className="hover:text-primary transition-colors">
               {product.title}
             </Link>
-
-            {/* Action Button Section */}
-            <div className="flex flex-col gap-2">
-              {firstVariant?.id ? (
-                <AddToCartButton
-                  variantId={firstVariant.id}
-                  quantity={1}
-                  disabled={!firstVariant?.availableForSale || isAddingToCart}
-                  onClick={(e) => {
-                    setIsAddingToCart(true);
-                    setShowSuccessMessage(false);
-                  }}
-                  className="group relative"
-                >
-                  <div
-                    className={`
-          flex items-center justify-center space-x-1 h-8 px-3 rounded-lg font-medium
-          transition-all duration-200 ease-in-out
-          ${
-            !firstVariant?.availableForSale
-              ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-              : isAddingToCart
-                ? 'bg-primary/90 text-white cursor-wait'
-                : 'bg-primary text-white hover:bg-primary/90 hover:shadow-md active:scale-95'
-          }
-          focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
-        `}
-                  >
-                    {isAddingToCart ? (
-                      <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
-                    ) : !firstVariant?.availableForSale ? (
-                      <Package className="w-5 h-5" />
-                    ) : showSuccessMessage ? (
-                      <CheckCircle className="w-5 h-5 text-secondary animate-in fade-in-0 zoom-in-75 duration-300" />
-                    ) : (
-                      <>
-                        <CartIcon />
-                        <PlusIcon />
-                      </>
-                    )}
-                  </div>
-                </AddToCartButton>
-              ) : (
-                <div className="flex items-center justify-center h-8 px-3 rounded-lg bg-gray-100 text-gray-500 border border-gray-200 cursor-not-allowed">
-                  <Package className="w-4 h-4" />
-                </div>
-              )}
-            </div>
           </h3>
 
           {/* Price */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center justify-between space-x-2">
             {firstVariant?.price?.amount && (
               <>
                 <ProductPrice
@@ -641,6 +621,54 @@ export default function ProductCard({ product, viewMode = 'grid', newProductDays
                 )}
               </>
             )}
+
+            {/* Action Button Section */}
+            <div className="flex flex-col gap-2">
+              {firstVariant?.id ? (
+                <AddToCartButton
+                  variantId={firstVariant.id}
+                  quantity={1}
+                  disabled={!firstVariant?.availableForSale || isAddingToCart}
+                  onClick={handleAddToCartClick}
+                  className="group/button relative"
+                >
+                  <div
+                    className={`
+          flex items-center justify-center space-x-1 h-8 px-3 rounded-lg font-medium
+          transition-all duration-200 ease-in-out
+          ${
+            !firstVariant?.availableForSale
+              ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+              : isAddingToCart
+                ? 'bg-primary/90 text-white cursor-wait'
+                : 'bg-primary text-white  hover:shadow-md active:scale-95'
+          }
+          focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
+        `}
+                  >
+                    {isAddingToCart ? (
+                      <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                    ) : !firstVariant?.availableForSale ? (
+                      <Package className="w-5 h-5" />
+                    ) : showSuccessMessage ? (
+                      <CheckCircle className="w-5 h-5 text-secondary animate-in fade-in-0 zoom-in-75 duration-300" />
+                    ) : (
+                      <>
+                        <CartIcon />
+                        <PlusIcon />
+                      </>
+                    )}
+                  </div>
+
+                  {/* Shimmer animation overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/button:translate-x-full transition-transform duration-700 ease-out"></div>
+                </AddToCartButton>
+              ) : (
+                <div className="flex items-center justify-center h-8 px-3 rounded-lg bg-gray-100 text-gray-500 border border-gray-200 cursor-not-allowed">
+                  <Package className="w-4 h-4" />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

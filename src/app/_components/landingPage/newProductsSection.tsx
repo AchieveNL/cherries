@@ -4,7 +4,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
-import { getProducts } from '@/lib/shopify'; // Adjust the import path as needed
 import BitBackground from '../animation/BitBackground';
 import { Button } from '../ui';
 
@@ -14,6 +13,12 @@ interface Product {
   image: string;
   alt: string;
   handle: string;
+}
+
+interface ApiResponse {
+  success: boolean;
+  products: Product[];
+  error?: string;
 }
 
 // Skeleton component for loading state
@@ -63,27 +68,28 @@ const LatestProducts = () => {
     const fetchLatestProducts = async () => {
       try {
         setLoading(true);
-        const response = await getProducts({
-          first: 3, // Get 3 latest products
-          sortKey: 'CREATED_AT',
-          reverse: true, // Most recent first
-        });
+        setError(null);
 
-        // Transform the data to match your component structure
-        const transformedProducts: Product[] = response.products.slice(0, 3).map((product, index) => ({
-          id: product.id || `product-${index}`,
-          title: product.title || product.title?.split(' ')[0]?.toUpperCase() || `PRODUCT ${index + 1}`,
-          image: product.featuredImage?.url || product.images?.nodes?.[0]?.url || '/placeholder-image.jpg',
-          alt:
-            product.featuredImage?.altText || product.images?.nodes?.[0]?.altText || product.title || 'Product image',
-          handle: product.handle || `product-${index}`,
-        }));
+        const response = await fetch('/api/products/latest?limit=3');
 
-        setProducts(transformedProducts);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data: ApiResponse = await response.json();
+
+        if (data.success) {
+          setProducts(data.products);
+        } else {
+          // API returned fallback data due to an error
+          setError(data.error || 'Failed to fetch products');
+          setProducts(data.products); // Still use the fallback products
+        }
       } catch (err: any) {
         console.error('Error fetching latest products:', err);
         setError(err.message);
-        // Fallback to static data if API fails
+
+        // Client-side fallback as last resort
         const fallbackProducts: Product[] = [
           {
             id: '1',
@@ -133,7 +139,11 @@ const LatestProducts = () => {
         {/* Error State */}
         {error && !loading && (
           <div className="text-center py-8">
-            <p className="text-primary text-lg">Failed to load products. Showing fallback content.</p>
+            <p className="text-primary text-lg">
+              {products.length > 0
+                ? 'Using cached content due to API issues.'
+                : 'Failed to load products. Please try again later.'}
+            </p>
           </div>
         )}
 

@@ -20,11 +20,18 @@ import type {
   ShopifyPageViewPayload,
 } from '@shopify/hydrogen-react';
 
+function formatShopId(shopId: string): string {
+  if (shopId.startsWith('gid://shopify/Shop/')) {
+    return shopId;
+  }
+  return `gid://shopify/Shop/${shopId}`;
+}
+
 // Configuration
 const SHOPIFY_CONFIG = {
   storeDomain: process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN || '',
-  shopId: process.env.NEXT_PUBLIC_SHOPIFY_SHOP_ID || '', // Required: gid://shopify/Shop/<id>
-  storefrontId: process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ID || '',
+  shopId: formatShopId(process.env.NEXT_PUBLIC_SHOPIFY_SHOP_ID || ''),
+  storefrontId: process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN_FRONT || '',
 };
 
 // Get browser parameters for analytics

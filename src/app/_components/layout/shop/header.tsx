@@ -774,7 +774,7 @@ export function Header() {
               >
                 <Heart className="w-6 h-6 hover:text-primary hover:fill-primary  transition-colors" />
                 {wishlistCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-primary text-white text-xs w-5 h-5 flex items-center justify-center font-medium">
+                  <span className="absolute -top-1 -right-1 bg-primary text-white text-xs w-4 h-4 flex items-center justify-center font-medium">
                     {wishlistCount > 99 ? '99+' : wishlistCount}
                   </span>
                 )}
@@ -791,7 +791,7 @@ export function Header() {
               >
                 <ShoppingIcon className="w-6 h-6 hover:text-primary  transition-colors" />
                 {cartItemCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-primary text-white text-xs w-5 h-5 flex items-center justify-center font-medium">
+                  <span className="absolute -top-1 -right-1 bg-primary text-white text-xs w-4 h-4 flex items-center justify-center font-medium">
                     {cartItemCount > 99 ? '99+' : cartItemCount}
                   </span>
                 )}
@@ -1003,7 +1003,6 @@ function CartSlideout({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
           {status === 'updating' || status === 'creating' ? (
             <div className="flex-1 flex items-center justify-center">
               <div className="flex flex-col items-center space-y-3">
-                <div className="animate-spin h-8 w-8 border-b-2 border-primary"></div>
                 <p className="text-sm text-gray-600">Updating cart...</p>
               </div>
             </div>
@@ -1012,12 +1011,8 @@ function CartSlideout({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
               <ShoppingCart className="w-16 h-16 text-gray-300 mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Your cart is empty</h3>
               <p className="text-gray-600 text-center mb-6">Find the perfect case for your phone</p>
-              <Link
-                href="/products"
-                onClick={onClose}
-                className="bg-primary text-white px-6 py-3 transition-all duration-200 font-semibold shadow-lg"
-              >
-                Shop Now
+              <Link href="/products">
+                <Button className=" px-6 py-3">Shop Now</Button>
               </Link>
             </div>
           ) : (

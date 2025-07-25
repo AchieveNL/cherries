@@ -12,6 +12,7 @@ export default function Home() {
   return (
     <main className="bg-white">
       <HeroSection />
+
       <CollectionSection collectionHandle="phone-cases" maxProducts={4} />
       <NewestProductSection />
       <CategoriesSection />

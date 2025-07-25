@@ -7,6 +7,7 @@ import { useMemo, useState } from 'react';
 
 import { ProductCard } from '@/app/_components/products';
 import { EmptyState, Pagination } from '@/app/_components/ui';
+import { useCollectionViewTracking } from '@/hooks/useAnalytics';
 import { useProductFilters } from '@/hooks/useFilters';
 import { useUrlFilters } from '@/hooks/useUrlFilters';
 import { FilterState } from '@/types';
@@ -34,6 +35,7 @@ export default function CollectionPage({
 }: CollectionPageProps) {
   const router = useRouter();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  useCollectionViewTracking(collection);
 
   // Initial filter state - useMemo to prevent recreation on every render
   const initialFilters: FilterState = useMemo(
@@ -118,36 +120,45 @@ export default function CollectionPage({
           </nav>
 
           {/* Collection Hero */}
-          <div className="bg-white  overflow-hidden shadow-sm border border-gray-100 mb-8">
-            <div className="relative h-48 md:h-64 lg:h-80">
-              {collection.image?.url ? (
-                <Image
-                  src={collection.image.url}
-                  alt={collection.image.altText || collection.title || 'Collection'}
-                  width={collection.image.width || 1200}
-                  height={collection.image.height || 600}
-                  className="w-full h-full object-cover"
-                  sizes="100vw"
-                />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                  <div className="text-center">
-                    <Filter className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                    <h2 className="text-2xl font-bungee font-bold text-gray-600">{collection.title}</h2>
+          <div className="bg-white overflow-hidden shadow-sm border border-gray-100 mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[300px] md:min-h-[400px]">
+              {/* Left - Image */}
+              <div className="relative overflow-hidden">
+                {collection.image?.url ? (
+                  <Image
+                    src={collection.image.url}
+                    alt={collection.image.altText || collection.title || 'Collection'}
+                    width={collection.image.width || 800}
+                    height={collection.image.height || 600}
+                    className="w-full h-full object-cover"
+                    sizes="(min-width: 1024px) 50vw, 100vw"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                    <div className="text-center">
+                      <Filter className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                      <p className="text-lg font-medium text-gray-500">Collection Image</p>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
 
-              {/* Overlay Content */}
-              <div className="absolute inset-0 bg-black bg-opacity-30 flex items-end">
-                <div className="p-6 md:p-8 text-white w-full">
-                  <h1 className="text-3xl font-bungee md:text-4xl lg:text-5xl font-bold mb-2">{collection.title}</h1>
-                  <p className="text-lg opacity-90 mb-4 max-w-2xl">
-                    {collection.description || `Discover our curated ${collection.title?.toLowerCase()} collection`}
+              {/* Right - Text Content */}
+              <div className="flex flex-col bg-black text-center justify-center p-8 md:p-12 lg:p-16">
+                <div className="max-w-xl">
+                  <h1 className="text-3xl mb-8 font-bungee md:text-4xl lg:text-[59px] font-bold text-white leading-tight">
+                    {collection.title}
+                  </h1>
+
+                  <hr className="border-primary w-[164px] h[6px] mx-auto border-2" />
+                  <p className="text-2xl text-white mt-2 mb-6 leading-relaxed">
+                    {collection.description ||
+                      `Discover our curated ${collection.title?.toLowerCase()} collection featuring carefully selected products that define quality and style.`}
                   </p>
-                  <div className="flex items-center space-x-4 text-sm">
-                    <span className="bg-white bg-opacity-20 px-3 py-1  backdrop-blur-sm">
-                      {totalProducts} {totalProducts === 1 ? 'Product' : 'Products'}
+
+                  <div className="flex justify-center items-center space-x-4 mb-6">
+                    <span className="bg-primary text-white px-4 py-2 text-xl lg:text-2xl font-medium">
+                      {totalProducts} {totalProducts === 1 ? 'PRODUCT' : 'PRODUCTS'}
                     </span>
                   </div>
                 </div>
