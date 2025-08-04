@@ -394,7 +394,7 @@ function ProductContent() {
                 <AddToCartButton
                   variantId={selectedVariant?.id || ''}
                   quantity={quantity}
-                  className="w-2/3 bg-primary text-white py-4 px-8 transition-all duration-300 font-bold text-lg disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:transform-none"
+                  className="w-2/3 relative group/button bg-primary text-white py-4 px-8 transition-all duration-300 font-bold text-lg disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:transform-none"
                   disabled={!selectedVariant?.availableForSale || isAddingToCart}
                   onClick={() => {
                     console.log('🔵 Add to cart clicked - setting loading state');
@@ -419,6 +419,8 @@ function ProductContent() {
                   ) : (
                     'Out of Stock'
                   )}
+
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/button:translate-x-full transition-transform duration-700 ease-out"></div>
                 </AddToCartButton>
 
                 {/* Success Message */}

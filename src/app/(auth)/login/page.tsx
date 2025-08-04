@@ -135,7 +135,7 @@ function LoginContent() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className="appearance-none  relative block w-full px-3 py-3 pl-10 border border-solid border-gray-300 placeholder-gray-100 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+                className="appearance-none  relative block w-full px-3 py-3 pl-10 border border-solid border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
                 placeholder="your-email@example.com"
                 disabled={loginLoading}
               />

@@ -7,12 +7,12 @@ export interface CustomerToken {
 }
 
 export enum EmailMarketingState {
-  INVALIDE,
-  NOT_SUBSCRIBED,
-  PENDING,
-  REDACTED,
-  SUBSCRIBED,
-  UNSUBSCRIBED,
+  INVALID = 'INVALID',
+  NOT_SUBSCRIBED = 'NOT_SUBSCRIBED',
+  PENDING = 'PENDING',
+  REDACTED = 'REDACTED',
+  SUBSCRIBED = 'SUBSCRIBED',
+  UNSUBSCRIBED = 'UNSUBSCRIBED',
 }
 export interface CustomerAccessToken {
   accessToken: string;

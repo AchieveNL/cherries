@@ -256,12 +256,9 @@ const DELETE_ADDRESS_MUTATION = `#graphql
 const EMAIL_MARKETING_SUBSCRIBE_MUTATION = `#graphql
   mutation CustomerEmailMarketingSubscribe {
     customerEmailMarketingSubscribe {
-      customer {
-        id
-        emailAddress {
-          emailAddress
-          marketingState
-        }
+      emailAddress {
+        emailAddress
+        marketingState
       }
       userErrors {
         field
@@ -275,12 +272,9 @@ const EMAIL_MARKETING_SUBSCRIBE_MUTATION = `#graphql
 const EMAIL_MARKETING_UNSUBSCRIBE_MUTATION = `#graphql
   mutation CustomerEmailMarketingUnsubscribe {
     customerEmailMarketingUnsubscribe {
-      customer {
-        id
-        emailAddress {
-          emailAddress
-          marketingState
-        }
+      emailAddress {
+        emailAddress
+        marketingState
       }
       userErrors {
         field
@@ -323,7 +317,7 @@ class CustomerAPI {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `${accessToken}`,
         Origin: process.env.NEXT_PUBLIC_APP_URL || (typeof window !== 'undefined' ? window.location.origin : ''),
         'User-Agent': 'NextJS-CustomerAccount/1.0',
         Accept: 'application/json',
@@ -528,12 +522,9 @@ class CustomerAPI {
 
       const data = await this.request<{
         customerEmailMarketingSubscribe: {
-          customer: {
-            id: string;
-            emailAddress: {
-              emailAddress: string;
-              marketingState: string;
-            } | null;
+          emailAddress: {
+            emailAddress: string;
+            marketingState: string;
           } | null;
           userErrors: Array<{ field: string[]; message: string; code: string }>;
         };
@@ -547,7 +538,7 @@ class CustomerAPI {
         throw new Error(errorMessage);
       }
 
-      const marketingState = data.customerEmailMarketingSubscribe.customer?.emailAddress?.marketingState;
+      const marketingState = data.customerEmailMarketingSubscribe.emailAddress?.marketingState;
       console.log('Email marketing subscription result:', marketingState);
 
       return {
@@ -566,12 +557,9 @@ class CustomerAPI {
 
       const data = await this.request<{
         customerEmailMarketingUnsubscribe: {
-          customer: {
-            id: string;
-            emailAddress: {
-              emailAddress: string;
-              marketingState: string;
-            } | null;
+          emailAddress: {
+            emailAddress: string;
+            marketingState: string;
           } | null;
           userErrors: Array<{ field: string[]; message: string; code: string }>;
         };
@@ -585,7 +573,7 @@ class CustomerAPI {
         throw new Error(errorMessage);
       }
 
-      const marketingState = data.customerEmailMarketingUnsubscribe.customer?.emailAddress?.marketingState;
+      const marketingState = data.customerEmailMarketingUnsubscribe.emailAddress?.marketingState;
       console.log('Email marketing unsubscription result:', marketingState);
 
       return {

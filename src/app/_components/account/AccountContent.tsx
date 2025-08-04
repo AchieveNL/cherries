@@ -527,7 +527,7 @@ function AccountContent() {
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center space-x-4">
               {profile.imageUrl && profile.imageUrl.length > 0 && (
-                <div className="relative h-12 w-12 rounded-full overflow-hidden">
+                <div className="relative h-12 w-12  overflow-hidden">
                   <Image src={profile.imageUrl} alt="Profile" fill className="object-cover" />
                 </div>
               )}
@@ -538,7 +538,7 @@ function AccountContent() {
             </div>
             <div className="flex items-center space-x-4">
               {getTotalStoreCredit() > 0 && (
-                <div className="bg-green-50 border border-green-200 rounded-md px-3 py-2">
+                <div className="bg-green-50 border border-green-200  px-3 py-2">
                   <div className="flex items-center space-x-2">
                     <Wallet className="h-4 w-4 text-green-600" />
                     <span className="text-sm font-medium text-green-800">
@@ -555,7 +555,7 @@ function AccountContent() {
               </button>
               <button
                 onClick={handleLogout}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                className="inline-flex items-center px-4 py-2 border border-gray-300  shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 Sign Out
@@ -568,9 +568,7 @@ function AccountContent() {
       {/* Success/Error Messages */}
       {(error || success) && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-          <div
-            className={`border rounded-md p-4 ${success ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}
-          >
+          <div className={`border  p-4 ${success ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
             <div className="flex">
               <AlertCircle className={`h-5 w-5 ${success ? 'text-green-400' : 'text-red-400'}`} />
               <div className="ml-3">
@@ -606,7 +604,7 @@ function AccountContent() {
                 <button
                   key={item.id}
                   onClick={() => handleTabChange(item.id as TabType)}
-                  className={`w-full text-left group rounded-md px-3 py-2 flex items-center text-sm font-medium ${
+                  className={`w-full text-left group  px-3 py-2 flex items-center text-sm font-medium ${
                     activeTab === item.id
                       ? 'bg-white text-primary border border-primary'
                       : 'text-text hover:text-white hover:bg-primary'
@@ -615,7 +613,7 @@ function AccountContent() {
                   <item.icon className="h-5 w-5 mr-3" />
                   {item.label}
                   {item.count !== null && item.count > 0 && (
-                    <span className="ml-auto bg-white text-primary rounded-full text-xs px-2 py-1">{item.count}</span>
+                    <span className="ml-auto bg-white text-primary  text-xs px-2 py-1">{item.count}</span>
                   )}
                 </button>
               ))}
@@ -626,14 +624,14 @@ function AccountContent() {
           <div className="space-y-6 sm:px-6 lg:px-0 lg:col-span-9">
             {/* Profile Tab */}
             {activeTab === 'profile' && (
-              <div className="bg-white shadow rounded-lg">
+              <div className="bg-white shadow ">
                 <div className="px-4 py-5 sm:p-6">
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg leading-6 font-medium text-gray-900">Profile Information</h3>
                     <button
                       onClick={() => setEditingProfile(!editingProfile)}
                       disabled={profileUpdating}
-                      className="inline-flex items-center px-3 py-2 border border-primary shadow-sm text-sm leading-4 font-medium rounded-md text-white bg-primary hover:bg-primary/90 disabled:opacity-50"
+                      className="inline-flex items-center px-3 py-2 border border-primary shadow-sm text-sm leading-4 font-medium  text-white bg-primary hover:bg-primary/90 disabled:opacity-50"
                     >
                       <Edit className="h-4 w-4 mr-2" />
                       {editingProfile ? 'Cancel' : 'Edit'}
@@ -642,7 +640,7 @@ function AccountContent() {
 
                   {editingProfile ? (
                     <div className="space-y-4">
-                      <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-4">
+                      <div className="bg-blue-50 border border-blue-200  p-3 mb-4">
                         <p className="text-sm text-blue-700">
                           <strong>Note:</strong> Only name fields can be updated. Email and phone updates require
                           separate verification processes.
@@ -656,7 +654,7 @@ function AccountContent() {
                             type="text"
                             value={profileForm.firstName || ''}
                             onChange={(e) => setProfileForm((prev) => ({ ...prev, firstName: e.target.value }))}
-                            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
+                            className="mt-1 block w-full border-gray-300  shadow-sm focus:ring-primary focus:border-primary"
                             disabled={profileUpdating}
                           />
                         </div>
@@ -666,27 +664,27 @@ function AccountContent() {
                             type="text"
                             value={profileForm.lastName || ''}
                             onChange={(e) => setProfileForm((prev) => ({ ...prev, lastName: e.target.value }))}
-                            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
+                            className="mt-1 block w-full border-gray-300  shadow-sm focus:ring-primary focus:border-primary"
                             disabled={profileUpdating}
                           />
                         </div>
                       </div>
                       <div className="flex justify-end space-x-3">
-                        <Button
+                        <button
                           onClick={() => setEditingProfile(false)}
                           disabled={profileUpdating}
-                          className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                          className="px-4 py-2 border border-gray-300  text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                         >
                           Cancel
-                        </Button>
-                        <Button
+                        </button>
+                        <button
                           onClick={handleUpdateProfile}
                           disabled={profileUpdating}
-                          className="px-4 py-2 bg-primary border border-transparent rounded-md text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50 flex items-center"
+                          className="px-4 py-2 bg-primary border border-transparent  text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50 flex items-center"
                         >
                           {profileUpdating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                           {profileUpdating ? 'Saving...' : 'Save Changes'}
-                        </Button>
+                        </button>
                       </div>
                     </div>
                   ) : (
@@ -735,7 +733,7 @@ function AccountContent() {
                               {profile.tags.map((tag, index) => (
                                 <span
                                   key={index}
-                                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                                  className="inline-flex items-center px-2.5 py-0.5  text-xs font-medium bg-red-100 text-primary-800"
                                 >
                                   {tag}
                                 </span>
@@ -752,7 +750,7 @@ function AccountContent() {
 
             {/* Addresses Tab */}
             {activeTab === 'addresses' && (
-              <div className="bg-white shadow rounded-lg">
+              <div className="bg-white shadow ">
                 <div className="px-4 py-5 sm:p-6">
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg leading-6 font-medium text-gray-900">Shipping Addresses</h3>
@@ -763,7 +761,7 @@ function AccountContent() {
                         setViewingAddressId(null);
                         setAddressForm({});
                       }}
-                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90"
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium  text-white bg-primary hover:bg-primary/90"
                     >
                       <Plus className="h-4 w-4 mr-2" />
                       Add Address
@@ -772,7 +770,7 @@ function AccountContent() {
 
                   {/* Address Form */}
                   {showAddressForm && (
-                    <div className="mb-6 p-4 border border-gray-200 rounded-md bg-gray-50">
+                    <div className="mb-6 p-4 border border-gray-200  bg-gray-50">
                       <div className="flex justify-between items-center mb-4">
                         <h4 className="text-md font-medium text-gray-900">
                           {editingAddressId ? 'Edit Address' : 'Add New Address'}
@@ -790,7 +788,7 @@ function AccountContent() {
                             type="text"
                             value={addressForm.firstName || ''}
                             onChange={(e) => setAddressForm((prev) => ({ ...prev, firstName: e.target.value }))}
-                            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
+                            className="mt-1 block w-full border-gray-300  shadow-sm focus:ring-primary focus:border-primary"
                             disabled={addressLoading}
                           />
                         </div>
@@ -802,7 +800,7 @@ function AccountContent() {
                             type="text"
                             value={addressForm.lastName || ''}
                             onChange={(e) => setAddressForm((prev) => ({ ...prev, lastName: e.target.value }))}
-                            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
+                            className="mt-1 block w-full border-gray-300  shadow-sm focus:ring-primary focus:border-primary"
                             disabled={addressLoading}
                           />
                         </div>
@@ -812,7 +810,7 @@ function AccountContent() {
                             type="text"
                             value={addressForm.company || ''}
                             onChange={(e) => setAddressForm((prev) => ({ ...prev, company: e.target.value }))}
-                            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
+                            className="mt-1 block w-full border-gray-300  shadow-sm focus:ring-primary focus:border-primary"
                             disabled={addressLoading}
                           />
                         </div>
@@ -824,7 +822,7 @@ function AccountContent() {
                             type="text"
                             value={addressForm.address1 || ''}
                             onChange={(e) => setAddressForm((prev) => ({ ...prev, address1: e.target.value }))}
-                            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
+                            className="mt-1 block w-full border-gray-300  shadow-sm focus:ring-primary focus:border-primary"
                             disabled={addressLoading}
                           />
                         </div>
@@ -834,7 +832,7 @@ function AccountContent() {
                             type="text"
                             value={addressForm.address2 || ''}
                             onChange={(e) => setAddressForm((prev) => ({ ...prev, address2: e.target.value }))}
-                            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
+                            className="mt-1 block w-full border-gray-300  shadow-sm focus:ring-primary focus:border-primary"
                             disabled={addressLoading}
                           />
                         </div>
@@ -846,7 +844,7 @@ function AccountContent() {
                             type="text"
                             value={addressForm.city || ''}
                             onChange={(e) => setAddressForm((prev) => ({ ...prev, city: e.target.value }))}
-                            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
+                            className="mt-1 block w-full border-gray-300  shadow-sm focus:ring-primary focus:border-primary"
                             disabled={addressLoading}
                           />
                         </div>
@@ -863,7 +861,7 @@ function AccountContent() {
                               }))
                             }
                             placeholder="e.g., California, Ontario"
-                            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
+                            className="mt-1 block w-full border-gray-300  shadow-sm focus:ring-primary focus:border-primary"
                             disabled={addressLoading}
                           />
                         </div>
@@ -875,7 +873,7 @@ function AccountContent() {
                             type="text"
                             value={addressForm.zip || ''}
                             onChange={(e) => setAddressForm((prev) => ({ ...prev, zip: e.target.value }))}
-                            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
+                            className="mt-1 block w-full border-gray-300  shadow-sm focus:ring-primary focus:border-primary"
                             disabled={addressLoading}
                           />
                         </div>
@@ -886,7 +884,7 @@ function AccountContent() {
                           <select
                             value={addressForm.territoryCode || ''}
                             onChange={handleCountryChange}
-                            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md"
+                            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm "
                             disabled={addressLoading}
                           >
                             <option value="" disabled>
@@ -905,7 +903,7 @@ function AccountContent() {
                             type="tel"
                             value={addressForm.phoneNumber || ''}
                             onChange={(e) => setAddressForm((prev) => ({ ...prev, phoneNumber: e.target.value }))}
-                            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
+                            className="mt-1 block w-full border-gray-300  shadow-sm focus:ring-primary focus:border-primary"
                             disabled={addressLoading}
                           />
                         </div>
@@ -914,14 +912,14 @@ function AccountContent() {
                         <button
                           onClick={resetAddressForm}
                           disabled={addressLoading}
-                          className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                          className="px-4 py-2 border border-gray-300  text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                         >
                           Cancel
                         </button>
                         <button
                           onClick={editingAddressId ? handleUpdateAddress : handleCreateAddress}
                           disabled={addressLoading}
-                          className="px-4 py-2 bg-primary border border-transparent rounded-md text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50 flex items-center"
+                          className="px-4 py-2 bg-primary border border-transparent  text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50 flex items-center"
                         >
                           {addressLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                           {addressLoading ? 'Saving...' : editingAddressId ? 'Update Address' : 'Save Address'}
@@ -932,7 +930,7 @@ function AccountContent() {
 
                   {/* Address Details View */}
                   {viewingAddressId && (
-                    <div className="mb-6 p-4 border border-blue-200 rounded-md bg-blue-50">
+                    <div className="mb-6 p-4 border border-red-200  bg-red-50">
                       <div className="flex justify-between items-center mb-4">
                         <h4 className="text-md font-medium text-gray-900">Address Details</h4>
                         <button onClick={() => setViewingAddressId(null)} className="text-gray-400 hover:text-gray-600">
@@ -975,10 +973,10 @@ function AccountContent() {
                                 </div>
                               )}
                             </div>
-                            <div className="flex justify-end space-x-3 pt-3 border-t border-blue-200">
+                            <div className="flex justify-end space-x-3 pt-3 border-t border-red-200">
                               <button
                                 onClick={() => handleEditAddress(address)}
-                                className="px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-500"
+                                className="px-3 py-2 text-sm font-medium text-primary hover:text-red-500"
                               >
                                 Edit Address
                               </button>
@@ -998,7 +996,7 @@ function AccountContent() {
                   ) : (
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       {addresses.map((address) => (
-                        <div key={address.id} className="border border-gray-200 rounded-md p-4 relative">
+                        <div key={address.id} className="border border-gray-200  p-4 relative">
                           <div className="flex justify-between items-start mb-2">
                             <h4 className="font-medium text-gray-900">
                               {address.firstName} {address.lastName}
@@ -1006,14 +1004,14 @@ function AccountContent() {
                             <div className="flex space-x-2">
                               <button
                                 onClick={() => handleViewAddress(address)}
-                                className="text-blue-600 hover:text-blue-800 text-sm"
+                                className="text-green-600 hover:text-green-800 text-sm"
                                 title="View Details"
                               >
                                 <Eye className="h-4 w-4" />
                               </button>
                               <button
                                 onClick={() => handleEditAddress(address)}
-                                className="text-blue-600 hover:text-blue-800 text-sm"
+                                className="text-green-600 hover:text-green-800 text-sm"
                                 title="Edit"
                               >
                                 <Edit className="h-4 w-4" />
@@ -1038,8 +1036,8 @@ function AccountContent() {
                             {address.phoneNumber && <p>{address.phoneNumber}</p>}
                           </div>
                           {profile.defaultAddress?.id === address.id && (
-                            <div className="absolute top-2 right-2">
-                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            <div className="absolute bottom-2 left-2">
+                              <span className="inline-flex items-center px-2 py-1  text-xs font-medium bg-red-100 text-primary">
                                 <Star className="h-3 w-3 mr-1" />
                                 Default
                               </span>
@@ -1055,7 +1053,7 @@ function AccountContent() {
 
             {/* Orders Tab */}
             {activeTab === 'orders' && (
-              <div className="bg-white shadow rounded-lg">
+              <div className="bg-white shadow ">
                 <div className="px-4 py-5 sm:p-6">
                   <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Order History</h3>
 
@@ -1066,7 +1064,7 @@ function AccountContent() {
                       <p className="mt-1 text-sm text-gray-500">You haven&#39;t placed any orders yet.</p>
                       <Button
                         onClick={() => router.push('/products')}
-                        className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90"
+                        className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium  text-white bg-primary hover:bg-primary/90"
                       >
                         Start Shopping
                       </Button>
@@ -1074,7 +1072,7 @@ function AccountContent() {
                   ) : (
                     <div className="space-y-4">
                       {orders.map((order) => (
-                        <div key={order.id} className="border border-gray-200 rounded-md p-4">
+                        <div key={order.id} className="border border-gray-200  p-4">
                           <div className="flex justify-between items-start mb-3">
                             <div>
                               <h4 className="font-medium text-gray-900">Order #{order.name}</h4>
@@ -1086,7 +1084,7 @@ function AccountContent() {
                               </p>
                               <div className="flex items-center space-x-2 mt-1">
                                 <span
-                                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                  className={`inline-flex items-center px-2.5 py-0.5  text-xs font-medium ${
                                     order.financialStatus === 'PAID'
                                       ? 'bg-green-100 text-green-800'
                                       : 'bg-yellow-100 text-yellow-800'
@@ -1096,7 +1094,7 @@ function AccountContent() {
                                   {order.financialStatus}
                                 </span>
                                 <span
-                                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                  className={`inline-flex items-center px-2.5 py-0.5  text-xs font-medium ${
                                     order.fulfillmentStatus === 'FULFILLED'
                                       ? 'bg-green-100 text-green-800'
                                       : 'bg-gray-100 text-gray-800'
@@ -1117,7 +1115,7 @@ function AccountContent() {
                                 <div key={item.id} className="flex justify-between items-center text-sm">
                                   <div className="flex items-center space-x-3">
                                     {item.image && (
-                                      <div className="relative h-8 w-8 rounded overflow-hidden">
+                                      <div className="relative h-8 w-8  overflow-hidden">
                                         <Image
                                           src={item.image.url}
                                           alt={item.image.altText || item.title}
@@ -1147,7 +1145,7 @@ function AccountContent() {
                               href={order.statusPageUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-500"
+                              className="inline-flex items-center text-sm font-medium text-primary hover:text-red-500"
                             >
                               <Eye className="h-4 w-4 mr-1" />
                               View Order Details
@@ -1163,7 +1161,7 @@ function AccountContent() {
 
             {/* Store Credit Tab */}
             {activeTab === 'store-credit' && (
-              <div className="bg-white shadow rounded-lg">
+              <div className="bg-white shadow ">
                 <div className="px-4 py-5 sm:p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg leading-6 font-medium text-gray-900">Store Credit</h3>
@@ -1182,7 +1180,7 @@ function AccountContent() {
                   ) : (
                     <div className="space-y-6">
                       {storeCreditAccounts.map((account) => (
-                        <div key={account.id} className="border border-gray-200 rounded-md p-4">
+                        <div key={account.id} className="border border-gray-200  p-4">
                           <div className="flex justify-between items-center mb-4">
                             <h4 className="font-medium text-gray-900">Store Credit Account</h4>
                             <span className="text-lg font-bold text-green-600">
@@ -1223,7 +1221,7 @@ function AccountContent() {
 
             {/* Preferences Tab */}
             {activeTab === 'preferences' && (
-              <div className="bg-white shadow rounded-lg">
+              <div className="bg-white shadow ">
                 <div className="px-4 py-5 sm:p-6">
                   <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Account Preferences</h3>
 
@@ -1245,7 +1243,7 @@ function AccountContent() {
                                 )
                               }
                               disabled={marketingLoading}
-                              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer  border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
                                 profile.emailAddress?.marketingState === EmailMarketingState.SUBSCRIBED
                                   ? 'bg-primary'
                                   : 'bg-gray-200'
@@ -1253,7 +1251,7 @@ function AccountContent() {
                             >
                               <span className="sr-only">Toggle marketing emails</span>
                               <span
-                                className={`pointer-events-none relative inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                                className={`pointer-events-none relative inline-block h-5 w-5 transform  bg-white shadow ring-0 transition duration-200 ease-in-out ${
                                   profile.emailAddress?.marketingState === EmailMarketingState.SUBSCRIBED
                                     ? 'translate-x-5'
                                     : 'translate-x-0'
@@ -1293,7 +1291,7 @@ function AccountContent() {
                         <Button
                           onClick={() => loadCustomerData()}
                           disabled={dataLoading}
-                          className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                          className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium  text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                         >
                           {dataLoading ? (
                             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
