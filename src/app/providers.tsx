@@ -5,6 +5,7 @@ import { ReactNode } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
 import { AnalyticsProvider } from './_components/layout/context/AnalyticsProvider';
+import { TrustooProvider } from './_components/layout/context/TrustooProvider';
 import { WishlistProvider } from './_components/layout/context/wishList';
 
 interface ProvidersProps {
@@ -43,9 +44,11 @@ export default function Providers({ children }: ProvidersProps) {
       languageIsoCode="EN"
     >
       <AnalyticsProvider>
-        <CartProviderWithAuth>
-          <WishlistProvider>{children}</WishlistProvider>
-        </CartProviderWithAuth>
+        <TrustooProvider>
+          <CartProviderWithAuth>
+            <WishlistProvider>{children}</WishlistProvider>
+          </CartProviderWithAuth>
+        </TrustooProvider>
       </AnalyticsProvider>
     </ShopifyProvider>
   );

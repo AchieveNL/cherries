@@ -29,6 +29,7 @@ interface CollectionItem {
 interface StaticPage {
   name: string;
   href: string;
+  upperCase?: boolean;
 }
 
 interface Language {
@@ -53,12 +54,20 @@ declare global {
 
 // Static pages array
 const staticPages: StaticPage[] = [
-  { name: 'ABOUT US', href: '/about' },
-  { name: 'FAQs', href: '/faq' },
+  { name: 'ABOUT US', href: '/about', upperCase: true },
+  { name: 'CONTACT', href: '/contact', upperCase: true },
+  { name: 'FAQs', href: '/faq', upperCase: false },
+];
+
+const staticPagesMobile: StaticPage[] = [
+  { name: 'ABOUT US', href: '/about', upperCase: true },
+  { name: 'FAQs', href: '/faq', upperCase: false },
+  { name: 'CONTACT', href: '/contact', upperCase: true },
 ];
 
 const languages: Language[] = [
   { code: 'en', name: 'English', flag: '🇺🇸' },
+  { code: 'nl', name: 'Nederlands', flag: '🇳🇱' },
   { code: 'es', name: 'Español', flag: '🇪🇸' },
   { code: 'fr', name: 'Français', flag: '🇫🇷' },
   { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
@@ -409,13 +418,15 @@ export function LanguageSwitcher() {
         <span className="text-sm">Loading...</span>
         <div className="w-3 h-3 border border-gray-300 border-t-gray-600 rounded-full animate-spin" />
         {/* Debug button in loading state */}
-        <button
-          onClick={handleDebug}
-          className="text-xs px-2 py-1 bg-gray-100 rounded hover:bg-gray-200"
-          title="Debug translation"
-        >
-          DEBUG
-        </button>
+        {process.env.NODE_ENV === 'development' && (
+          <button
+            onClick={handleDebug}
+            className="text-xs px-2 py-1 bg-gray-100 rounded hover:bg-gray-200"
+            title="Debug translation"
+          >
+            DEBUG
+          </button>
+        )}
       </div>
     );
   }
@@ -682,12 +693,12 @@ export function Header() {
           <div className="lg:hidden flex items-center justify-between md:py-3 border-b border-gray-100">
             <LanguageSwitcher />
 
-            <div className="flex items-center space-x-4">
-              {staticPages.map((page) => (
+            <div className="flex text-xs md:text-base items-center space-x-4">
+              {staticPagesMobile.map((page) => (
                 <Link
                   key={page.name}
                   href={page.href}
-                  className="text-black hover:text-primary transition-colors font-medium"
+                  className={` ${page.upperCase ? 'uppercase' : ''} text-black hover:text-primary transition-colors font-medium `}
                 >
                   {page.name}
                 </Link>
@@ -704,7 +715,11 @@ export function Header() {
                 onClick={handleMenuToggle}
                 aria-label="Toggle mobile menu"
               >
-                <Menu className="w-6 h-6 group-hover:text-primary" />
+                {isMenuOpen ? (
+                  <X className="w-6 h-6 group-hover:text-primary" />
+                ) : (
+                  <Menu className="w-6 h-6 group-hover:text-primary" />
+                )}
               </button>
 
               <nav className="hidden lg:flex items-center">
@@ -758,7 +773,7 @@ export function Header() {
                   <Link
                     key={page.name}
                     href={page.href}
-                    className="text-black hover:text-primary transition-colors font-medium "
+                    className={` ${page.upperCase ? 'uppercase' : ''} text-black hover:text-primary transition-colors font-medium `}
                   >
                     {page.name}
                   </Link>
@@ -800,68 +815,48 @@ export function Header() {
           </div>
 
           {/* Mobile Menu */}
-          {isMenuOpen && (
-            <div className="lg:hidden pb-4 border-t border-gray-100 mt-4 pt-4">
-              <nav className="space-y-2">
-                {navItems.map((item) => (
-                  <div key={item.name}>
-                    <a
-                      href={item.href}
-                      className="flex items-center justify-between px-3 py-3 text-gray-700 hover:text-primary transition-all duration-200"
-                    >
-                      <div className="flex items-center space-x-3">
-                        <item.icon />
-                        <span className="font-medium">{item.name}</span>
-                      </div>
-                      {item.hasDropdown && <ChevronDown className="w-4 h-4" />}
-                    </a>
-                    {item.hasDropdown && item.dropdownItems && (
-                      <div className="ml-8 mt-2 space-y-1">
-                        {item.dropdownItems.map((dropdownItem) => (
-                          <a
-                            key={dropdownItem.name}
-                            href={dropdownItem.href}
-                            className="block px-3 py-2 text-sm text-gray-600 hover:text-primary hover:bg-red-50 transition-colors"
-                          >
-                            {dropdownItem.name}
-                          </a>
-                        ))}
-                      </div>
-                    )}
+          <div
+            className={`lg:hidden border-t border-gray-100 overflow-hidden transition-all duration-300 ${
+              isMenuOpen ? 'max-h-screen pb-4 mt-4 pt-4' : 'max-h-0'
+            }`}
+          >
+            <nav className="space-y-2">
+              {navItems.map((item) => (
+                <CollapsibleMenuItem key={item.name} item={item} onItemClick={() => setIsMenuOpen(false)} />
+              ))}
+
+              <div className="border-t border-gray-100 pt-4 mt-4">
+                <Link
+                  href="/wishlist"
+                  className="flex items-center justify-between px-3 py-3 text-gray-700 hover:bg-gradient-to-r hover:text-primary transition-all duration-200"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <div className="flex items-center space-x-3">
+                    <Heart className="w-5 h-5" />
+                    <span className="font-medium">Wishlist</span>
                   </div>
-                ))}
+                  {wishlistCount > 0 && (
+                    <span className="bg-primary text-white text-xs w-5 h-5 flex items-center justify-center font-medium">
+                      {wishlistCount > 99 ? '99+' : wishlistCount}
+                    </span>
+                  )}
+                </Link>
+              </div>
 
-                <div className="border-t border-gray-100 pt-4 mt-4">
-                  <Link
-                    href="/wishlist"
-                    className="flex items-center justify-between px-3 py-3 text-gray-700 hover:bg-gradient-to-r hover:text-primary transition-all duration-200"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <Heart className="w-5 h-5" />
-                      <span className="font-medium">Wishlist</span>
-                    </div>
-                    {wishlistCount > 0 && (
-                      <span className="bg-primary text-white text-xs w-5 h-5 flex items-center justify-center font-medium">
-                        {wishlistCount > 99 ? '99+' : wishlistCount}
-                      </span>
-                    )}
-                  </Link>
-                </div>
-
-                <div className="border-t border-gray-100 pt-4 mt-4">
-                  <Link
-                    href="/account"
-                    className="flex items-center justify-between px-3 py-3 text-gray-700 hover:bg-gradient-to-r hover:text-primary transition-all duration-200"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <AccountIcon className="transition-colors" />
-                      <span className="font-medium">Account</span>
-                    </div>
-                  </Link>
-                </div>
-              </nav>
-            </div>
-          )}
+              <div className="border-t border-gray-100 pt-4 mt-4">
+                <Link
+                  href="/account"
+                  className="flex items-center justify-between px-3 py-3 text-gray-700 hover:bg-gradient-to-r hover:text-primary transition-all duration-200"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <div className="flex items-center space-x-3">
+                    <AccountIcon className="transition-colors" />
+                    <span className="font-medium">Account</span>
+                  </div>
+                </Link>
+              </div>
+            </nav>
+          </div>
         </div>
       </header>
 
@@ -945,7 +940,7 @@ function CartLineItemMini() {
             </CartLineQuantityAdjustButton>
           </div>
 
-          <span className="font-bold text-primary text-sm">${priceAmount.toFixed(2)}</span>
+          <span className="font-bold text-primary text-sm">€{priceAmount.toFixed(2)}</span>
         </div>
       </div>
 
@@ -1057,5 +1052,59 @@ function CartSlideout({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
         </div>
       </div>
     </>
+  );
+}
+function CollapsibleMenuItem({ item, onItemClick }: { item: any; onItemClick: () => void }) {
+  const [isSubmenuOpen, setIsSubmenuOpen] = useState(false);
+
+  const handleMainClick = (e: React.MouseEvent) => {
+    if (item.hasDropdown && item.dropdownItems) {
+      e.preventDefault();
+      setIsSubmenuOpen(!isSubmenuOpen);
+    } else {
+      onItemClick();
+    }
+  };
+
+  const handleSubmenuClick = () => {
+    onItemClick();
+    setIsSubmenuOpen(false);
+  };
+
+  return (
+    <div>
+      <a
+        href={item.href}
+        className="flex items-center justify-between px-3 py-3 text-gray-700 hover:text-primary transition-all duration-200"
+        onClick={handleMainClick}
+      >
+        <div className="flex items-center space-x-3">
+          <item.icon />
+          <span className="font-medium">{item.name}</span>
+        </div>
+        {item.hasDropdown && (
+          <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isSubmenuOpen ? 'rotate-180' : ''}`} />
+        )}
+      </a>
+
+      {item.hasDropdown && item.dropdownItems && (
+        <div
+          className={`ml-8 space-y-1 overflow-hidden transition-all duration-300 ${
+            isSubmenuOpen ? 'max-h-96 mt-2' : 'max-h-0'
+          }`}
+        >
+          {item.dropdownItems.map((dropdownItem: any) => (
+            <a
+              key={dropdownItem.name}
+              href={dropdownItem.href}
+              className="block px-3 py-2 text-sm text-gray-600 hover:text-primary hover:bg-red-50 transition-colors"
+              onClick={handleSubmenuClick}
+            >
+              {dropdownItem.name}
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

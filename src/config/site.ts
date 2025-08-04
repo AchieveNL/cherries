@@ -7,17 +7,16 @@ export const siteConfig = {
 
   // Social Media Links
   social: {
-    instagram: 'https://instagram.com/cherries_tech',
+    instagram: 'https://www.instagram.com/cherriesofficialcom/',
     twitter: 'https://twitter.com/CherriesTech',
     facebook: 'https://facebook.com/CherriesTech',
-    tiktok: 'https://tiktok.com/@cherries_tech',
-    youtube: 'https://youtube.com/@CherriesTech',
+    tiktok: 'https://www.tiktok.com/@cherriesofficial.com',
+    snapchat: 'https://snapchat.com/t/uHFjxXIp',
   },
 
   // Social Media Handles (without @)
   handles: {
     instagram: 'cherries_tech',
-    twitter: 'CherriesTech',
     facebook: 'CherriesTech',
     tiktok: 'cherries_tech',
     youtube: 'CherriesTech',
@@ -25,17 +24,17 @@ export const siteConfig = {
 
   // Contact Information
   contact: {
-    email: 'hello@cherries.com',
-    support: 'support@cherries.com',
-    business: 'business@cherries.com',
+    email: 'info@cherriesofficial.com',
+    support: 'info@cherriesofficial.com',
+    business: 'info@cherries.com',
   },
 
   // Business Information
   business: {
-    locality: 'Your City',
-    region: 'Your State',
-    country: 'Your Country',
-    phone: '+1 (555) 123-4567',
+    locality: 'Rotterdam',
+    region: 'Zuid Holland',
+    country: 'Netherlands',
+    phone: '+31 10 3072618',
   },
 
   // SEO Configuration
@@ -63,9 +62,9 @@ export const siteConfig = {
 
   // Brand Colors
   theme: {
-    primary: '#ff6b6b',
-    secondary: '#4ecdc4',
-    accent: '#45b7d1',
+    primary: '#830016',
+    secondary: '#EFE8DD', // Yellow
+    accent: '#EF4444', // Red
   },
 
   // Verification Codes (replace with actual codes)

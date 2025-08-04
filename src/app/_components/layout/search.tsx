@@ -342,7 +342,7 @@ function SimpleSearchModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                             <div className="flex items-center space-x-2 mt-1">
                               {product.vendor && <span className="text-sm text-gray-500">{product.vendor}</span>}
                               <span className="text-sm font-medium text-text">
-                                ${product.priceRange.minVariantPrice.amount}
+                                €{product.priceRange.minVariantPrice.amount}
                               </span>
                             </div>
                           </div>

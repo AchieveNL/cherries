@@ -27,7 +27,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   try {
     // Parse pagination parameters
     const currentPage = parseInt(searchParams.page || '1', 10);
-    const itemsPerPage = 5;
+    const itemsPerPage = 10;
 
     // Parse and construct filter state from URL parameters
     const filters: FilterState = {

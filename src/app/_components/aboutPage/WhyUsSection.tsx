@@ -1,8 +1,36 @@
+import Lottie from 'lottie-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
+import pixel from '../../../../public/animation/pixel.json';
 import { Button } from '../ui';
+
+// Fixed Hook to observe when element comes into view
+function useInView(threshold = 0.1) {
+  const [isInView, setIsInView] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsInView(entry.isIntersecting);
+      },
+      {
+        threshold,
+        rootMargin: '0px 0px -100px 0px', // Trigger when element is 100px from bottom of viewport
+      }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, [threshold]);
+
+  return { ref, isInView };
+}
 
 const WhyUsSection = () => {
   const [activeTab, setActiveTab] = useState('MISSION');
@@ -28,8 +56,23 @@ const WhyUsSection = () => {
 
   const currentContent = tabs.find((tab) => tab.id === activeTab)?.content;
 
+  const { ref: animationRef, isInView } = useInView(0.1); // Trigger when 10% of element is visible
+  const lottieRef = useRef<any>(null);
+  // Handle Lottie animation based on visibility
+  useEffect(() => {
+    if (lottieRef.current) {
+      if (isInView) {
+        console.log('Element is in view, playing animation');
+        lottieRef.current.play();
+      } else {
+        console.log('Element is out of view, stopping animation');
+        lottieRef.current.stop();
+      }
+    }
+  }, [isInView]);
+
   return (
-    <div className="bg-white py-16 lg:py-24">
+    <div className="bg-white py-16 lg:py-24" ref={animationRef}>
       <div className="max-w-8xl container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left Content */}
@@ -55,8 +98,6 @@ const WhyUsSection = () => {
             {/* Content */}
             <div className="space-y-6">
               <p className="text-text text-base font-medium leading-relaxed">{currentContent?.text1}</p>
-
-              <p className="text-text text-base font-medium leading-relaxed">{currentContent?.text2}</p>
             </div>
 
             {/* Shop Now Button */}
@@ -71,10 +112,22 @@ const WhyUsSection = () => {
 
           {/* Right Image */}
           <div className="relative">
-            <div className="relative w-full h-[708] lg:h-[648px]">
+            <div className="relative z-10 w-full h-[708] lg:h-[648px]">
               <Image src="/about/why-us.webp" alt="Fashion Model" fill className="object-cover " priority />
             </div>
           </div>
+        </div>
+      </div>
+      {/* Hero frame image */}
+      <div className="relative w-full overflow-hidden -translate-y-24 z-0">
+        <div className="w-full  rotate-180 -mt-px">
+          <Lottie
+            lottieRef={lottieRef}
+            animationData={pixel}
+            loop={false}
+            autoplay={false} // Set to false, we'll control it manually
+            className="w-[1000px] md:w-auto  h-auto" // Ensure responsive sizing
+          />
         </div>
       </div>
     </div>

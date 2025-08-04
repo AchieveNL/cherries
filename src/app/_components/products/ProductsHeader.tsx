@@ -1,7 +1,5 @@
 import Image from 'next/image';
 
-import Breadcrumbs from '../layout/Breadcrumbs';
-
 import type { Collection } from '@shopify/hydrogen-react/storefront-api-types';
 import type { PartialDeep } from 'type-fest';
 
@@ -13,8 +11,6 @@ interface ProductsHeaderProps {
 export default function ProductsHeader({ currentCollection }: ProductsHeaderProps) {
   return (
     <div className="mb-8">
-      <Breadcrumbs currentCollection={currentCollection} />
-
       {/* Hero Section */}
       <div className="relative overflow-hidden shadow-2xl mb-8">
         {/* Main content container */}
@@ -36,11 +32,11 @@ export default function ProductsHeader({ currentCollection }: ProductsHeaderProp
           <div className="w-1/2 bg-black text-white flex flex-col justify-center px-8 md:px-12 lg:px-16 py-8">
             {/* Small label */}
             <div className="mb-4 text-center">
-              <span className="text-white  text-sm  uppercase">OUR COLLECTIONS</span>
+              <span className="text-white  text-sm  uppercase">OUR PRODUCTS</span>
             </div>
 
             {/* Main heading */}
-            <h1 className="text-3xl text-center font-bungee md:text-4xl lg:text-5xl xl:text-6xl font-black leading-tight mb-6">
+            <h1 className="text-xl text-center font-bungee md:text-4xl lg:text-5xl xl:text-6xl font-black leading-tight mb-6">
               <span className="block text-white">DESIGNED TO</span>
               <span className="block text-white">PROTECT.</span>
               <span className="block text-white">INSPIRED BY</span>

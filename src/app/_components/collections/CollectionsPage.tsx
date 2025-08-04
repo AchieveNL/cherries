@@ -1,12 +1,14 @@
 'use client';
 
 import { Image } from '@shopify/hydrogen-react';
-import { ArrowRight, Grid, List, Package, Search } from 'lucide-react';
+import { ArrowRight, List, Package, Search } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { EmptyState, Pagination } from '@/app/_components/ui';
+import { GridIcon } from '../icons/products/GridIcon';
 
 import type { Collection } from '@shopify/hydrogen-react/storefront-api-types';
 import type { PartialDeep } from 'type-fest';
@@ -27,7 +29,7 @@ function CollectionCard({ collection, viewMode }: CollectionCardProps) {
       <div className="bg-white overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group">
         <div className="flex">
           {/* Image */}
-          <div className="w-48 h-32 flex-shrink-0 relative overflow-hidden bg-gray-100">
+          <div className="w-48 h-36 flex-shrink-0 relative overflow-hidden bg-gray-100">
             {collection.image?.url ? (
               <Image
                 src={collection.image.url}
@@ -210,23 +212,29 @@ export default function CollectionsPage({ collections, totalCollections }: Colle
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+      <div className="bg-white shadow-sm border-b border-gray-100">
+        <div className="container mx-auto px-4 py-6 max-w-8xl">
+          <nav className="flex items-center space-x-2 text-sm text-gray-500">
+            <Link href="/" className="hover:text-gray-900 transition-colors">
+              Home
+            </Link>
+            <span>/</span>
+            <span className="text-gray-900 font-medium">Collections</span>
+          </nav>
+        </div>
+      </div>
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
           {/* Breadcrumb */}
-          <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
-            <a href="/" className="hover:text-gray-900 transition-colors">
-              Home
-            </a>
-            <span>/</span>
-            <span className="text-gray-900 font-medium">Collections</span>
-          </nav>
 
           {/* Hero Section */}
-          <div className="text-center mb-8">
+          <div className="text-center my-8">
             <h1 className="text-4xl font-bungee md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4">
               Our Collections
             </h1>
+
+            <div className="w-[164px] h-1 bg-primary mx-auto mb-8"></div>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-6">
               Discover curated collections of products organized by theme, style, and category. Find exactly what
               you&apos;re looking for in our thoughtfully organized selection.
@@ -265,11 +273,11 @@ export default function CollectionsPage({ collections, totalCollections }: Colle
               <button
                 onClick={() => setViewMode('grid')}
                 className={`p-2 transition-colors ${
-                  viewMode === 'grid' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                  viewMode === 'grid' ? 'bg-white text-primary shadow-sm' : 'text-gray-600 hover:text-gray-900'
                 }`}
                 aria-label="Grid view"
               >
-                <Grid className="w-4 h-4" />
+                <GridIcon className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setViewMode('list')}

@@ -6,7 +6,6 @@ import { Bungee, Poppins, Roboto } from 'next/font/google';
 import Script from 'next/script';
 
 import { siteConfig } from '../config/site';
-import CustomCursor from './_components/animation/CustomCursor';
 import { Footer } from './_components/layout/shop/footer';
 import { Header } from './_components/layout/shop/header';
 import Providers from './providers';
@@ -27,11 +26,14 @@ const roboto = Roboto({
   variable: '--font-roboto',
 });
 
+// GTM Configuration
+const GTM_ID = 'GTM-5S6B2XK9';
+
 export const metadata: Metadata = {
   title: 'Cherries - Bold Tech Accessories | Phone Cases & Chargers with Retro Style',
   description: siteConfig.description,
-  keywords: siteConfig.seo.keywords,
-  authors: siteConfig.seo.authors,
+  keywords: [...siteConfig.seo.keywords], // Spread to create mutable array
+  authors: [...siteConfig.seo.authors],
   creator: siteConfig.seo.creator,
   publisher: siteConfig.seo.publisher,
   category: siteConfig.seo.category,
@@ -74,18 +76,6 @@ export const metadata: Metadata = {
         alt: 'Cherries pixel art inspired tech accessories',
       },
     ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    site: `@${siteConfig.handles.twitter}`,
-    creator: `@${siteConfig.handles.twitter}`,
-    title: 'Cherries - Bold Tech Accessories with Retro Style',
-    description:
-      'Premium phone cases and chargers inspired by retro aesthetics and pixel art. Tech accessories that combine protection, power, and personality.',
-    images: {
-      url: `${siteConfig.url}/twitter-image.jpg`,
-      alt: 'Cherries retro-style phone cases and chargers',
-    },
   },
   verification: {
     google: siteConfig.verification.google,
@@ -136,7 +126,7 @@ export const metadata: Metadata = {
     'product:brand': siteConfig.name,
     'product:availability': 'in stock',
     'product:condition': 'new',
-    'product:price:currency': 'USD',
+    'product:price:currency': 'EUR',
     // Business info
     'business:contact_data:locality': siteConfig.business.locality,
     'business:contact_data:region': siteConfig.business.region,
@@ -148,6 +138,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
+        {/* Google Tag Manager - Critical Loading */}
+        <Script
+          id="gtm-script"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+              new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+              j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+              'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+              })(window,document,'script','dataLayer','${GTM_ID}');
+            `,
+          }}
+        />
+
         {/* Google Translate Meta Tags */}
         <meta name="google-translate-customization" content="YOUR_CUSTOMIZATION_ID" />
 
@@ -172,7 +177,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 siteConfig.social.twitter,
                 siteConfig.social.facebook,
                 siteConfig.social.tiktok,
-                siteConfig.social.youtube,
               ],
               contactPoint: {
                 '@type': 'ContactPoint',
@@ -203,6 +207,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className={`${poppins.variable} ${bungee.variable} ${roboto.variable} ${poppins.className}`}>
+        {/* Google Tag Manager (noscript) - Must be immediately after opening body tag */}
+        <noscript>
+          <iframe
+            src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
+            height="0"
+            width="0"
+            style={{ display: 'none', visibility: 'hidden' }}
+          />
+        </noscript>
+
         {/* Google Translate Script - Load early but non-blocking */}
         <Script
           id="google-translate-init"
@@ -225,20 +239,41 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             `,
           }}
         />
+
         {/* Google Translate API Script */}
         <Script
           src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
           strategy="afterInteractive"
         />
+        <Script
+          id="shopify-init"
+          dangerouslySetInnerHTML={{
+            __html: `
+              if (typeof window !== "undefined") {
+                window.Shopify = window.Shopify || {};
+window.Shopify.shop = "cherriesofficial.myshopify.com";
+                window.ShopifyForms = window.ShopifyForms || {};
+                window.ShopifyForms.currentPageType = 'index';
+              }
+            `,
+          }}
+        />
+
+        <Script
+          src="https://cdn.shopify.com/extensions/b7bffa7f-3cdd-4adf-8b5e-155850befa0b/forms-1629/assets/loader.js"
+          type="text/javascript"
+          defer
+        ></Script>
+
         <Providers>
           {/* Hidden Google Translate Element */}
           <div id="google_translate_element" style={{ display: 'none' }}></div>
           <Header />
           <div className="pt-32 md:pt-24 font-roboto">{children}</div>
           {/* Only show custom cursor on desktop */}
-          <div className="hidden md:block">
-            <CustomCursor />
-          </div>
+          {/* <div className="hidden md:block"> */}
+          {/*   <CustomCursor /> */}
+          {/* </div> */}
           <Footer />
         </Providers>
       </body>

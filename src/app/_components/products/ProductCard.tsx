@@ -2,7 +2,7 @@
 'use client';
 
 import { AddToCartButton, Image, ProductPrice, ProductProvider, useCart } from '@shopify/hydrogen-react';
-import { CheckCircle, Heart, Package, ShoppingCart } from 'lucide-react';
+import { CheckCircle, Heart, Package } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
@@ -560,7 +560,7 @@ font-roboto
                 handleWishlistToggle();
               }}
               disabled={wishlistLoading}
-              className="p-3  transition-colors disabled:opacity-50 disabled:cursor-not-allowed pointer-events-auto"
+              className="p-3  transition-colors  disabled:opacity-50 disabled:cursor-not-allowed pointer-events-auto"
               aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
             >
               <Heart
@@ -604,24 +604,25 @@ font-roboto
 
           {/* Price */}
           <div className="flex items-center justify-between space-x-2">
-            {firstVariant?.price?.amount && (
-              <>
-                <ProductPrice
-                  data={normalizedProduct}
-                  variantId={firstVariant.id}
-                  className="text-lg font-bold text-black"
-                />
-                {isOnSale && firstVariant?.compareAtPrice?.amount && (
+            <div className="flex items-center space-x-2">
+              {firstVariant?.price?.amount && (
+                <>
                   <ProductPrice
                     data={normalizedProduct}
                     variantId={firstVariant.id}
-                    priceType="compareAt"
-                    className="text-lg font-bold text-primary line-through"
+                    className="text-lg font-bold text-black"
                   />
-                )}
-              </>
-            )}
-
+                  {isOnSale && firstVariant?.compareAtPrice?.amount && (
+                    <ProductPrice
+                      data={normalizedProduct}
+                      variantId={firstVariant.id}
+                      priceType="compareAt"
+                      className="text-lg font-bold text-primary line-through"
+                    />
+                  )}
+                </>
+              )}
+            </div>
             {/* Action Button Section */}
             <div className="flex flex-col gap-2">
               {firstVariant?.id ? (

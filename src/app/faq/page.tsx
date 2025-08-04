@@ -5,6 +5,7 @@ import { ChevronDown, Mail, MessageCircle, Package, Phone, RefreshCw, Search, Sh
 import Image from 'next/image';
 import { useState } from 'react';
 
+import ContactInformations from '../_components/faqPage/contactInformations';
 import SubscribeSection from '../_components/landingPage/SubscribeSection';
 import { Button } from '../_components/ui';
 
@@ -189,18 +190,18 @@ export default function FAQPage() {
       {/* Hero Section */}
       <section className="relative py-20 bg-gradient-to-br from-gray-50 via-white to-gray-50">
         <div className="container mx-auto px-4 max-w-7xl">
-          <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-5xl md:text-6xl font-bungee font-bold text-text mb-6 tracking-wide">
+          <div className="text-center max-w-6xl mx-auto">
+            <h1 className="text-5xl md:text-6xl  max-w-4xl mx-auto font-bungee font-bold text-text mb-6 tracking-wide">
               frequently asked questions
             </h1>
-            <div className="w-16 h-1 bg-primary mx-auto mb-8"></div>
-            <p className="text-xl text-gray-600 leading-relaxed mb-12">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-              dolore magna reprehenderit.
+            <div className="w-[164px] h-1 bg-primary mx-auto mb-8"></div>
+            <p className="text-xl max-w-4xl mx-auto capitalize text-gray-600 leading-relaxed mb-12">
+              Below are the most frequently asked questions we’ve answered. If you&lsquo;re not satisfied, feel free to
+              send us an email.
             </p>
 
             {/* Search Bar */}
-            <div className="relative max-w-2xl mx-auto">
+            <div className="relative max-w-6xl mx-auto">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                 <Search className="h-5 w-5 text-gray-400" />
               </div>
@@ -209,7 +210,7 @@ export default function FAQPage() {
                 placeholder="Search for answers..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 border-2 border-gray-200  focus:ring-2 focus:ring-primary focus:border-transparent bg-white text-lg shadow-lg"
+                className="w-full pl-12 pr-4 py-4 border-2 border-solid border-gray-200  focus:ring-2 focus:ring-primary focus:border-transparent bg-white text-lg shadow-lg"
               />
             </div>
           </div>
@@ -218,7 +219,7 @@ export default function FAQPage() {
 
       {/* FAQ Items */}
       <section className="py-20">
-        <div className="container mx-auto px-4 max-w-4xl">
+        <div className="container mx-auto max-w-6xl">
           {filteredFAQs.length === 0 ? (
             <div className="text-center py-12">
               <MessageCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
@@ -257,34 +258,7 @@ export default function FAQPage() {
           )}
         </div>
       </section>
-      {/* FAQ Footer */}
-      <section className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4 max-w-8xl text-center">
-          <h2 className="text-3xl font-bungee font-bold text-gray-900 mb-4 tracking-wide">STILL HAVE QUESTIONS?</h2>
-          {/* <div className="w-24 h-1 bg-primary mx-auto mb-8"></div> */}
-          <p className="text-xl text-gray-600 mb-12 leading-relaxed">
-            Our customer support team is here to help you with any questions not covered in our FAQ.
-          </p>
-
-          <div className="grid h-[448px] md:grid-cols-2 gap-8 mb-12">
-            <div className="bg-white py-24   p-8 shadow-lg hover:shadow-xl transition-shadow duration-300">
-              <Mail className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Email Support</h3>
-              <p className="text-gray-600 mb-4">Get detailed answers via email</p>
-              <p className="text-primary font-medium">support@casehub.com</p>
-              <p className="text-sm text-gray-500 mt-2">Response within 24 hours</p>
-            </div>
-
-            <div className="bg-white py-24  p-8 shadow-lg hover:shadow-xl transition-shadow duration-300">
-              <Phone className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Phone Support</h3>
-              <p className="text-gray-600 mb-4">Speak directly with our team</p>
-              <p className="text-primary font-medium">010-3072618</p>
-              <p className="text-sm text-gray-500 mt-2">Mon-Fri 9AM-6PM EST</p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <ContactInformations />
       {/* Subscribe  Section */}
       <SubscribeSection />
     </div>

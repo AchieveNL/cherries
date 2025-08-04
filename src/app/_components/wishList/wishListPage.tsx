@@ -1,11 +1,12 @@
 'use client';
 
 import { useCart } from '@shopify/hydrogen-react';
-import { ArrowRight, Grid, Heart, List, Plus, ShoppingCart, Trash2 } from 'lucide-react';
+import { ArrowRight, Heart, List, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
-import { CartIcon } from '../icons/shared';
+import { GridIcon } from '../icons/products/GridIcon';
+import { CartIcon, RectangleIcon, TrashIcon } from '../icons/shared';
 import { useWishlist } from '../layout/context/wishList';
 import { ProductCard } from '../products';
 import { Button } from '../ui';
@@ -131,13 +132,13 @@ export default function WishlistPage() {
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="container mx-auto px-4 py-8 max-w-8xl">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold font-bungee text-gray-900 flex items-center space-x-3">
-                <Heart className="w-8 h-8 text-primary" />
-                <span>My Wishlist</span>
+          <div className="flex md:flex-row flex-col space-y-4 md:space-y-0 items-center justify-between">
+            <div className="flex items-center  space-x-4">
+              <h1 className="text-base uppercase font-bold font-bungee text-gray-900 flex items-center space-x-3">
+                <span className="">My Wish list</span>
               </h1>
-              <p className="text-gray-600 mt-2">
+              <RectangleIcon />
+              <p className="text-black text-base uppercase">
                 {items.length === 0
                   ? 'Your wishlist is empty'
                   : `${items.length} item${items.length !== 1 ? 's' : ''} saved for later`}
@@ -155,7 +156,7 @@ export default function WishlistPage() {
                     }`}
                     aria-label="Grid view"
                   >
-                    <Grid className="w-4 h-4" />
+                    <GridIcon className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
@@ -170,18 +171,20 @@ export default function WishlistPage() {
 
                 <button
                   onClick={() => setShowClearConfirm(true)}
-                  className="flex items-center space-x-2 text-gray-600 hover:text-primary transition-colors"
+                  className="flex items-center space-x-2 text-black hover:text-primary transition-colors"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <TrashIcon />
                   <span>Clear All</span>
                 </button>
 
-                <Link
-                  href="/products"
-                  className="bg-primary text-white px-6 py-3 font-semibold hover:bg-primary/90 transition-colors flex items-center space-x-2"
-                >
-                  <CartIcon className="w-4 h-4" />
-                  <span>Continue Shopping</span>
+                <Link href="/products">
+                  <Button
+                    variant="black"
+                    className="px-6 py-3 font-semibold transition-colors flex items-center space-x-2"
+                  >
+                    <CartIcon />
+                    <span>Continue Shopping</span>
+                  </Button>
                 </Link>
               </div>
             )}
@@ -202,7 +205,7 @@ export default function WishlistPage() {
                 href="/products"
                 className="bg-primary text-white px-8 py-4 font-semibold hover:bg-primary/90 transition-colors inline-flex items-center space-x-2"
               >
-                <ShoppingCart className="w-5 h-5" />
+                <CartIcon className="w-5 h-5" />
                 <span>Start Shopping</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
@@ -255,7 +258,7 @@ export default function WishlistPage() {
               <div className="bg-green-50 border-l-4 border-green-400 p-4 mx-4 mt-4">
                 <div className="flex">
                   <div className="flex-shrink-0">
-                    <ShoppingCart className="h-5 w-5 text-green-400" />
+                    <CartIcon className="h-5 w-5 text-green-400" />
                   </div>
                   <div className="ml-3">
                     <p className="text-sm text-green-700 font-medium">{addAllSuccessMessage}</p>

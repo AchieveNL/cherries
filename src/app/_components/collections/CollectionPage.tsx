@@ -11,6 +11,7 @@ import { useCollectionViewTracking } from '@/hooks/useAnalytics';
 import { useProductFilters } from '@/hooks/useFilters';
 import { useUrlFilters } from '@/hooks/useUrlFilters';
 import { FilterState } from '@/types';
+import Breadcrumbs from '../layout/Breadcrumbs';
 import ProductFilter from '../products/ProductFilter';
 
 import type { Collection, Product } from '@shopify/hydrogen-react/storefront-api-types';
@@ -103,27 +104,17 @@ export default function CollectionPage({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+      <Breadcrumbs currentCollection={collection} />
       <div className="container mx-auto px-4 py-8">
         {/* Collection Header */}
         <div className="mb-8">
           {/* Breadcrumb */}
-          <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
-            <a href="/" className="hover:text-gray-900 transition-colors">
-              Home
-            </a>
-            <span>/</span>
-            <a href="/collections" className="hover:text-gray-900 transition-colors">
-              Collections
-            </a>
-            <span>/</span>
-            <span className="text-gray-900 font-medium">{collection.title}</span>
-          </nav>
 
           {/* Collection Hero */}
           <div className="bg-white overflow-hidden shadow-sm border border-gray-100 mb-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[300px] md:min-h-[400px]">
               {/* Left - Image */}
-              <div className="relative overflow-hidden">
+              <div className="relative overflow-hidden min-h-[337.5px] md:min-h-[400px]">
                 {collection.image?.url ? (
                   <Image
                     src={collection.image.url}
@@ -157,7 +148,7 @@ export default function CollectionPage({
                   </p>
 
                   <div className="flex justify-center items-center space-x-4 mb-6">
-                    <span className="bg-primary text-white px-4 py-2 text-xl lg:text-2xl font-medium">
+                    <span className="bg-primary text-white px-14 py-3 text-xl lg:text-[20px] font-medium">
                       {totalProducts} {totalProducts === 1 ? 'PRODUCT' : 'PRODUCTS'}
                     </span>
                   </div>

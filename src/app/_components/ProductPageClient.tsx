@@ -7,6 +7,7 @@ import { AlertCircle, Award, CheckCircle, Heart, MessageCircle, Minus, Plus, Sta
 import React, { useEffect, useState } from 'react';
 
 import { trackAddToCart, trackProductView } from '@/lib/analytics';
+import { ProductContentAnalyzer, ProductDescriptionFormatter } from '@/lib/productDescription';
 import Breadcrumb from './Breadcrumb';
 import { ArrowButton } from './icons/shared';
 import { useWishlist } from './layout/context/wishList';
@@ -23,6 +24,10 @@ import type {
   Image as ShopifyImage,
 } from '@shopify/hydrogen-react/storefront-api-types';
 import type { PartialDeep } from 'type-fest';
+
+interface ProductDescriptionProps {
+  product: PartialDeep<Product, { recurseIntoArrays: true }>;
+}
 
 interface ProductPageClientProps {
   product: PartialDeep<Product, { recurseIntoArrays: true }>;
@@ -273,11 +278,7 @@ function ProductContent() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <div className="bg-white shadow-sm border-b border-gray-100">
-        <div className="container mx-auto px-4 py-6 max-w-8xl">
-          <Breadcrumb product={product} />
-        </div>
-      </div>
+      <Breadcrumb product={product} />
 
       <div className="container mx-auto px-4 py-8 max-w-8xl">
         {/* Main Product Section */}
@@ -432,8 +433,6 @@ function ProductContent() {
                     </div>
                   </div>
                 )}
-
-                <span className="self-center text-sm w-2/3">Estimated delivery from June 24th</span>
               </div>
             </header>
 
@@ -464,7 +463,7 @@ function ProductContent() {
                   </div>
 
                   {/* Tab Content */}
-                  <div className="p-8">
+                  <div className="p-4">
                     {activeTab === 'description' && <ProductDescription product={product} />}
                     {activeTab === 'reviews' && <ProductReviews product={product} />}
                     {activeTab === 'faq' && <ProductFAQ product={product} />}
@@ -535,7 +534,7 @@ export default function ProductPageClient({ product }: ProductPageClientProps) {
 }
 
 // Enhanced Product Description Component
-function ProductDescription({ product }: { product: PartialDeep<Product, { recurseIntoArrays: true }> }) {
+export function ProductDescription({ product }: ProductDescriptionProps) {
   const metafields = product.metafields || [];
   const storyMetafield = metafields.find(
     (field): field is Metafield =>
@@ -549,17 +548,138 @@ function ProductDescription({ product }: { product: PartialDeep<Product, { recur
 
   const storyContent = storyMetafield?.value;
 
+  // Process the description using our library
+  const processedContent = ProductDescriptionFormatter.processDescription(product.descriptionHtml);
+  const contentAnalysis = ProductContentAnalyzer.analyzeContent(product.descriptionHtml);
+
   return (
     <div className="space-y-8">
-      {/* Main Description */}
+      {/* Enhanced Main Description */}
       <div className="prose prose-lg max-w-none">
-        <div className="text-text/80 text-lg leading-relaxed">{product.description}</div>
-        {storyContent && (
-          <div className="mt-6 pt-6 border-t border-gray-100">
-            <div className="text-text/70 leading-relaxed" dangerouslySetInnerHTML={{ __html: storyContent }} />
-          </div>
-        )}
+        <div className="enhanced-description" dangerouslySetInnerHTML={{ __html: processedContent.html }} />
       </div>
+
+      {/* Extracted Features Section */}
+      {processedContent.features.length > 0 && (
+        <div className="bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 rounded-xl p-6">
+          <h3 className="text-xl font-semibold text-text mb-4 flex items-center space-x-2">
+            <Star className="w-5 h-5 text-primary" />
+            <span>Key Features</span>
+          </h3>
+          <div className="grid gap-3">
+            {processedContent.features.map((feature, index) => (
+              <div
+                key={index}
+                className="flex items-start space-x-3 p-3 bg-white/60 rounded-lg border border-white/40 hover:bg-white/80 transition-colors"
+              >
+                <CheckCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                <span className="text-text font-medium">{feature}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Specifications Section */}
+      {processedContent.specifications.length > 0 && (
+        <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
+          <h3 className="text-xl font-semibold text-text mb-4 flex items-center space-x-2">
+            <span>Specifications</span>
+          </h3>
+          <div className="space-y-3">
+            {processedContent.specifications.map((spec, index) => (
+              <div
+                key={index}
+                className="flex justify-between items-start py-3 px-4 bg-white rounded-lg border border-gray-100 hover:border-gray-200 transition-colors"
+              >
+                <span className="font-semibold text-text flex-shrink-0 mr-4">{spec.key}</span>
+                <span className="text-text/70 text-right">{spec.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Product Story Section */}
+      {storyContent && (
+        <div className="mt-8 pt-8 border-t border-gray-200">
+          <h3 className="text-xl font-semibold text-text mb-4 flex items-center space-x-2">
+            <span>Our Story</span>
+          </h3>
+          <div
+            className="text-text/70 leading-relaxed prose prose-lg max-w-none"
+            dangerouslySetInnerHTML={{ __html: storyContent }}
+          />
+        </div>
+      )}
+      <style jsx>{`
+        .enhanced-description {
+          line-height: 1.75;
+        }
+
+        .enhanced-description ul {
+          list-style: none;
+          padding: 0;
+        }
+
+        .enhanced-description h3 {
+          color: #1f2937;
+          font-weight: 600;
+          margin-top: 2rem;
+          margin-bottom: 1rem;
+        }
+
+        .enhanced-description p {
+          line-height: 1.75;
+          margin-bottom: 1.5rem;
+        }
+
+        .enhanced-description p:last-child {
+          margin-bottom: 0;
+        }
+
+        .enhanced-description strong {
+          color: #830016;
+          font-weight: 600;
+        }
+
+        .enhanced-description em {
+          color: #6b7280;
+          font-style: italic;
+        }
+
+        .enhanced-description code {
+          background-color: #f3f4f6;
+          padding: 0.25rem 0.5rem;
+          border-radius: 0.25rem;
+          font-size: 0.875rem;
+          font-family: 'Courier New', monospace;
+        }
+
+        .enhanced-description a {
+          color: #830016;
+          text-decoration: underline;
+        }
+
+        .enhanced-description a:hover {
+          color: #a0001e;
+        }
+
+        .enhanced-description .callout {
+          animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 }

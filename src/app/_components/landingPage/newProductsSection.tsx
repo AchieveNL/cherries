@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useScroll } from 'framer-motion';
+import Lottie from 'lottie-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
+import pixel from '../../../../public/animation/pixel.json';
 import BitBackground from '../animation/BitBackground';
 import { Button } from '../ui';
 
@@ -30,6 +32,30 @@ const ProductSkeleton = () => (
     <div className="h-8 bg-gray-200 animate-pulse rounded mx-auto w-3/4"></div>
   </div>
 );
+function useInView(threshold = 0.1) {
+  const [isInView, setIsInView] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsInView(entry.isIntersecting);
+      },
+      {
+        threshold,
+        rootMargin: '0px 0px -100px 0px', // Trigger when element is 100px from bottom of viewport
+      }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, [threshold]);
+
+  return { ref, isInView };
+}
 
 const LatestProducts = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -47,7 +73,7 @@ const LatestProducts = () => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setIsVisible(true);
+          setIsVisible(entry.isIntersecting);
         }
       },
       { threshold: 0.1 }
@@ -57,12 +83,34 @@ const LatestProducts = () => {
       observer.observe(containerRef.current);
     }
 
-    return () => {
-      if (containerRef.current) {
-        observer.unobserve(containerRef.current);
-      }
-    };
+    return () => observer.disconnect();
   }, []);
+
+  const lottieRef1 = useRef<any>(null);
+  const lottieRef2 = useRef<any>(null);
+
+  // Handle Lottie animation based on visibility
+  useEffect(() => {
+    if (lottieRef1.current) {
+      if (isVisible) {
+        console.log('Element is in view, playing animation');
+        lottieRef1.current.play();
+      } else {
+        console.log('Element is out of view, stopping animation');
+        lottieRef1.current.stop();
+      }
+    }
+
+    if (lottieRef2.current) {
+      if (isVisible) {
+        console.log('Element is in view, playing animation');
+        lottieRef2.current.play();
+      } else {
+        console.log('Element is out of view, stopping animation');
+        lottieRef2.current.stop();
+      }
+    }
+  }, [isVisible]);
 
   useEffect(() => {
     const fetchLatestProducts = async () => {
@@ -124,7 +172,7 @@ const LatestProducts = () => {
 
   return (
     <section ref={containerRef} className="relative min-h-screen py-12 overflow-hidden">
-      <div className="container mx-auto px-8 relative z-10 mb-60">
+      <div className="container mx-auto px-8 relative z-10 mb-16">
         {/* Header */}
         <div className="flex justify-between items-center mb-12">
           <h2
@@ -211,8 +259,25 @@ const LatestProducts = () => {
       </div>
 
       {/* Hero frame image */}
-      <div className="absolute bottom-0 left-0 w-full z-0">
-        <BitBackground scrollYProgress={scrollYProgress} />
+      <div className="relative w-full overflow-hidden">
+        <div className="w-full">
+          <Lottie
+            lottieRef={lottieRef1}
+            animationData={pixel}
+            loop={false}
+            autoplay={false} // Set to false, we'll control it manually
+            className="w-[1000px] md:w-auto  h-auto" // Ensure responsive sizing
+          />
+        </div>
+        <div className="w-full  rotate-180 -mt-px">
+          <Lottie
+            lottieRef={lottieRef2}
+            animationData={pixel}
+            loop={false}
+            autoplay={false} // Set to false, we'll control it manually
+            className="w-[1000px] md:w-auto  h-auto" // Ensure responsive sizing
+          />
+        </div>
       </div>
     </section>
   );

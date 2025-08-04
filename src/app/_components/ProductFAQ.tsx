@@ -98,9 +98,6 @@ export default function ProductFAQ({ product }: ProductFAQProps) {
       <div className="text-center py-12">
         <h3 className="text-lg font-semibold text-text mb-2">No FAQs Available</h3>
         <p className="text-text/60 mb-6">We&apos;re working on adding frequently asked questions for this product.</p>
-        <button className="bg-primary text-white px-6 py-3 rounded-xl font-medium hover:bg-primary/90 transition-colors">
-          Ask a Question
-        </button>
       </div>
     );
   }

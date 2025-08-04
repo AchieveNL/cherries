@@ -6,6 +6,7 @@ import { PartialDeep } from 'type-fest';
 // Import analytics for search tracking
 import { trackSearch } from '@/lib/analytics';
 import { Collection, FilterState, Product } from '@/types';
+import { GridIcon } from '../icons/products/GridIcon';
 
 // Type guards to ensure data integrity
 function isValidProduct(product: any): product is PartialDeep<Product, { recurseIntoArrays: true }> {
@@ -315,7 +316,7 @@ export default function ProductFilter({
                 >
                   <span>Filters</span>
                   {activeFiltersCount > 0 && (
-                    <span className="bg-primary text-white text-xs px-1.5 py-0.5 min-w-[16px] h-4 flex items-center justify-center rounded-full">
+                    <span className="bg-primary text-white text-xs px-1.5 py-0.5 min-w-[16px] h-4 flex items-center justify-center ">
                       {activeFiltersCount}
                     </span>
                   )}
@@ -659,7 +660,7 @@ export default function ProductFilter({
                     viewMode === 'grid' ? 'bg-white text-primary shadow-sm' : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
-                  <Grid className="w-4 h-4" />
+                  <GridIcon className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => onViewModeChange('list')}

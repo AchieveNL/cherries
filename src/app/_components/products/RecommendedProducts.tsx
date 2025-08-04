@@ -26,7 +26,7 @@ interface RecommendedProductsProps {
 
 const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
   productId,
-  title = 'RECOMMENDED',
+  title = 'recommended products',
   limit = 4,
   products: providedProducts,
   isLoading: providedLoading = false,

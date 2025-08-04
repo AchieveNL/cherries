@@ -370,7 +370,7 @@ const LandingPage = ({ collectionHandle = 'featured-products', maxProducts = 4 }
                           alt={getProductImage(selectedProductData)!.alt}
                           width={280}
                           height={420}
-                          className="drop-shadow-2xl object-cover rounded-lg transition-transform duration-300 hover:scale-105"
+                          className="drop-shadow-2xl object-contain rounded-lg transition-transform duration-300  scale-x-150 scale-y-150"
                           priority={selectedProduct === 0}
                           onLoad={() => setImageLoaded(true)}
                           onError={(e) => {

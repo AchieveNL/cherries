@@ -1,3 +1,5 @@
+import { siteConfig } from './src/config/site';
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ['./src/**/*.{js,ts,jsx,tsx,mdx}'],
@@ -9,9 +11,9 @@ module.exports = {
         roboto: ['var(--font-roboto)', 'system-ui', 'sans-serif'],
       },
       colors: {
-        primary: '#830016',
-        secondary: '#EFE8DD', // Yellow
-        accent: '#EF4444', // Red
+        primary: siteConfig.theme.primary,
+        secondary: siteConfig.theme.secondary,
+        accent: siteConfig.theme.accent,
         background: '#F3F4F6', // Gray
         text: '#1D1E1C', // Dark Gray
       },

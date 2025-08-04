@@ -11,7 +11,7 @@ import {
   useCart,
   useCartLine,
 } from '@shopify/hydrogen-react';
-import { Heart, ShoppingCart } from 'lucide-react';
+import { Heart } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useState } from 'react';
@@ -36,7 +36,7 @@ function CartPageContent() {
       <div className="min-h-screen bg-white">
         <div className="container mx-auto px-4 py-16">
           <div className="text-center max-w-md mx-auto">
-            <ShoppingCart className="w-20 h-20 text-gray-400 mx-auto mb-6" />
+            <CartIcon className="w-20 h-20 text-gray-400 mx-auto mb-6" />
             <h1 className="text-3xl font-bold text-gray-900 mb-4">Your cart is empty</h1>
             <p className="text-gray-600 mb-8 text-lg">Looks like you haven&apos;t added any items yet</p>
 
@@ -56,7 +56,7 @@ function CartPageContent() {
           <h1 className="text-2xl font-bold text-gray-900 uppercase tracking-wide">MY CART({lines.length})</h1>
           <a href="/products">
             <Button variant="black" showArrow className="flex items-center space-x-2">
-              <CartIcon className="mr-2" />
+              <CartIcon className="" />
               Continue Shopping
             </Button>
           </a>
@@ -164,15 +164,6 @@ function CartLineItemCompact() {
       setIsAddingToWishlist(false);
     }
   }, [merchandise, addItem, removeItem, isAddingToWishlist, isInWishlistAlready]);
-
-  const handleMoveToWishlist = useCallback(async () => {
-    if (isRemoving || isAddingToWishlist || !id || isInWishlistAlready) return;
-
-    // First add to wishlist
-    await handleToggleWishlist();
-    // Then remove from cart
-    await handleRemove();
-  }, [handleToggleWishlist, handleRemove, isRemoving, isAddingToWishlist, id, isInWishlistAlready]);
 
   const getVariantAttributes = (): Array<{ name: string; value: string }> => {
     const attributes: Array<{ name: string; value: string }> = [];
@@ -320,18 +311,6 @@ function CartLineItemCompact() {
 
           {/* Action Buttons */}
           <div className="flex justify-end space-x-3">
-            {!isInWishlistAlready && (
-              <button
-                onClick={handleMoveToWishlist}
-                disabled={isRemoving || isAddingToWishlist}
-                className="flex items-center space-x-2 bg-gray-100 text-gray-700 px-6 py-2 text-sm font-medium hover:bg-gray-200 transition-colors uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label="Move to wishlist"
-              >
-                <Heart className="w-4 h-4" />
-                <span>{isAddingToWishlist ? 'Moving...' : 'Move to Wishlist'}</span>
-              </button>
-            )}
-
             <button
               onClick={handleRemove}
               disabled={isRemoving}
