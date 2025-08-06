@@ -228,7 +228,7 @@ const RecommendedProducts: React.FC<RecommendedProductsProps> = ({
         {/* Section Header */}
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-2 font-bungee tracking-wide">{title}</h2>
-          <div className="w-24 h-1 bg-primary mx-auto"></div>
+          <div className="w-[164px] h-[6px] bg-primary mx-auto"></div>
         </div>
 
         {/* Products Grid or Loading */}
