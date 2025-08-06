@@ -164,10 +164,10 @@ function LoginContent() {
         </div>
 
         {/* Info Section */}
-        <div className="bg-primary/80 border border-solid border-secondary  p-4">
+        <div className="bg-white border border-solid border-secondary   p-4">
           <div className="text-sm">
-            <p className="text-white font-medium mb-1">Secure Authentication</p>
-            <p className="text-white">
+            <p className="text-text font-medium mb-1">Secure Authentication</p>
+            <p className="text-text">
               You&apos;ll be redirected to Shopify&apos;s secure login page to authenticate with your existing account.
             </p>
           </div>
