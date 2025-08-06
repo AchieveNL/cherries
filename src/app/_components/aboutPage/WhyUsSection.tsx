@@ -101,7 +101,7 @@ const WhyUsSection = () => {
             </div>
 
             {/* Shop Now Button */}
-            <div className="pt-4">
+            <div className="pt-4 z-10 relative">
               <Link href="/products">
                 <Button className="text-white px-12 py-3" showArrow>
                   Shop Now
