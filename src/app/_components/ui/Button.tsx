@@ -52,7 +52,7 @@ const Button: React.FC<ButtonProps> = ({
       disabled={disabled}
       className={cn(
         // Using 'group/button' to create a scoped group that won't conflict with other groups
-        'group/button relative  overflow-hidden font-medium disabled:cursor-not-allowed transition-colors flex items-center justify-center',
+        'group/button relative  overflow-hidden font-base font-medium disabled:cursor-not-allowed transition-colors flex items-center justify-center',
         variantStyles[variant],
         sizeStyles[size],
         className
