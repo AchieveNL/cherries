@@ -134,7 +134,7 @@ export default function WishlistPage() {
         <div className="container mx-auto px-4 py-8 max-w-8xl">
           <div className="flex md:flex-row flex-col space-y-4 md:space-y-0 items-center justify-between">
             <div className="flex items-center  space-x-4">
-              <h1 className="text-base uppercase font-bold font-bungee text-gray-900 flex items-center space-x-3">
+              <h1 className="text-base uppercase font-bold font-roboto text-gray-900 flex items-center space-x-3">
                 <span className="">My Wish list</span>
               </h1>
               <RectangleIcon />
