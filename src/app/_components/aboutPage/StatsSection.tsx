@@ -71,20 +71,20 @@ const StatsSection = () => {
   return (
     <div className="bg-white pt-4 sm:pt-8 lg:pt-12 xl-pt-18 pb-8 sm:pb-12 lg:pb-14 xl:pb-20">
       <div className="max-w-8xl container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3  gap-4 sm:gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3  gap-4 sm:gap-6 ">
           {stats.map((stat, index) => (
             <div
               key={index}
-              className="p-4 sm:p-6 lg:p-8 w-full max-w-[450px] mx-auto h-auto min-h-[280px] sm:min-h-[300px] lg:h-[332px] rounded-2xl flex flex-col "
-              style={
-                stat.primary
-                  ? {
-                      boxShadow: '8px 8px 15px 0px #83001626, -8px -8px 15px 0px #83001626',
-                    }
-                  : {
-                      boxShadow: '8px 8px 15px 0px #0000000D, -8px -8px 15px 0px #0000000D',
-                    }
-              }
+              className="p-4 sm:p-6 lg:p-8 w-full max-w-[450px] mx-auto h-auto min-h-[280px] sm:min-h-[300px] lg:h-[332px] rounded-2xl flex flex-col transition-all duration-300"
+              style={{
+                boxShadow: '8px 8px 15px 0px #0000000D, -8px -8px 15px 0px #0000000D',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = '8px 8px 15px 0px #83001626, -8px -8px 15px 0px #83001626';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = '8px 8px 15px 0px #0000000D, -8px -8px 15px 0px #0000000D';
+              }}
             >
               {/* Icon and Info */}
               <div className="flex justify-start items-center mb-6 sm:mb-8 lg:mb-12">
