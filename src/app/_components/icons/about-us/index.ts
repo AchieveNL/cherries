@@ -11,3 +11,8 @@ export { RecycledMaterialIcon } from './RecycledMaterialIcon';
 export { UniqueTechIcon } from './UniqueTechIcon';
 export { SafeAndFlexableIcon } from './SafeAndFlexableIcon';
 export { LimitedIcon } from './LimitedIcon';
+
+export { PremiumQualityIconProduct } from './PremiumQualityIconProduct';
+export { RecycledMaterialIconProduct } from './RecycledMaterialIconProduct';
+export { SafeAndFlexableIconProduct } from './SafeAndFlexableIconProduct';
+export { WorldWideShippingIconProduct } from './WorldWideShippingIconProduct';

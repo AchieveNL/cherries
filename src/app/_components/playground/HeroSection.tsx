@@ -5,6 +5,8 @@ import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { CherryIcon } from '../icons/shared';
+import { AuroraBackground } from '../ui/aurora-background';
+import { TextHoverEffect } from '../ui/text-hover-effect';
 
 // Custom hook for intersection observer
 function useInView(threshold = 0.1) {
@@ -244,154 +246,147 @@ const HeroAnimation: React.FC = () => {
   // };
 
   return (
-    <div ref={animationRef} className="flex items-center justify-center min-h-screen overflow-hidden">
-      <motion.div
-        ref={containerRef}
-        className="hero-can-wrapper relative flex items-center justify-center"
-        style={{
-          x: containerX,
-          y: containerY,
-        }}
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 1, ease: 'easeOut' }}
-        onHoverStart={() => setIsHovered(true)}
-        onHoverEnd={() => setIsHovered(false)}
-      >
-        {/* Lottie animation positioned behind and centered */}
-        {/* {!animationError && ( */}
-        {/*   <div className="absolute inset-0 flex items-center justify-center z-0 overflow-hidden"> */}
-        {/*     <div className="w-[300px] h-[400px] overflow-hidden"> */}
-        {/*       <Lottie */}
-        {/*         lottieRef={lottieRef} */}
-        {/*         animationData={pixel} */}
-        {/*         loop={false} */}
-        {/*         autoplay={false} */}
-        {/*         className="h-dvh w-[1200px] max-h-[600px] transform" */}
-        {/*         onLoadedData={() => console.log('Lottie animation loaded')} */}
-        {/*         onError={(error) => { */}
-        {/*           console.error('Lottie error:', error); */}
-        {/*           setAnimationError(true); */}
-        {/*         }} */}
-        {/*       /> */}
-        {/*     </div> */}
-        {/*   </div> */}
-        {/* )} */}
-
-        {/* Left Cherry with popup animation */}
-        {/* <motion.div */}
-        {/*   className="absolute top-24 transform -translate-y-1/2 z-20 left-80" */}
-        {/*   initial={{ scale: 0, rotate: -180, opacity: 0 }} */}
-        {/*   animate={ */}
-        {/*     isInView */}
-        {/*       ? { */}
-        {/*           scale: 1, */}
-        {/*           rotate: 0, */}
-        {/*           opacity: 1, */}
-        {/*         } */}
-        {/*       : { */}
-        {/*           scale: 0, */}
-        {/*           rotate: -180, */}
-        {/*           opacity: 0, */}
-        {/*         } */}
-        {/*   } */}
-        {/*   transition={{ */}
-        {/*     duration: 8.8, */}
-        {/*     delay: 0.3, */}
-        {/*     type: 'spring', */}
-        {/*     stiffness: 200, */}
-        {/*     damping: 15, */}
-        {/*   }} */}
-        {/*   whileHover={{ */}
-        {/*     scale: 1.1, */}
-        {/*     rotate: 5, */}
-        {/*     transition: { duration: 0.2 }, */}
-        {/*   }} */}
-        {/* > */}
-        {/*   <CherryIcon className="drop-shadow-lg size-96" /> */}
-        {/* </motion.div> */}
-
-        {/* Right Cherry with popup animation */}
+    <AuroraBackground>
+      <div ref={animationRef} className="flex items-center justify-center min-h-screen overflow-hidden">
         <motion.div
-          className="absolute top-80 transform -translate-y-1/2 z-20 right-72"
-          initial={{ scale: 0, rotate: 180, opacity: 0 }}
-          animate={
-            isInView
-              ? {
-                  scale: 1,
-                  rotate: 0,
-                  opacity: 1,
-                }
-              : {
-                  scale: 0,
-                  rotate: 180,
-                  opacity: 0,
-                }
-          }
-          transition={{
-            duration: 8.8,
-            delay: 0.5,
-            type: 'spring',
-            stiffness: 200,
-            damping: 15,
-          }}
-          whileHover={{
-            scale: 1.1,
-            rotate: -5,
-            transition: { duration: 0.2 },
-          }}
-        >
-          <CherryIcon className="drop-shadow-lg size-96" />
-        </motion.div>
-
-        {/* Phone/Video positioned in front */}
-        <motion.div
-          className="hero-can relative z-10"
+          ref={containerRef}
+          className="hero-can-wrapper relative flex items-center justify-center"
           style={{
-            y: videoY,
+            x: containerX,
+            y: containerY,
           }}
-          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 1, ease: 'easeOut' }}
+          onHoverStart={() => setIsHovered(true)}
+          onHoverEnd={() => setIsHovered(false)}
         >
-          <motion.video
-            ref={videoRef}
-            preload="metadata"
-            width="1200"
-            height="800"
-            loop
-            muted
-            autoPlay
-            playsInline
-            className={`w-[1200px] object-cover border border-white/10 cursor-pointer`}
-            animate={{
-              rotateY: isHovered ? 5 : 0,
-              rotateX: isHovered ? -5 : 0,
+          {/* Lottie animation positioned behind and centered */}
+          {/* {!animationError && ( */}
+          {/*   <div className="absolute inset-0 flex items-center justify-center z-0 overflow-hidden"> */}
+          {/*     <div className="w-[300px] h-[400px] overflow-hidden"> */}
+          {/*       <Lottie */}
+          {/*         lottieRef={lottieRef} */}
+          {/*         animationData={pixel} */}
+          {/*         loop={false} */}
+          {/*         autoplay={false} */}
+          {/*         className="h-dvh w-[1200px] max-h-[600px] transform" */}
+          {/*         onLoadedData={() => console.log('Lottie animation loaded')} */}
+          {/*         onError={(error) => { */}
+          {/*           console.error('Lottie error:', error); */}
+          {/*           setAnimationError(true); */}
+          {/*         }} */}
+          {/*       /> */}
+          {/*     </div> */}
+          {/*   </div> */}
+          {/* )} */}
+
+          {/* Left Cherry with popup animation */}
+          {/* <motion.div */}
+          {/*   className="absolute top-24 transform -translate-y-1/2 z-20 left-80" */}
+          {/*   initial={{ scale: 0, rotate: -180, opacity: 0 }} */}
+          {/*   animate={ */}
+          {/*     isInView */}
+          {/*       ? { */}
+          {/*           scale: 1, */}
+          {/*           rotate: 0, */}
+          {/*           opacity: 1, */}
+          {/*         } */}
+          {/*       : { */}
+          {/*           scale: 0, */}
+          {/*           rotate: -180, */}
+          {/*           opacity: 0, */}
+          {/*         } */}
+          {/*   } */}
+          {/*   transition={{ */}
+          {/*     duration: 8.8, */}
+          {/*     delay: 0.3, */}
+          {/*     type: 'spring', */}
+          {/*     stiffness: 200, */}
+          {/*     damping: 15, */}
+          {/*   }} */}
+          {/*   whileHover={{ */}
+          {/*     scale: 1.1, */}
+          {/*     rotate: 5, */}
+          {/*     transition: { duration: 0.2 }, */}
+          {/*   }} */}
+          {/* > */}
+          {/*   <CherryIcon className="drop-shadow-lg size-96" /> */}
+          {/* </motion.div> */}
+
+          <motion.div
+            className="absolute top-0  transform blur-md -translate-y-1/2 z-0 left-80"
+            initial={{ scale: 0, rotate: 180, opacity: 0 }}
+            animate={
+              isInView
+                ? {
+                    scale: 1,
+                    rotate: 0,
+                    opacity: 1,
+                  }
+                : {
+                    scale: 0,
+                    rotate: 180,
+                    opacity: 0,
+                  }
+            }
+            transition={{
+              duration: 8.8,
+              delay: 0.5,
+              type: 'spring',
+              stiffness: 200,
+              damping: 15,
             }}
-            transition={{ duration: 0.3 }}
-            onClick={handleVideoClick}
-            onError={(e) => {
-              console.error('Video loading error:', e);
+            whileHover={{
+              scale: 1.1,
+              rotate: -5,
+              transition: { duration: 0.2 },
             }}
           >
-            {/* WebM for modern browsers */}
-            <source src="/output.webm" type="video/webm; codecs=vp8" />
-            {/* MP4 fallback for broader compatibility */}
-            <source src="/output.mp4" type="video/mp4" />
-            {/* Fallback text */}
-            Your browser does not support the video tag.
-          </motion.video>
-        </motion.div>
+            <CherryIcon className="drop-shadow-lg scale-x-[-1] size-64" />
+          </motion.div>
+          {/* Right Cherry with popup animation */}
+          <motion.div
+            className="absolute bottom-28 transform -translate-y-1/2 z-20 right-[28rem]"
+            initial={{ scale: 0, rotate: 180, opacity: 0 }}
+            animate={
+              isInView
+                ? {
+                    scale: 1,
+                    rotate: 0,
+                    opacity: 1,
+                  }
+                : {
+                    scale: 0,
+                    rotate: 180,
+                    opacity: 0,
+                  }
+            }
+            transition={{
+              duration: 8.8,
+              delay: 0.5,
+              type: 'spring',
+              stiffness: 200,
+              damping: 15,
+            }}
+            whileHover={{
+              scale: 1.1,
+              rotate: -5,
+              transition: { duration: 0.2 },
+            }}
+          >
+            <CherryIcon className="drop-shadow-lg size-96" />
+          </motion.div>
 
-        {/* Animated Text Section - Positioned to the right of the phone */}
-        <motion.div
-          className="absolute right-0 z-15 select-none"
-          style={{
-            y: textY,
-          }}
-          variants={textContainerVariants}
-          initial="hidden"
-          animate={isInView ? 'visible' : 'hidden'}
-        >
-          <div className="flex flex-col space-y-4">
+          <motion.div
+            className="absolute  top-1/3 left-2 z-0 select-none"
+            style={{
+              y: textY,
+            }}
+            variants={textContainerVariants}
+            initial="hidden"
+            animate={isInView ? 'visible' : 'hidden'}
+          >
             {/* Main Title with SplitText */}
             {/* <h1 className="font-bungee  skew-x-12 text-primary text-6xl font-black drop-shadow-2xl"> */}
             {/*   <SplitText */}
@@ -406,24 +401,49 @@ const HeroAnimation: React.FC = () => {
             {/*   </SplitText> */}
             {/* </h1> */}
 
-            {/* Floating background text effect */}
-            <motion.div
-              className="absolute -z-10 -top-4 -left-4 font-bungee text-8xl font-black text-white/5"
+            <TextHoverEffect text="Premium Quality" maxCharsPerLine={8} />
+          </motion.div>
+          {/* Phone/Video positioned in front */}
+          <motion.div
+            className="hero-can relative z-10"
+            style={{
+              y: videoY,
+            }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          >
+            <motion.video
+              ref={videoRef}
+              preload="metadata"
+              width="1600"
+              height="900"
+              loop
+              muted
+              autoPlay
+              playsInline
+              className={`w-[1600px] object-cover   cursor-pointer`}
               animate={{
-                rotate: [0, 2, -2, 0],
+                rotateY: isHovered ? 5 : 0,
+                rotateX: isHovered ? -5 : 0,
               }}
-              transition={{
-                duration: 4,
-                repeat: Infinity,
-                ease: 'easeInOut',
+              transition={{ duration: 0.3 }}
+              onClick={handleVideoClick}
+              onError={(e) => {
+                console.error('Video loading error:', e);
               }}
             >
-              CHERRY
-            </motion.div>
-          </div>
+              {/* WebM for modern browsers */}
+              <source src="/output.webm" type="video/webm; codecs=vp8" />
+              {/* MP4 fallback for broader compatibility */}
+              <source src="/output.mp4" type="video/mp4" />
+              {/* Fallback text */}
+              Your browser does not support the video tag.
+            </motion.video>
+          </motion.div>
+
+          {/* Animated Text Section - Positioned to the right of the phone */}
         </motion.div>
-      </motion.div>
-    </div>
+      </div>
+    </AuroraBackground>
   );
 };
 

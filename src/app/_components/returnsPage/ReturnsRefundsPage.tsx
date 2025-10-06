@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 'use client';
 
 export default function ReturnsRefundsPage() {
@@ -8,14 +9,7 @@ export default function ReturnsRefundsPage() {
         <div className="mb-8">
           <div className="text-center">
             <h1 className="text-3xl font-bungee font-bold text-gray-900 mb-2">Returns & Refunds</h1>
-            <p className="text-gray-600">
-              Last updated:{' '}
-              {new Date().toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
-            </p>
+            <p className="text-gray-600">Last updated: September 9, 2025</p>
           </div>
         </div>
 
@@ -29,9 +23,9 @@ export default function ReturnsRefundsPage() {
                   <h2 className="text-xl font-bold text-gray-900">Our Return Policy</h2>
                 </div>
                 <p className="text-gray-700 leading-relaxed">
-                  We want you to be completely satisfied with your purchase. If you&apos;re not happy with your order,
-                  we&apos;re we&apos;re we&apos;re we&apos;re here to help. Please read our return and refund policy
-                  carefully to process.
+                  At Cherries B.V., we want you to be completely satisfied with your purchase. If you're not happy with
+                  your order, we&apos;re here to help. Please read our return and refund policy carefully to understand
+                  the process.
                 </p>
               </section>
 
@@ -42,8 +36,9 @@ export default function ReturnsRefundsPage() {
                 <div className="mb-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">1.1 Time Limit</h3>
                   <p className="text-gray-700 leading-relaxed">
-                    You have <strong>30 calendar days</strong> from the date of delivery to return items for a refund or
-                    exchange. Returns initiated after this period will not be accepted.
+                    You have <strong>14 calendar days</strong> from the date of delivery to return items for a refund or
+                    exchange, in accordance with EU consumer protection laws. Returns initiated after this period will
+                    not be accepted unless the item is defective.
                   </p>
                 </div>
 
@@ -66,11 +61,11 @@ export default function ReturnsRefundsPage() {
                         <h4 className="font-semibold text-green-900">Returnable</h4>
                       </div>
                       <ul className="text-green-800 space-y-1">
-                        <li>• Clothing and accessories</li>
+                        <li>• Fashion items and accessories</li>
                         <li>• Electronics (in original packaging)</li>
-                        <li>• Home goods</li>
+                        <li>• Home and lifestyle products</li>
                         <li>• Books and media</li>
-                        <li>• Toys and games</li>
+                        <li>• General merchandise</li>
                       </ul>
                     </div>
                     <div className="bg-red-50 p-4 rounded-lg border border-red-200">
@@ -79,10 +74,10 @@ export default function ReturnsRefundsPage() {
                       </div>
                       <ul className="text-red-800 space-y-1">
                         <li>• Perishable items</li>
-                        <li>• Personal care items</li>
-                        <li>• Intimate apparel</li>
+                        <li>• Personal care and hygiene items</li>
+                        <li>• Intimate apparel and underwear</li>
                         <li>• Custom/personalized items</li>
-                        <li>• Gift cards</li>
+                        <li>• Digital products and gift cards</li>
                       </ul>
                     </div>
                   </div>
@@ -97,9 +92,9 @@ export default function ReturnsRefundsPage() {
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">2.1 Start Your Return</h3>
                   <p className="text-gray-700 leading-relaxed mb-4">To initiate a return, you can:</p>
                   <ul className="list-disc pl-6 space-y-1 text-gray-700">
-                    <li>Log into your account and go to &quot;Order History&quot;</li>
-                    <li>Click &quot;Return Items&quot; next to the relevant order</li>
-                    <li>Or contact our customer service team directly</li>
+                    <li>Log into your account on www.cherriesofficial.com and go to "Order History"</li>
+                    <li>Click "Return Items" next to the relevant order</li>
+                    <li>Or contact our customer service team at info@cherriesofficial.com</li>
                   </ul>
                 </div>
 
@@ -133,7 +128,7 @@ export default function ReturnsRefundsPage() {
                       <div>
                         <h4 className="font-semibold text-gray-900">Ship Your Return</h4>
                         <p className="text-gray-700">
-                          Use the prepaid return label (for eligible returns) or ship at your expense
+                          Ship to our Rotterdam address using the return instructions provided
                         </p>
                       </div>
                     </div>
@@ -158,10 +153,11 @@ export default function ReturnsRefundsPage() {
                       <h4 className="font-semibold text-yellow-900">Important Shipping Information</h4>
                     </div>
                     <ul className="text-yellow-800 space-y-1">
-                      <li>• Free return shipping for defective or incorrect items</li>
+                      <li>• Free return shipping for defective or incorrect items within the Netherlands</li>
                       <li>• Customer pays return shipping for other returns</li>
+                      <li>• EU customers: Return shipping costs may be reimbursed for defective items</li>
                       <li>• We recommend using a trackable shipping method</li>
-                      <li>• Original shipping costs are non-refundable</li>
+                      <li>• Original shipping costs are non-refundable unless item was defective</li>
                     </ul>
                   </div>
                 </div>
@@ -175,8 +171,8 @@ export default function ReturnsRefundsPage() {
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">3.1 Processing Time</h3>
                   <p className="text-gray-700 leading-relaxed">
                     Once we receive your returned item, we will inspect it and process your refund within{' '}
-                    <strong>2-3 business days</strong>. You will receive an email confirmation once your refund has been
-                    processed.
+                    <strong>14 business days</strong> as required by EU law. You will receive an email confirmation once
+                    your refund has been processed.
                   </p>
                 </div>
 
@@ -187,13 +183,16 @@ export default function ReturnsRefundsPage() {
                   </p>
                   <ul className="list-disc pl-6 space-y-1 text-gray-700">
                     <li>
-                      <strong>Credit/Debit Cards:</strong> 5-7 business days
+                      <strong>Credit/Debit Cards:</strong> 3-7 business days
                     </li>
                     <li>
-                      <strong>PayPal:</strong> 3-5 business days
+                      <strong>PayPal:</strong> 2-5 business days
                     </li>
                     <li>
-                      <strong>Bank Transfer:</strong> 5-10 business days
+                      <strong>iDEAL (Netherlands):</strong> 1-3 business days
+                    </li>
+                    <li>
+                      <strong>SEPA Bank Transfer:</strong> 3-5 business days
                     </li>
                     <li>
                       <strong>Store Credit:</strong> Immediate
@@ -208,9 +207,9 @@ export default function ReturnsRefundsPage() {
                   </p>
                   <ul className="list-disc pl-6 space-y-1 text-gray-700">
                     <li>Items with signs of use beyond normal inspection</li>
-                    <li>Items returned after 30 days but within 60 days</li>
                     <li>Items missing parts or accessories</li>
                     <li>Items with minor damage not caused by defects</li>
+                    <li>Items returned after the 14-day period (at our discretion)</li>
                   </ul>
                 </div>
               </section>
@@ -222,8 +221,8 @@ export default function ReturnsRefundsPage() {
                 <div className="mb-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">4.1 Size & Color Exchanges</h3>
                   <p className="text-gray-700 leading-relaxed">
-                    We offer free exchanges for size or color changes within the same product line, subject to
-                    availability. The exchange process follows the same timeline as returns.
+                    We offer exchanges for size or color changes within the same product line, subject to availability.
+                    The exchange process follows the same timeline as returns.
                   </p>
                 </div>
 
@@ -267,20 +266,37 @@ export default function ReturnsRefundsPage() {
 
               {/* Section 6 */}
               <section className="mb-8">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">6. International Returns</h2>
-                <p className="text-gray-700 leading-relaxed mb-4">For international orders, please note:</p>
+                <h2 className="text-xl font-bold text-gray-900 mb-4">6. EU Consumer Rights</h2>
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <h3 className="font-semibold text-blue-900 mb-2">Your Rights as an EU Consumer</h3>
+                  <p className="text-blue-800 mb-2">As a consumer in the European Union, you have the right to:</p>
+                  <ul className="text-blue-800 space-y-1">
+                    <li>• Cancel your order within 14 days without giving a reason</li>
+                    <li>• Receive a full refund within 14 days of us receiving the returned item</li>
+                    <li>• Return defective items for up to 2 years after purchase</li>
+                    <li>• Receive clear information about your consumer rights</li>
+                  </ul>
+                </div>
+              </section>
+
+              {/* Section 7 */}
+              <section className="mb-8">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">7. International Returns (Non-EU)</h2>
+                <p className="text-gray-700 leading-relaxed mb-4">
+                  For orders outside the European Union, please note:
+                </p>
                 <ul className="list-disc pl-6 space-y-1 text-gray-700">
                   <li>Customers are responsible for return shipping costs</li>
-                  <li>Items must be returned within 30 days of delivery</li>
+                  <li>Items must be returned within 14 days of delivery</li>
                   <li>Customs duties and taxes are non-refundable</li>
                   <li>We recommend using a trackable shipping method</li>
                   <li>Additional processing time may apply for international returns</li>
                 </ul>
               </section>
 
-              {/* Section 7 */}
+              {/* Section 8 */}
               <section className="mb-8">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">7. Holiday Returns</h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-4">8. Holiday Returns</h2>
                 <div className="bg-green-50 p-4 rounded-lg border border-green-200">
                   <h3 className="font-semibold text-green-900 mb-2">Extended Holiday Return Period</h3>
                   <p className="text-green-800">
@@ -290,40 +306,26 @@ export default function ReturnsRefundsPage() {
                 </div>
               </section>
 
-              {/* Section 8 */}
-              <section className="mb-8">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">8. Warranty Information</h2>
-                <p className="text-gray-700 leading-relaxed mb-4">
-                  Many of our products come with manufacturer warranties. For warranty claims:
-                </p>
-                <ul className="list-disc pl-6 space-y-1 text-gray-700">
-                  <li>Contact us first to determine if it&apos;s a return or warranty issue</li>
-                  <li>Warranty claims may be handled directly by the manufacturer</li>
-                  <li>Keep your receipt and warranty documentation</li>
-                  <li>Some warranties may extend beyond our return period</li>
-                </ul>
-              </section>
-
               {/* Contact Section */}
               <section className="mb-8 bg-gray-50 p-6 rounded-lg">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">Need Help with Your Return?</h2>
                 <p className="text-gray-700 leading-relaxed mb-4">
                   Our customer service team is here to help you with any questions about returns, exchanges, or refunds.
-                  Please don&apos;t hesitate to reach out:
+                  Please don't hesitate to reach out:
                 </p>
 
                 <div className="space-y-3">
-                  <div className="flex items-center text-gray-700">
-                    <span>returns@yourcompany.com</span>
+                  <div className="text-gray-700">
+                    <strong>Cherries B.V.</strong>
                   </div>
                   <div className="flex items-center text-gray-700">
-                    <span>+1 (555) 123-4567</span>
+                    <span>Email: info@cherriesofficial.com</span>
                   </div>
                   <div className="flex items-center text-gray-700">
-                    <span>123 Business Street, City, State 12345</span>
+                    <span>Website: www.cherriesofficial.com</span>
                   </div>
                   <div className="flex items-center text-gray-700">
-                    <span>www.yourcompany.com/support</span>
+                    <span>Address: Kiotoweg 351, 3047 BG Rotterdam, The Netherlands</span>
                   </div>
                 </div>
               </section>

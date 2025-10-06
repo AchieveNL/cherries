@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
-import pixel from '../../../../public/animation/pixel.json';
+import pixel2 from '../../../../public/animation/pixel2.json';
 import BitBackground from '../animation/BitBackground';
 import { Button } from '../ui';
 
@@ -263,16 +263,7 @@ const LatestProducts = () => {
         <div className="w-full">
           <Lottie
             lottieRef={lottieRef1}
-            animationData={pixel}
-            loop={false}
-            autoplay={false} // Set to false, we'll control it manually
-            className="w-[1000px] md:w-auto  h-auto" // Ensure responsive sizing
-          />
-        </div>
-        <div className="w-full  rotate-180 -mt-px">
-          <Lottie
-            lottieRef={lottieRef2}
-            animationData={pixel}
+            animationData={pixel2}
             loop={false}
             autoplay={false} // Set to false, we'll control it manually
             className="w-[1000px] md:w-auto  h-auto" // Ensure responsive sizing

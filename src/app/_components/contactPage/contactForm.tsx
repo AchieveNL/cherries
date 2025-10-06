@@ -2,6 +2,7 @@
 'use client';
 
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 import { Button } from '../ui';
 
@@ -14,10 +15,6 @@ const contactForm = () => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<{
-    type: 'success' | 'error' | null;
-    message: string;
-  }>({ type: null, message: '' });
 
   const handleInputChange = (e: any) => {
     const { name, value } = e.target;
@@ -25,32 +22,27 @@ const contactForm = () => {
       ...prev,
       [name]: value,
     }));
-
-    // Clear status when user starts typing
-    if (submitStatus.type) {
-      setSubmitStatus({ type: null, message: '' });
-    }
   };
 
   const validateForm = () => {
     if (!formData.fullName.trim()) {
-      setSubmitStatus({ type: 'error', message: 'Naam is verplicht' });
+      toast.error('Full name is required');
       return false;
     }
     if (!formData.email.trim()) {
-      setSubmitStatus({ type: 'error', message: 'Email is verplicht' });
+      toast.error('Email is required');
       return false;
     }
     if (!formData.email.includes('@')) {
-      setSubmitStatus({ type: 'error', message: 'Geldig email adres is vereist' });
+      toast.error('Valid email address is required');
       return false;
     }
     if (!formData.issueType) {
-      setSubmitStatus({ type: 'error', message: 'Selecteer een type issue' });
+      toast.error('Please select an issue type');
       return false;
     }
     if (!formData.description.trim()) {
-      setSubmitStatus({ type: 'error', message: 'Beschrijving is verplicht' });
+      toast.error('Description is required');
       return false;
     }
     return true;
@@ -60,7 +52,6 @@ const contactForm = () => {
     if (!validateForm()) return;
 
     setIsSubmitting(true);
-    setSubmitStatus({ type: null, message: '' });
 
     try {
       const response = await fetch('/api/contact', {
@@ -74,9 +65,9 @@ const contactForm = () => {
       const result = await response.json();
 
       if (result.success) {
-        setSubmitStatus({
-          type: 'success',
-          message: result.message || 'Bedankt voor je bericht! We nemen zo snel mogelijk contact met je op.',
+        toast.success(result.message || 'Thank you for your message! We will contact you as soon as possible.', {
+          duration: 5000,
+          description: 'Your request has been successfully sent.',
         });
 
         // Reset form on success
@@ -87,17 +78,14 @@ const contactForm = () => {
           description: '',
         });
       } else {
-        setSubmitStatus({
-          type: 'error',
-          message: result.error || 'Er is een fout opgetreden. Probeer het later opnieuw.',
+        toast.error(result.error || 'An error occurred. Please try again later.', {
+          description: 'Please check your information and try again.',
         });
       }
     } catch (error) {
       console.error('Form submission error:', error);
-      setSubmitStatus({
-        type: 'error',
-        message:
-          'Er is een fout opgetreden bij het verzenden. Controleer je internetverbinding en probeer het opnieuw.',
+      toast.error('An error occurred while sending.', {
+        description: 'Please check your internet connection and try again.',
       });
     } finally {
       setIsSubmitting(false);
@@ -111,19 +99,6 @@ const contactForm = () => {
       </h2>
 
       <div className="space-y-8">
-        {/* Status Message */}
-        {submitStatus.type && (
-          <div
-            className={`p-4 rounded-lg border ${
-              submitStatus.type === 'success'
-                ? 'bg-green-50 border-green-200 text-green-800'
-                : 'bg-red-50 border-red-200 text-red-800'
-            }`}
-          >
-            <p className="font-medium">{submitStatus.message}</p>
-          </div>
-        )}
-
         {/* Full Name */}
         <div className="relative">
           <input
@@ -225,7 +200,7 @@ const contactForm = () => {
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   ></path>
                 </svg>
-                Verzenden...
+                Sending...
               </>
             ) : (
               <>

@@ -9,8 +9,13 @@ import React, { useEffect, useState } from 'react';
 import { trackAddToCart, trackProductView } from '@/lib/analytics';
 import { ProductContentAnalyzer, ProductDescriptionFormatter } from '@/lib/productDescription';
 import Breadcrumb from './Breadcrumb';
-import { PremiumQualityIcon, RecycledMaterialIcon, SafeAndFlexableIcon, WorldWideShippingIcon } from './icons/about-us';
-import { ArrowButton, CheckIcon } from './icons/shared';
+import {
+  PremiumQualityIconProduct,
+  RecycledMaterialIconProduct,
+  SafeAndFlexableIconProduct,
+  WorldWideShippingIconProduct,
+} from './icons/about-us';
+import { ArrowButton, CartIcon, CheckIcon, PlusIcon } from './icons/shared';
 import { useWishlist } from './layout/context/wishList';
 import ProductFAQ from './ProductFAQ';
 import ProductGallery from './ProductGallery';
@@ -404,7 +409,7 @@ function ProductContent() {
                   }}
                 >
                   {selectedVariant?.availableForSale ? (
-                    <span className="flex items-center justify-center space-x-4">
+                    <span className="flex items-center uppercase justify-center space-x-4">
                       {isAddingToCart ? (
                         <>
                           <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
@@ -413,7 +418,11 @@ function ProductContent() {
                       ) : (
                         <>
                           <span>Add {quantity} to Cart</span>
-                          <ArrowButton className="" />
+
+                          <div className="flex items-center">
+                            <CartIcon className="" />
+                            <PlusIcon className="" />
+                          </div>
                         </>
                       )}
                     </span>
@@ -441,7 +450,7 @@ function ProductContent() {
               <div className="bg-gray-50 p-4 border border-solid">
                 <div className="flex flex-col">
                   <div className="flex items-center border-b border-solid pb-2 border-[#D9D9D9] space-x-4">
-                    <WorldWideShippingIcon className="w-6 h-6 text-primary" />
+                    <WorldWideShippingIconProduct className=" text-primary" />
                     <div className="flex flex-col">
                       <h3 className="text-base text-text font-bold capitalize">worldwide shipping</h3>
                       <p className="text-xs flex items-center gap-2 capitalize text-[#5D5D5D]">
@@ -453,7 +462,7 @@ function ProductContent() {
                 </div>
                 <div className="flex flex-col">
                   <div className="flex items-center border-b border-solid py-2 border-[#D9D9D9] space-x-4">
-                    <PremiumQualityIcon className="w-6 h-6 text-primary" />
+                    <PremiumQualityIconProduct className="text-primary" />
                     <div className="flex flex-col">
                       <h3 className="text-base text-text font-bold capitalize">premium quality</h3>
                       <p className="text-xs flex items-center gap-2 capitalize text-[#5D5D5D]">
@@ -465,7 +474,7 @@ function ProductContent() {
                 </div>
                 <div className="flex flex-col">
                   <div className="flex items-center border-b border-solid py-2 border-[#D9D9D9] space-x-4">
-                    <SafeAndFlexableIcon className="w-6 h-6 text-primary" />
+                    <SafeAndFlexableIconProduct className="text-primary" />
                     <div className="flex flex-col">
                       <h3 className="text-base text-text font-bold capitalize">secure & flexible payment</h3>
 
@@ -482,7 +491,7 @@ function ProductContent() {
                 </div>
                 <div className="flex flex-col">
                   <div className="flex items-center py-2 space-x-4">
-                    <RecycledMaterialIcon className="w-6 h-6 text-primary" />
+                    <RecycledMaterialIconProduct className=" text-primary" />
                     <div className="flex flex-col">
                       <h3 className="text-base text-text font-bold capitalize">made with care</h3>
 

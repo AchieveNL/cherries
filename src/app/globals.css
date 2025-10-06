@@ -2,6 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* Brand Colors */
+  --primary: #830016;
+  --secondary: #efe8dd;
+  --accent: #ef4444;
+
+  /* Component Variables */
+  --normal-bg: var(--secondary); /* Using secondary (light beige) for background */
+  --normal-text: var(--primary); /* Using primary (dark red) for text */
+  --normal-border: var(--accent); /* Using accent (red) for border */
+  --border-radius: 0px;
+
+  /* Alternative option - if you want popover to use brand colors */
+  --popover: var(--secondary);
+  --popover-foreground: var(--primary);
+  --border: var(--accent);
+}
+
 /* Global CSS Reset and Base Styles */
 * {
   margin: 0;

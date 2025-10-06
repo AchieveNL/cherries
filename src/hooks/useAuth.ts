@@ -92,7 +92,7 @@ export function useAuth(): AuthHookReturn {
   /**
    * Logout function - clears tokens and redirects
    */
-  const logout = useCallback(async (redirectToShopify: boolean = false) => {
+  const logout = useCallback(async () => {
     try {
       setIsLoading(true);
 
@@ -101,7 +101,7 @@ export function useAuth(): AuthHookReturn {
       setCustomer(null);
 
       // Perform logout (clears tokens and optionally redirects)
-      await performLogout(redirectToShopify);
+      await performLogout();
     } catch (error) {
       console.error('Logout failed:', error);
       // Even if Shopify logout fails, we've cleared local state
@@ -258,19 +258,16 @@ export function useAuthWithLoading() {
     [auth.login]
   );
 
-  const logoutWithLoading = useCallback(
-    async (redirectToShopify?: boolean) => {
-      setActionLoading(true);
-      try {
-        await auth.logout(redirectToShopify);
-      } catch (error) {
-        setActionLoading(false);
-        throw error;
-      }
-      // Note: Logout may redirect, so setActionLoading(false) might not be reached
-    },
-    [auth.logout]
-  );
+  const logoutWithLoading = useCallback(async () => {
+    setActionLoading(true);
+    try {
+      await auth.logout();
+    } catch (error) {
+      setActionLoading(false);
+      throw error;
+    }
+    // Note: Logout may redirect, so setActionLoading(false) might not be reached
+  }, [auth.logout]);
 
   const refreshWithLoading = useCallback(async () => {
     setActionLoading(true);

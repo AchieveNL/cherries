@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { AnalyticsProvider } from './_components/layout/context/AnalyticsProvider';
 import { TrustooProvider } from './_components/layout/context/TrustooProvider';
 import { WishlistProvider } from './_components/layout/context/wishList';
+import { Toaster } from './_components/ui/sonner';
 
 interface ProvidersProps {
   children: ReactNode;
@@ -50,6 +51,7 @@ export default function Providers({ children }: ProvidersProps) {
           </CartProviderWithAuth>
         </TrustooProvider>
       </AnalyticsProvider>
+      <Toaster />
     </ShopifyProvider>
   );
 }

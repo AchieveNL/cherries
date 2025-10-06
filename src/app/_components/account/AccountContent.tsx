@@ -4,7 +4,6 @@
 import countryList from 'country-list'; // Import the default export for all countries
 
 import {
-  AlertCircle,
   Calendar,
   Check,
   CreditCard,
@@ -27,6 +26,7 @@ import {
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -84,8 +84,6 @@ function AccountContent() {
   });
 
   const [dataLoading, setDataLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>(getInitialTab()!);
   const [editingProfile, setEditingProfile] = useState(false);
   const [profileForm, setProfileForm] = useState<{ firstName?: string; lastName?: string }>({});
@@ -104,8 +102,6 @@ function AccountContent() {
     setEditingAddressId(null);
     setViewingAddressId(null);
     setAddressForm({});
-    setError(null);
-    setSuccess(null);
 
     // Update URL without causing a page reload
     const newSearchParams = new URLSearchParams(searchParams);
@@ -143,7 +139,6 @@ function AccountContent() {
   const loadCustomerData = async () => {
     try {
       setDataLoading(true);
-      setError(null);
 
       console.log('Loading customer data...');
       const data = await getCustomerData();
@@ -160,32 +155,17 @@ function AccountContent() {
       }
     } catch (error) {
       console.error('Failed to load customer data:', error);
-      setError('Failed to load account data. Please try refreshing the page.');
+      toast.error('Failed to load account data', {
+        description: 'Please try refreshing the page.',
+      });
     } finally {
       setDataLoading(false);
     }
   };
 
-  const showMessage = (message: string, isError: boolean = false) => {
-    if (isError) {
-      setError(message);
-      setSuccess(null);
-    } else {
-      setSuccess(message);
-      setError(null);
-    }
-    // Auto-clear after 5 seconds
-    setTimeout(() => {
-      setError(null);
-      setSuccess(null);
-    }, 5000);
-  };
-
   const handleUpdateProfile = async () => {
     try {
       setProfileUpdating(true);
-      setError(null);
-      setSuccess(null);
 
       const { profile } = customerData;
       if (!profile) {
@@ -205,7 +185,7 @@ function AccountContent() {
 
       // Check if there are any changes to make
       if (Object.keys(updateInput).length === 0) {
-        showMessage('No changes to save');
+        toast.info('No changes to save');
         setEditingProfile(false);
         return;
       }
@@ -216,7 +196,7 @@ function AccountContent() {
       if (updatedProfile) {
         setCustomerData((prev) => ({ ...prev, profile: updatedProfile }));
         setEditingProfile(false);
-        showMessage('Profile updated successfully!');
+        toast.success('Profile updated successfully!');
 
         // Update form state with new data
         setProfileForm({
@@ -226,7 +206,9 @@ function AccountContent() {
       }
     } catch (error: any) {
       console.error('Failed to update profile:', error);
-      showMessage(`Failed to update profile: ${error.message}`, true);
+      toast.error('Failed to update profile', {
+        description: error.message,
+      });
     } finally {
       setProfileUpdating(false);
     }
@@ -261,13 +243,13 @@ function AccountContent() {
   const handleCreateAddress = async () => {
     try {
       setAddressLoading(true);
-      setError(null);
-      setSuccess(null);
 
       // Validate form
       const validationErrors = validateAddressForm();
       if (validationErrors.length > 0) {
-        showMessage(validationErrors.join(', '), true);
+        toast.error('Please fix the following errors:', {
+          description: validationErrors.join(', '),
+        });
         return;
       }
 
@@ -296,11 +278,13 @@ function AccountContent() {
         }));
         setShowAddressForm(false);
         setAddressForm({});
-        showMessage('Address created successfully!');
+        toast.success('Address created successfully!');
       }
     } catch (error: any) {
       console.error('Failed to create address:', error);
-      showMessage(`Failed to create address: ${error.message}`, true);
+      toast.error('Failed to create address', {
+        description: error.message,
+      });
     } finally {
       setAddressLoading(false);
     }
@@ -311,13 +295,13 @@ function AccountContent() {
 
     try {
       setAddressLoading(true);
-      setError(null);
-      setSuccess(null);
 
       // Validate form
       const validationErrors = validateAddressForm();
       if (validationErrors.length > 0) {
-        showMessage(validationErrors.join(', '), true);
+        toast.error('Please fix the following errors:', {
+          description: validationErrors.join(', '),
+        });
         return;
       }
 
@@ -347,11 +331,13 @@ function AccountContent() {
         setEditingAddressId(null);
         setShowAddressForm(false);
         setAddressForm({});
-        showMessage('Address updated successfully!');
+        toast.success('Address updated successfully!');
       }
     } catch (error: any) {
       console.error('Failed to update address:', error);
-      showMessage(`Failed to update address: ${error.message}`, true);
+      toast.error('Failed to update address', {
+        description: error.message,
+      });
     } finally {
       setAddressLoading(false);
     }
@@ -389,27 +375,25 @@ function AccountContent() {
     }
 
     try {
-      setError(null);
-      setSuccess(null);
       const success = await deleteCustomerAddress(addressId);
       if (success) {
         setCustomerData((prev) => ({
           ...prev,
           addresses: prev.addresses.filter((addr) => addr.id !== addressId),
         }));
-        showMessage('Address deleted successfully!');
+        toast.success('Address deleted successfully!');
       }
     } catch (error: any) {
       console.error('Failed to delete address:', error);
-      showMessage(`Failed to delete address: ${error.message}`, true);
+      toast.error('Failed to delete address', {
+        description: error.message,
+      });
     }
   };
 
   const handleEmailMarketingToggle = async (subscribe: boolean) => {
     try {
       setMarketingLoading(true);
-      setError(null);
-      setSuccess(null);
 
       console.log('Toggling email marketing to:', subscribe);
 
@@ -435,13 +419,15 @@ function AccountContent() {
             : null,
         }));
 
-        showMessage(`Email marketing ${subscribe ? 'enabled' : 'disabled'} successfully!`);
+        toast.success(`Email marketing ${subscribe ? 'enabled' : 'disabled'} successfully!`);
       } else {
         throw new Error('Failed to update email marketing preference');
       }
     } catch (error: any) {
       console.error('Failed to update email marketing preference:', error);
-      showMessage(`Failed to update email marketing preference: ${error.message}`, true);
+      toast.error('Failed to update email marketing preference', {
+        description: error.message,
+      });
     } finally {
       setMarketingLoading(false);
     }
@@ -449,7 +435,7 @@ function AccountContent() {
 
   const handleLogout = async () => {
     try {
-      await logout(true);
+      await logout();
     } catch (error) {
       console.error('Logout failed:', error);
       router.push('/');
@@ -496,8 +482,6 @@ function AccountContent() {
     setEditingAddressId(null);
     setViewingAddressId(null);
     setAddressForm({});
-    setError(null);
-    setSuccess(null);
   };
 
   // Show loading state
@@ -564,29 +548,6 @@ function AccountContent() {
           </div>
         </div>
       </div>
-
-      {/* Success/Error Messages */}
-      {(error || success) && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-          <div className={`border  p-4 ${success ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
-            <div className="flex">
-              <AlertCircle className={`h-5 w-5 ${success ? 'text-green-400' : 'text-red-400'}`} />
-              <div className="ml-3">
-                <p className={`text-sm ${success ? 'text-green-700' : 'text-red-700'}`}>{success || error}</p>
-              </div>
-              <button
-                onClick={() => {
-                  setError(null);
-                  setSuccess(null);
-                }}
-                className="ml-auto"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -1243,7 +1204,7 @@ function AccountContent() {
                                 )
                               }
                               disabled={marketingLoading}
-                              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer  border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
                                 profile.emailAddress?.marketingState === EmailMarketingState.SUBSCRIBED
                                   ? 'bg-primary'
                                   : 'bg-gray-200'
@@ -1251,7 +1212,7 @@ function AccountContent() {
                             >
                               <span className="sr-only">Toggle marketing emails</span>
                               <span
-                                className={`pointer-events-none relative inline-block h-5 w-5 transform  bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                                className={`pointer-events-none relative inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
                                   profile.emailAddress?.marketingState === EmailMarketingState.SUBSCRIBED
                                     ? 'translate-x-5'
                                     : 'translate-x-0'
@@ -1273,7 +1234,7 @@ function AccountContent() {
                                       : 'opacity-0 ease-out duration-100'
                                   }`}
                                 >
-                                  <Check className="h-3 w-3 text-blue-600" />
+                                  <Check className="h-3 w-3 text-primary" />
                                 </span>
                               </span>
                             </button>
@@ -1289,7 +1250,10 @@ function AccountContent() {
                       <h4 className="text-md font-medium text-gray-900 mb-3">Account Actions</h4>
                       <div className="space-y-3">
                         <Button
-                          onClick={() => loadCustomerData()}
+                          onClick={() => {
+                            loadCustomerData();
+                            toast.success('Account data refreshed successfully!');
+                          }}
                           disabled={dataLoading}
                           className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium  text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                         >

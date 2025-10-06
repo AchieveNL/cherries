@@ -243,7 +243,7 @@ export interface AuthHookReturn {
   isLoading: boolean;
   customer: CustomerProfile | null;
   login: (email?: string) => Promise<void>;
-  logout: (redirectToShopify?: boolean) => Promise<void>;
+  logout: () => Promise<void>;
   refreshToken: () => Promise<boolean>;
   refreshUserData: () => Promise<void>;
   checkAuthStatus: () => Promise<void>;

@@ -136,7 +136,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${poppins.variable} ${bungee.variable} ${roboto.variable}`}>
       <head>
         {/* Google Tag Manager - Critical Loading */}
         <Script
@@ -206,7 +206,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className={`${poppins.variable} ${bungee.variable} ${roboto.variable} ${poppins.className}`}>
+      <body>
         {/* Google Tag Manager (noscript) - Must be immediately after opening body tag */}
         <noscript>
           <iframe
