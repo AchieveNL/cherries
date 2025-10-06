@@ -8,10 +8,10 @@ import type {
   CustomerProfile,
   CustomerStoreCreditAccount,
   CustomerUpdateInput,
+  EmailMarketingState,
   OrderFilters,
 } from '@/types/auth';
 
-// Enhanced GraphQL queries
 const CUSTOMER_PROFILE_QUERY = `#graphql
   query CustomerProfile {
     customer {
@@ -173,6 +173,7 @@ const UPDATE_CUSTOMER_MUTATION = `#graphql
         displayName
         emailAddress {
           emailAddress
+          marketingState
         }
         phoneNumber {
           phoneNumber
@@ -200,7 +201,7 @@ const CREATE_ADDRESS_MUTATION = `#graphql
         city
         province
         zip
-        territoryCode
+        country
         phoneNumber
         formatted
       }
@@ -214,8 +215,8 @@ const CREATE_ADDRESS_MUTATION = `#graphql
 `;
 
 const UPDATE_ADDRESS_MUTATION = `#graphql
-  mutation CustomerAddressUpdate($addressId: ID!, $address: CustomerAddressInput!) {
-    customerAddressUpdate(addressId: $addressId, address: $address) {
+  mutation CustomerAddressUpdate($addressId: ID!, $address: CustomerAddressInput!, $defaultAddress: Boolean) {
+    customerAddressUpdate(addressId: $addressId, address: $address, defaultAddress: $defaultAddress) {
       customerAddress {
         id
         firstName
@@ -243,6 +244,38 @@ const DELETE_ADDRESS_MUTATION = `#graphql
   mutation CustomerAddressDelete($addressId: ID!) {
     customerAddressDelete(addressId: $addressId) {
       deletedAddressId
+      userErrors {
+        field
+        message
+        code
+      }
+    }
+  }
+`;
+
+const EMAIL_MARKETING_SUBSCRIBE_MUTATION = `#graphql
+  mutation CustomerEmailMarketingSubscribe {
+    customerEmailMarketingSubscribe {
+      emailAddress {
+        emailAddress
+        marketingState
+      }
+      userErrors {
+        field
+        message
+        code
+      }
+    }
+  }
+`;
+
+const EMAIL_MARKETING_UNSUBSCRIBE_MUTATION = `#graphql
+  mutation CustomerEmailMarketingUnsubscribe {
+    customerEmailMarketingUnsubscribe {
+      emailAddress {
+        emailAddress
+        marketingState
+      }
       userErrors {
         field
         message
@@ -345,26 +378,27 @@ class CustomerAPI {
     }
   };
 
+  // Fixed updateProfile method - only uses supported fields
   updateProfile = async (input: CustomerUpdateInput): Promise<CustomerProfile | null> => {
     try {
+      // Create the input object with only the fields that CustomerUpdateInput supports
       const shopifyInput: any = {};
 
-      // Only include fields that CustomerUpdateInput definitely supports
-      if (input.firstName !== undefined) shopifyInput.firstName = input.firstName;
-      if (input.lastName !== undefined) shopifyInput.lastName = input.lastName;
-      if (input.acceptsMarketing !== undefined) shopifyInput.acceptsMarketing = input.acceptsMarketing;
-
-      // Skip phone and email for now - they likely need separate mutations
-      if (input.phone !== undefined) {
-        shopifyInput.phoneNumber = { phoneNumber: input.phone };
+      // Only firstName and lastName are supported by CustomerUpdateInput
+      if (input.firstName !== undefined) {
+        shopifyInput.firstName = input.firstName;
       }
-      if (input.email !== undefined) {
-        shopifyInput.emailAddress = { emailAddress: input.email };
+      if (input.lastName !== undefined) {
+        shopifyInput.lastName = input.lastName;
       }
 
+      // If no valid fields to update, just return current profile
       if (Object.keys(shopifyInput).length === 0) {
+        console.log('No valid fields to update, returning current profile');
         return await this.getProfile();
       }
+
+      console.log('Updating profile with input:', shopifyInput);
 
       const data = await this.request<{
         customerUpdate: {
@@ -374,9 +408,11 @@ class CustomerAPI {
       }>(UPDATE_CUSTOMER_MUTATION, { input: shopifyInput });
 
       if (data.customerUpdate.userErrors.length > 0) {
-        throw new Error(data.customerUpdate.userErrors[0].message);
+        console.error('Profile update errors:', data.customerUpdate.userErrors);
+        throw new Error(data.customerUpdate.userErrors.map((e) => e.message).join(', '));
       }
 
+      console.log('Profile updated successfully:', data.customerUpdate.customer);
       return data.customerUpdate.customer;
     } catch (error) {
       console.error('❌ Failed to update customer profile:', error);
@@ -399,6 +435,8 @@ class CustomerAPI {
 
   createAddress = async (address: CustomerAddressInput): Promise<CustomerAddress | null> => {
     try {
+      console.log('Creating address with input:', address);
+
       const data = await this.request<{
         customerAddressCreate: {
           customerAddress: CustomerAddress;
@@ -406,8 +444,12 @@ class CustomerAPI {
         };
       }>(CREATE_ADDRESS_MUTATION, { address });
 
+      console.log('Create address response:', data);
+
       if (data.customerAddressCreate.userErrors.length > 0) {
-        throw new Error(data.customerAddressCreate.userErrors[0].message);
+        const errorMessages = data.customerAddressCreate.userErrors.map((e) => e.message).join(', ');
+        console.error('Address creation errors:', data.customerAddressCreate.userErrors);
+        throw new Error(errorMessages);
       }
 
       return data.customerAddressCreate.customerAddress;
@@ -417,17 +459,31 @@ class CustomerAPI {
     }
   };
 
-  updateAddress = async (addressId: string, address: CustomerAddressInput): Promise<CustomerAddress | null> => {
+  updateAddress = async (
+    addressId: string,
+    address: CustomerAddressInput,
+    defaultAddress?: boolean
+  ): Promise<CustomerAddress | null> => {
     try {
+      console.log('Updating address with input:', { addressId, address, defaultAddress });
+
       const data = await this.request<{
         customerAddressUpdate: {
           customerAddress: CustomerAddress;
           userErrors: Array<{ field: string[]; message: string; code: string }>;
         };
-      }>(UPDATE_ADDRESS_MUTATION, { addressId, address });
+      }>(UPDATE_ADDRESS_MUTATION, {
+        addressId,
+        address,
+        defaultAddress: defaultAddress || null,
+      });
+
+      console.log('Update address response:', data);
 
       if (data.customerAddressUpdate.userErrors.length > 0) {
-        throw new Error(data.customerAddressUpdate.userErrors[0].message);
+        const errorMessages = data.customerAddressUpdate.userErrors.map((e) => e.message).join(', ');
+        console.error('Address update errors:', data.customerAddressUpdate.userErrors);
+        throw new Error(errorMessages);
       }
 
       return data.customerAddressUpdate.customerAddress;
@@ -447,13 +503,111 @@ class CustomerAPI {
       }>(DELETE_ADDRESS_MUTATION, { addressId });
 
       if (data.customerAddressDelete.userErrors.length > 0) {
-        throw new Error(data.customerAddressDelete.userErrors[0].message);
+        const errorMessages = data.customerAddressDelete.userErrors.map((e) => e.message).join(', ');
+        console.error('Address deletion errors:', data.customerAddressDelete.userErrors);
+        throw new Error(errorMessages);
       }
 
       return !!data.customerAddressDelete.deletedAddressId;
     } catch (error) {
       console.error('❌ Failed to delete customer address:', error);
       throw error;
+    }
+  };
+
+  // Fixed email marketing management
+  subscribeToEmailMarketing = async (): Promise<{ success: boolean; marketingState?: string }> => {
+    try {
+      console.log('Attempting to subscribe to email marketing...');
+
+      const data = await this.request<{
+        customerEmailMarketingSubscribe: {
+          emailAddress: {
+            emailAddress: string;
+            marketingState: string;
+          } | null;
+          userErrors: Array<{ field: string[]; message: string; code: string }>;
+        };
+      }>(EMAIL_MARKETING_SUBSCRIBE_MUTATION);
+
+      console.log('Email marketing subscribe response:', data);
+
+      if (data.customerEmailMarketingSubscribe.userErrors.length > 0) {
+        const errorMessage = data.customerEmailMarketingSubscribe.userErrors.map((e) => e.message).join(', ');
+        console.error('Email marketing subscribe errors:', data.customerEmailMarketingSubscribe.userErrors);
+        throw new Error(errorMessage);
+      }
+
+      const marketingState = data.customerEmailMarketingSubscribe.emailAddress?.marketingState;
+      console.log('Email marketing subscription result:', marketingState);
+
+      return {
+        success: marketingState === 'SUBSCRIBED',
+        marketingState,
+      };
+    } catch (error) {
+      console.error('❌ Failed to subscribe to email marketing:', error);
+      throw error;
+    }
+  };
+
+  unsubscribeFromEmailMarketing = async (): Promise<{ success: boolean; marketingState?: string }> => {
+    try {
+      console.log('Attempting to unsubscribe from email marketing...');
+
+      const data = await this.request<{
+        customerEmailMarketingUnsubscribe: {
+          emailAddress: {
+            emailAddress: string;
+            marketingState: string;
+          } | null;
+          userErrors: Array<{ field: string[]; message: string; code: string }>;
+        };
+      }>(EMAIL_MARKETING_UNSUBSCRIBE_MUTATION);
+
+      console.log('Email marketing unsubscribe response:', data);
+
+      if (data.customerEmailMarketingUnsubscribe.userErrors.length > 0) {
+        const errorMessage = data.customerEmailMarketingUnsubscribe.userErrors.map((e) => e.message).join(', ');
+        console.error('Email marketing unsubscribe errors:', data.customerEmailMarketingUnsubscribe.userErrors);
+        throw new Error(errorMessage);
+      }
+
+      const marketingState = data.customerEmailMarketingUnsubscribe.emailAddress?.marketingState;
+      console.log('Email marketing unsubscription result:', marketingState);
+
+      return {
+        success: marketingState === 'UNSUBSCRIBED',
+        marketingState,
+      };
+    } catch (error) {
+      console.error('❌ Failed to unsubscribe from email marketing:', error);
+      throw error;
+    }
+  };
+
+  // Helper method to toggle email marketing based on current state
+  toggleEmailMarketing = async (subscribe: boolean): Promise<{ success: boolean; marketingState?: string }> => {
+    try {
+      if (subscribe) {
+        return await this.subscribeToEmailMarketing();
+      } else {
+        return await this.unsubscribeFromEmailMarketing();
+      }
+    } catch (error) {
+      console.error('❌ Failed to toggle email marketing:', error);
+      throw error;
+    }
+  };
+
+  // Get current email marketing state
+  getEmailMarketingState = async (): Promise<EmailMarketingState | null> => {
+    try {
+      const profile = await this.getProfile();
+      return profile?.emailAddress?.marketingState || null;
+    } catch (error) {
+      console.error('❌ Failed to get email marketing state:', error);
+      return null;
     }
   };
 
@@ -549,6 +703,10 @@ export const getCustomerAddresses = customerAPI.getAddresses;
 export const createCustomerAddress = customerAPI.createAddress;
 export const updateCustomerAddress = customerAPI.updateAddress;
 export const deleteCustomerAddress = customerAPI.deleteAddress;
+export const subscribeToEmailMarketing = customerAPI.subscribeToEmailMarketing;
+export const unsubscribeFromEmailMarketing = customerAPI.unsubscribeFromEmailMarketing;
+export const toggleEmailMarketing = customerAPI.toggleEmailMarketing;
+export const getEmailMarketingState = customerAPI.getEmailMarketingState;
 export const getCustomerOrders = customerAPI.getOrders;
 export const getCustomerStoreCreditAccounts = customerAPI.getStoreCreditAccounts;
 export const getCustomerMetafields = customerAPI.getMetafields;

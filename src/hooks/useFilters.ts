@@ -1,18 +1,20 @@
-// src/hooks/useFilters.ts - Fixed version
 import { useMemo, useState } from 'react';
 
 import type { Product } from '@shopify/hydrogen-react/storefront-api-types';
 import type { PartialDeep } from 'type-fest';
 
-export interface FilterState {
+// Define the FilterState interface
+interface FilterState {
   search: string;
   category: string;
   priceRange: [number, number];
   vendor: string;
   availability: 'all' | 'inStock' | 'outOfStock';
   sortBy: 'featured' | 'newest' | 'oldest' | 'priceAsc' | 'priceDesc' | 'nameAsc' | 'nameDesc';
+  collections?: string[];
 }
 
+// Default filter state
 const defaultFilters: FilterState = {
   search: '',
   category: '',
@@ -20,50 +22,47 @@ const defaultFilters: FilterState = {
   vendor: '',
   availability: 'all',
   sortBy: 'featured',
+  collections: [],
 };
 
-export function useProductFilters(products: PartialDeep<Product, { recurseIntoArrays: true }>[] | undefined | null) {
-  const [filters, setFilters] = useState<FilterState>(defaultFilters);
+// Updated hook to accept external filters OR use internal state
+export function useProductFilters(
+  products: PartialDeep<Product, { recurseIntoArrays: true }>[],
+  externalFilters?: FilterState | null
+) {
+  // Use internal state only if no external filters provided
+  const [internalFilters, setInternalFilters] = useState<FilterState>(defaultFilters);
 
-  // Ensure products is always an array
-  const safeProducts = useMemo(() => {
-    if (!products || !Array.isArray(products)) {
-      console.warn('useProductFilters: products is not an array, using empty array');
-      return [];
-    }
-    return products;
-  }, [products]);
+  // Use external filters if provided and not null, otherwise use internal state
+  const filters = externalFilters !== null ? externalFilters || internalFilters : internalFilters;
 
   const filteredProducts = useMemo(() => {
-    // Start with safe products array
-    let filtered = [...safeProducts];
+    // If externalFilters is null, return original products (no filtering)
+    if (externalFilters === null) {
+      return products;
+    }
+
+    let filtered = [...products];
 
     // Apply search filter
     if (filters.search) {
-      const searchTerm = filters.search.toLowerCase();
-      filtered = filtered.filter((product) => {
-        const title = product.title?.toLowerCase() || '';
-        const description = product.description?.toLowerCase() || '';
-        const vendor = product.vendor?.toLowerCase() || '';
-        const tags = product.tags?.join(' ').toLowerCase() || '';
-
-        return (
-          title.includes(searchTerm) ||
-          description.includes(searchTerm) ||
-          vendor.includes(searchTerm) ||
-          tags.includes(searchTerm)
-        );
-      });
+      const searchLower = filters.search.toLowerCase();
+      filtered = filtered.filter(
+        (product) =>
+          product.title?.toLowerCase().includes(searchLower) ||
+          product.vendor?.toLowerCase().includes(searchLower) ||
+          product.productType?.toLowerCase().includes(searchLower)
+      );
     }
 
-    // Apply category filter (product type)
+    // Apply category filter
     if (filters.category) {
-      filtered = filtered.filter((product) => product.productType?.toLowerCase() === filters.category.toLowerCase());
+      filtered = filtered.filter((product) => product.productType === filters.category);
     }
 
     // Apply vendor filter
     if (filters.vendor) {
-      filtered = filtered.filter((product) => product.vendor?.toLowerCase() === filters.vendor.toLowerCase());
+      filtered = filtered.filter((product) => product.vendor === filters.vendor);
     }
 
     // Apply availability filter
@@ -76,21 +75,19 @@ export function useProductFilters(products: PartialDeep<Product, { recurseIntoAr
 
     // Apply price range filter
     filtered = filtered.filter((product) => {
-      if (!product.variants?.nodes || product.variants.nodes.length === 0) {
-        return true; // Include products without variants
-      }
-
-      const prices = product.variants.nodes
-        .map((variant) => (variant?.price?.amount ? parseFloat(variant.price.amount) : 0))
-        .filter((price) => price > 0);
-
-      if (prices.length === 0) return true;
-
-      const minPrice = Math.min(...prices);
-      const maxPrice = Math.max(...prices);
-
-      return minPrice >= filters.priceRange[0] && maxPrice <= filters.priceRange[1];
+      const price = parseFloat(product.priceRange?.minVariantPrice?.amount || '0');
+      return price >= filters.priceRange[0] && price <= filters.priceRange[1];
     });
+
+    // Apply collections filter
+    if (filters.collections && filters.collections.length > 0) {
+      filtered = filtered.filter((product) => {
+        // Check if product belongs to any of the selected collections
+        return (
+          product.collections?.nodes?.some((collection) => filters.collections?.includes(collection?.id || '')) || false
+        );
+      });
+    }
 
     // Apply sorting
     filtered.sort((a, b) => {
@@ -100,31 +97,31 @@ export function useProductFilters(products: PartialDeep<Product, { recurseIntoAr
         case 'oldest':
           return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
         case 'priceAsc':
-          const priceA = a.variants?.nodes?.[0]?.price?.amount ? parseFloat(a.variants.nodes[0].price.amount) : 0;
-          const priceB = b.variants?.nodes?.[0]?.price?.amount ? parseFloat(b.variants.nodes[0].price.amount) : 0;
-          return priceA - priceB;
+          return (
+            parseFloat(a.priceRange?.minVariantPrice?.amount || '0') -
+            parseFloat(b.priceRange?.minVariantPrice?.amount || '0')
+          );
         case 'priceDesc':
-          const priceA2 = a.variants?.nodes?.[0]?.price?.amount ? parseFloat(a.variants.nodes[0].price.amount) : 0;
-          const priceB2 = b.variants?.nodes?.[0]?.price?.amount ? parseFloat(b.variants.nodes[0].price.amount) : 0;
-          return priceB2 - priceA2;
+          return (
+            parseFloat(b.priceRange?.minVariantPrice?.amount || '0') -
+            parseFloat(a.priceRange?.minVariantPrice?.amount || '0')
+          );
         case 'nameAsc':
           return (a.title || '').localeCompare(b.title || '');
         case 'nameDesc':
           return (b.title || '').localeCompare(a.title || '');
-        case 'featured':
         default:
-          return 0; // Keep original order
+          return 0;
       }
     });
 
     return filtered;
-  }, [safeProducts, filters]);
+  }, [products, filters, externalFilters]);
 
   return {
     filters,
-    setFilters,
+    setFilters: setInternalFilters, // Only return setter for internal filters
     filteredProducts,
-    totalProducts: safeProducts.length,
     filteredCount: filteredProducts.length,
   };
 }

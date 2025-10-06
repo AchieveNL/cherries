@@ -1,41 +1,25 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import CollectionsPage from '@/app/_components/collections/CollectionsPage';
 import { getCollections } from '@/lib/shopify';
+
+/* eslint-disable @typescript-eslint/no-unused-vars */
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Collections',
   description: 'Browse our curated collections of products',
 };
 
-interface SearchParams {
-  page?: string;
-  sort?: string;
-  search?: string;
-}
-
-export default async function Collections({ searchParams }: { searchParams: SearchParams }) {
-  const page = Number(searchParams?.page) || 1;
-  const itemsPerPage = 12;
-  const sortKey = searchParams?.sort === 'updated' ? 'UPDATED_AT' : 'TITLE';
-  const search = searchParams?.search || '';
-
+export default async function Collections() {
   try {
-    const { collections, pageInfo, totalCount } = await getCollections({
-      first: itemsPerPage,
-      sortKey,
-      reverse: sortKey === 'UPDATED_AT',
-      query: search,
+    // Load ALL collections on the server - no search/pagination parameters
+    const { collections, totalCount } = await getCollections({
+      sortKey: 'TITLE',
+      reverse: false,
+      query: '', // Empty query to get all collections
+      first: 250, // Increase to get all collections or adjust based on your needs
     });
-    console.log('Collections Data:', collections);
 
-    return (
-      <CollectionsPage
-        collections={collections}
-        totalCollections={totalCount}
-        hasNextPage={pageInfo.hasNextPage}
-        hasPreviousPage={pageInfo.hasPreviousPage}
-      />
-    );
+    return <CollectionsPage collections={collections} totalCollections={totalCount} />;
   } catch (error) {
     console.error('Error fetching collections:', error);
     return (

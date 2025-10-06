@@ -7,37 +7,34 @@ export interface CustomerToken {
 }
 
 export enum EmailMarketingState {
-  INVALIDE,
-  NOT_SUBSCRIBED,
-  PENDING,
-  REDACTED,
-  SUBSCRIBED,
-  UNSUBSCRIBED,
+  INVALID = 'INVALID',
+  NOT_SUBSCRIBED = 'NOT_SUBSCRIBED',
+  PENDING = 'PENDING',
+  REDACTED = 'REDACTED',
+  SUBSCRIBED = 'SUBSCRIBED',
+  UNSUBSCRIBED = 'UNSUBSCRIBED',
 }
 export interface CustomerAccessToken {
   accessToken: string;
   expiresAt: string;
 }
-export interface LoginResponse {
+
+export interface BaseResponse {
   success: boolean;
-  customerAccessToken?: CustomerAccessToken;
-  customer?: CustomerProfile;
   errors?: Array<{
     field: string[];
     message: string;
     code?: string;
   }>;
 }
-
-export interface RegisterResponse {
-  success: boolean;
+export interface LoginResponse extends BaseResponse {
   customerAccessToken?: CustomerAccessToken;
   customer?: CustomerProfile;
-  errors?: Array<{
-    field: string[];
-    message: string;
-    code?: string;
-  }>;
+}
+
+export interface RegisterResponse extends BaseResponse {
+  customerAccessToken?: CustomerAccessToken;
+  customer?: CustomerProfile;
 }
 
 export interface RecoverResponse {
@@ -246,7 +243,7 @@ export interface AuthHookReturn {
   isLoading: boolean;
   customer: CustomerProfile | null;
   login: (email?: string) => Promise<void>;
-  logout: (redirectToShopify?: boolean) => Promise<void>;
+  logout: () => Promise<void>;
   refreshToken: () => Promise<boolean>;
   refreshUserData: () => Promise<void>;
   checkAuthStatus: () => Promise<void>;
@@ -267,9 +264,9 @@ export interface CustomerAddressInput {
   address1?: string;
   address2?: string;
   city?: string;
-  province?: string;
+  territoryCode?: string; // Country code (e.g., 'US', 'CA')
+  zoneCode?: string; // State/Province code (e.g., 'NY', 'CA', 'ON')
   zip?: string;
-  territoryCode?: string;
   phoneNumber?: string;
 }
 

@@ -6,6 +6,7 @@ import { AlertCircle, ArrowRight, Loader2, User } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 
+import { Button } from '@/app/_components/ui';
 import { useAuth } from '@/hooks/useAuth';
 
 function LoginContent() {
@@ -104,16 +105,13 @@ function LoginContent() {
       <div className="max-w-md w-full space-y-8">
         {/* Header */}
         <div className="text-center">
-          <div className="mx-auto h-42 w-42 rounded-full flex items-center justify-center mb-6">
-            <img src="/logo.svg" alt="CaseHub Logo" className="w-42 h-42" />
-          </div>
           <h2 className="text-3xl font-bungee font-bold text-gray-900 mb-2">Welcome Back</h2>
           <p className="text-gray-600">Sign in to access your account and orders</p>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="rounded-lg p-4 bg-red-50 border border-red-200">
+          <div className=" p-4 bg-red-50 border border-solid border-red-200">
             <div className="flex items-start space-x-3">
               <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
               <p className="text-sm text-red-700">{error}</p>
@@ -137,7 +135,7 @@ function LoginContent() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                className="appearance-none  relative block w-full px-3 py-3 pl-10 border border-solid border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
                 placeholder="your-email@example.com"
                 disabled={loginLoading}
               />
@@ -149,10 +147,10 @@ function LoginContent() {
           </div>
 
           {/* Login Button */}
-          <button
+          <Button
             onClick={handleLogin}
             disabled={loginLoading}
-            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-text bg-secondary hover:bg-secondary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="group relative w-full flex justify-center py-3 px-4 border border-solid border-transparent text-sm font-medium  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {loginLoading ? (
               <Loader2 className="h-5 w-5 animate-spin" />
@@ -162,14 +160,14 @@ function LoginContent() {
                 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </>
             )}
-          </button>
+          </Button>
         </div>
 
         {/* Info Section */}
-        <div className="bg-secondary/50 border border-secondary rounded-lg p-4">
+        <div className="bg-white border border-solid border-secondary   p-4">
           <div className="text-sm">
-            <p className="text-blue-500 font-medium mb-1">Secure Authentication</p>
-            <p className="text-blue-500">
+            <p className="text-text font-medium mb-1">Secure Authentication</p>
+            <p className="text-text">
               You&apos;ll be redirected to Shopify&apos;s secure login page to authenticate with your existing account.
             </p>
           </div>
@@ -187,7 +185,7 @@ function LoginContent() {
           <div className="text-xs text-gray-500">
             <p>
               Don&apos;t have a Shopify account?{' '}
-              <span className="text-blue-600">You can create one during the login process.</span>
+              <span className="text-primary">You can create one during the login process.</span>
             </p>
           </div>
         </div>
@@ -201,7 +199,7 @@ function LoginPageFallback() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 flex items-center justify-center">
       <div className="flex items-center space-x-3">
-        <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
         <span className="text-gray-600">Loading login page...</span>
       </div>
     </div>

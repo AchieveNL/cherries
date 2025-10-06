@@ -8,27 +8,73 @@ import type {
 } from '@shopify/hydrogen-react/storefront-api-types';
 import type { PartialDeep } from 'type-fest';
 
-// Create Shopify client
-export const client = createStorefrontClient({
-  storeDomain: process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN!,
-  storefrontApiVersion: '2025-04',
-  privateStorefrontToken: process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN!,
-  contentType: 'json',
-});
+const storeDomain = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN;
+const storefrontToken = process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN_FRONT;
+
+if (!storeDomain) {
+  console.error('❌ Missing NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN environment variable');
+}
+
+if (!storefrontToken) {
+  console.error('❌ Missing SHOPIFY_STOREFRONT_ACCESS_TOKEN environment variable');
+}
+
+// Only create client if we have the required environment variables
+let client: ReturnType<typeof createStorefrontClient> | null = null;
+
+if (storeDomain && storefrontToken) {
+  try {
+    client = createStorefrontClient({
+      storeDomain: storeDomain,
+      storefrontApiVersion: '2025-04',
+      privateStorefrontToken: storefrontToken,
+      contentType: 'json',
+    });
+    console.log('✅ Shopify client created successfully');
+  } catch (error) {
+    console.error('❌ Failed to create Shopify client:', error);
+  }
+}
+
+export { client };
 
 // Helper function for making requests
-async function shopifyRequest<T>(query: string, variables: Record<string, any> = {}): Promise<T | null> {
+export async function shopifyRequest<T>(query: string, variables: Record<string, any> = {}): Promise<T | null> {
   try {
+    // Check if client is properly initialized
+    if (!client) {
+      console.error('Shopify client not initialized. Check your environment variables:');
+      console.error('- NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN:', storeDomain ? '✅ Set' : '❌ Missing');
+      console.error('- SHOPIFY_STOREFRONT_ACCESS_TOKEN:', storefrontToken ? '✅ Set' : '❌ Missing');
+      return null;
+    }
+
+    // Get headers safely
+    let headers: Record<string, string>;
+    try {
+      headers = client.getPrivateTokenHeaders();
+    } catch (headerError) {
+      console.error('Failed to get private token headers:', headerError);
+      return null;
+    }
+
+    // Make the request
     const response = await fetch(client.getStorefrontApiUrl(), {
       body: JSON.stringify({
         query,
         variables,
       }),
-      headers: client.getPrivateTokenHeaders(),
+      headers: {
+        ...headers,
+        'Content-Type': 'application/json',
+      },
       method: 'POST',
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`HTTP ${response.status}: ${response.statusText}`);
+      console.error('Response body:', errorText);
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
 
@@ -51,8 +97,8 @@ function normalizePageInfo(pageInfo: any) {
   return {
     hasNextPage: pageInfo?.hasNextPage || false,
     hasPreviousPage: pageInfo?.hasPreviousPage || false,
-    startCursor: pageInfo?.startCursor || undefined,
-    endCursor: pageInfo?.endCursor || undefined,
+    startCursor: pageInfo?.startCursor || null,
+    endCursor: pageInfo?.endCursor || null,
   };
 }
 
@@ -236,6 +282,7 @@ const PRODUCT_QUERY = `#graphql
         {namespace: "custom", key: "return_policy"}
         {namespace: "custom", key: "video_url"}
         {namespace: "custom", key: "size_guide"}
+        {namespace: "custom", key: "faqs"}
       ]) {
         id
         namespace
@@ -255,8 +302,8 @@ const PRODUCT_QUERY = `#graphql
 `;
 
 const PRODUCTS_QUERY = `#graphql
-  query Products($first: Int!, $sortKey: ProductSortKeys!, $reverse: Boolean!, $query: String) {
-    products(first: $first, sortKey: $sortKey, reverse: $reverse, query: $query) {
+ query Products($first: Int, $last: Int, $after: String, $before: String, $sortKey: ProductSortKeys!, $reverse: Boolean!, $query: String) {
+  products(first: $first, last: $last, after: $after, before: $before, sortKey: $sortKey, reverse: $reverse, query: $query) {
       pageInfo {
         hasNextPage
         hasPreviousPage
@@ -524,9 +571,26 @@ const PRODUCT_RECOMMENDATIONS_QUERY = `#graphql
       id
       title
       handle
+      description
       vendor
+      productType
+      tags
       availableForSale
-      images(first: 1) {
+      createdAt
+      updatedAt
+      onlineStoreUrl
+
+      # Featured image (fallback if images array is empty)
+      featuredImage {
+        id
+        url
+        altText
+        width
+        height
+      }
+
+      # Multiple images for variety
+      images(first: 3) {
         nodes {
           id
           url
@@ -535,9 +599,14 @@ const PRODUCT_RECOMMENDATIONS_QUERY = `#graphql
           height
         }
       }
-      variants(first: 1) {
+
+      # Get multiple variants for better pricing info
+      variants(first: 3) {
         nodes {
           id
+          title
+          availableForSale
+          quantityAvailable
           price {
             amount
             currencyCode
@@ -546,13 +615,69 @@ const PRODUCT_RECOMMENDATIONS_QUERY = `#graphql
             amount
             currencyCode
           }
+          selectedOptions {
+            name
+            value
+          }
+          image {
+            id
+            url
+            altText
+            width
+            height
+          }
         }
       }
+
+      # Price ranges for better pricing display
       priceRange {
         minVariantPrice {
           amount
           currencyCode
         }
+        maxVariantPrice {
+          amount
+          currencyCode
+        }
+      }
+
+      compareAtPriceRange {
+        minVariantPrice {
+          amount
+          currencyCode
+        }
+        maxVariantPrice {
+          amount
+          currencyCode
+        }
+      }
+
+      # SEO data
+      seo {
+        title
+        description
+      }
+
+      # Collections for categorization
+      collections(first: 3) {
+        nodes {
+          id
+          title
+          handle
+        }
+      }
+
+      # Custom metafields for ratings, etc.
+      metafields(identifiers: [
+        {namespace: "custom", key: "rating"}
+        {namespace: "custom", key: "review_count"}
+        {namespace: "custom", key: "features"}
+      ]) {
+        id
+        namespace
+        key
+        value
+        type
       }
     }
   }
@@ -563,8 +688,24 @@ const PRODUCT_RECOMMENDATIONS_QUERY = `#graphql
 // ===========================
 
 const COLLECTIONS_QUERY = `#graphql
-  query Collections($first: Int!, $sortKey: CollectionSortKeys, $reverse: Boolean, $query: String) {
-    collections(first: $first, sortKey: $sortKey, reverse: $reverse, query: $query) {
+  query Collections(
+    $first: Int,
+    $last: Int,
+    $after: String,
+    $before: String,
+    $sortKey: CollectionSortKeys,
+    $reverse: Boolean,
+    $query: String
+  ) {
+    collections(
+      first: $first,
+      last: $last,
+      after: $after,
+      before: $before,
+      sortKey: $sortKey,
+      reverse: $reverse,
+      query: $query
+    ) {
       pageInfo {
         hasNextPage
         hasPreviousPage
@@ -819,11 +960,17 @@ export async function getProduct(handle: string): Promise<PartialDeep<Product, {
 
 export async function getProducts({
   first = 20,
+  last,
+  after,
+  before,
   sortKey = 'CREATED_AT',
   reverse = true,
   query = '',
 }: {
   first?: number;
+  last?: number;
+  after?: string;
+  before?: string;
   sortKey?:
     | 'BEST_SELLING'
     | 'CREATED_AT'
@@ -846,12 +993,21 @@ export async function getProducts({
     endCursor?: string;
   };
 }> {
-  const data = await shopifyRequest<{ products: ProductConnection }>(PRODUCTS_QUERY, {
-    first,
+  const variables: any = {
     sortKey,
     reverse,
     query,
-  });
+  };
+
+  if (before) {
+    variables.before = before;
+    variables.last = last || first || 20;
+  } else {
+    variables.after = after;
+    variables.first = first || 20;
+  }
+
+  const data = await shopifyRequest<{ products: ProductConnection }>(PRODUCTS_QUERY, variables);
 
   return {
     products: data?.products.nodes || [],
@@ -862,14 +1018,42 @@ export async function getProducts({
 
 export async function getProductRecommendations(
   productId: string,
-  intent: 'RELATED' | 'COMPLEMENTARY' = 'RELATED'
+  intent: 'RELATED' | 'COMPLEMENTARY' = 'RELATED',
+  limit: number = 8
 ): Promise<PartialDeep<Product, { recurseIntoArrays: true }>[]> {
-  const data = await shopifyRequest<{ productRecommendations: Product[] }>(PRODUCT_RECOMMENDATIONS_QUERY, {
-    productId,
-    intent,
-  });
+  // Input validation
+  if (!productId || typeof productId !== 'string') {
+    console.warn('getProductRecommendations: Invalid productId provided');
+    return [];
+  }
 
-  return data?.productRecommendations || [];
+  // Validate intent
+  if (!['RELATED', 'COMPLEMENTARY'].includes(intent)) {
+    console.warn('getProductRecommendations: Invalid intent provided, defaulting to RELATED');
+    intent = 'RELATED';
+  }
+
+  try {
+    const data = await shopifyRequest<{ productRecommendations: Product[] }>(PRODUCT_RECOMMENDATIONS_QUERY, {
+      productId,
+      intent,
+    });
+
+    const recommendations = data?.productRecommendations || [];
+
+    // Log for debugging (remove in production)
+    console.log(`Found ${recommendations.length} recommendations for product ${productId} with intent ${intent}`);
+
+    // Filter out any null/undefined products and limit results
+    const validRecommendations = recommendations
+      .filter((product): product is Product => product !== null && product !== undefined)
+      .slice(0, limit);
+
+    return validRecommendations;
+  } catch (error) {
+    console.error('Error fetching product recommendations:', error);
+    return [];
+  }
 }
 
 // ===========================
@@ -877,12 +1061,18 @@ export async function getProductRecommendations(
 // ===========================
 
 export async function getCollections({
-  first = 20,
+  first,
+  last,
+  after,
+  before,
   sortKey = 'TITLE',
   reverse = false,
   query = '',
 }: {
   first?: number;
+  last?: number;
+  after?: string;
+  before?: string;
   sortKey?: 'TITLE' | 'ID' | 'UPDATED_AT' | 'RELEVANCE';
   reverse?: boolean;
   query?: string;
@@ -891,22 +1081,32 @@ export async function getCollections({
   pageInfo: {
     hasNextPage: boolean;
     hasPreviousPage: boolean;
-    startCursor?: string;
-    endCursor?: string;
+    startCursor: string | undefined;
+    endCursor: string | undefined;
   };
   totalCount: number;
 }> {
-  const data = await shopifyRequest<{ collections: CollectionConnection }>(COLLECTIONS_QUERY, {
-    first,
+  // Ensure we have either first or last, but not both
+  const variables: any = {
     sortKey,
     reverse,
     query,
-  });
+  };
+
+  if (before) {
+    variables.before = before;
+    variables.last = last || first || 20;
+  } else {
+    variables.after = after;
+    variables.first = first || 20;
+  }
+
+  const data = await shopifyRequest<{ collections: CollectionConnection }>(COLLECTIONS_QUERY, variables);
 
   return {
     collections: data?.collections.nodes || [],
     pageInfo: normalizePageInfo(data?.collections.pageInfo),
-    totalCount: data?.collections.nodes?.length || 0, // Fixed: calculate from nodes length
+    totalCount: data?.collections.nodes?.length || 0,
   };
 }
 

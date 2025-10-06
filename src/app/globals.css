@@ -2,6 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* Brand Colors */
+  --primary: #830016;
+  --secondary: #efe8dd;
+  --accent: #ef4444;
+
+  /* Component Variables */
+  --normal-bg: var(--secondary); /* Using secondary (light beige) for background */
+  --normal-text: var(--primary); /* Using primary (dark red) for text */
+  --normal-border: var(--accent); /* Using accent (red) for border */
+  --border-radius: 0px;
+
+  /* Alternative option - if you want popover to use brand colors */
+  --popover: var(--secondary);
+  --popover-foreground: var(--primary);
+  --border: var(--accent);
+}
+
 /* Global CSS Reset and Base Styles */
 * {
   margin: 0;
@@ -83,4 +101,72 @@ table {
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+}
+/* Hide Google Translate default elements */
+.goog-te-gadget-simple {
+  display: none !important;
+}
+.goog-te-gadget-icon {
+  display: none !important;
+}
+.goog-te-banner-frame {
+  display: none !important;
+}
+.goog-te-menu-value {
+  display: none !important;
+}
+.skiptranslate {
+  display: none !important;
+}
+
+/* Prevent Google Translate from adding top margin */
+body {
+  top: 0 !important;
+  position: relative !important;
+}
+
+/* Hide the Google Translate element */
+#google_translate_element {
+  display: none !important;
+}
+
+/* Style translated elements */
+.goog-te-combo {
+  display: none !important;
+}
+
+/* Remove Google Translate branding */
+.goog-logo-link {
+  display: none !important;
+}
+
+.goog-te-gadget {
+  display: none !important;
+}
+
+/* Ensure translated content maintains proper styling */
+font[style*='background-color: rgba(0, 0, 255, 0.2)'] {
+  background-color: transparent !important;
+}
+
+/* Hide Google Translate popup */
+.goog-te-balloon-frame {
+  display: none !important;
+}
+
+/* Style for language notification */
+.goog-te-banner-frame.skiptranslate {
+  display: none !important;
+}
+
+/* Remove iframe borders */
+.goog-te-menu-frame {
+  max-height: 400px !important;
+  overflow-y: auto !important;
+  border: 1px solid #ccc !important;
+  border-radius: 8px !important;
+}
+
+.z-99 {
+  z-index: 99 !important;
 }

@@ -1,89 +1,488 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { useState } from 'react';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 import { ArrowUp } from '../icons/landingPage/ArrowUp';
+import { useWishlist } from '../layout/context/wishList';
 import { Button } from '../ui';
 
-const LandingPage = () => {
-  const [selectedPhone, setSelectedPhone] = useState(2); // Default to phone-1.png (id: 2)
+import type { Product } from '@shopify/hydrogen-react/storefront-api-types';
+import type { PartialDeep } from 'type-fest';
 
-  const phoneImages = [
-    { id: 1, src: '/landingPage/collections/phone-2.png', alt: 'Brown Phone Case' },
-    { id: 2, src: '/landingPage/collections/phone-1.png', alt: 'Pink Phone Case' },
-    { id: 3, src: '/landingPage/collections/phone-2.png', alt: 'Brown Phone Case Alt' },
-  ];
+interface LandingPageProps {
+  collectionHandle?: string;
+  maxProducts?: number;
+}
 
-  const handlePhoneSelect = (phoneId: any) => {
-    setSelectedPhone(phoneId);
+// Heart Icon Component
+const Heart = ({ className }: { className?: string }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    strokeWidth={2}
+    stroke="currentColor"
+    fill="none"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+  </svg>
+);
+
+// Skeleton Components
+const MainProductSkeleton = () => (
+  <div className="relative z-10">
+    <div className="animate-pulse">
+      {/* Desktop Skeleton */}
+      <div className="hidden md:block">
+        <div className="w-[400px] h-[600px] bg-gray-200 rounded-lg"></div>
+      </div>
+      {/* Mobile Skeleton */}
+      <div className="block md:hidden">
+        <div className="w-[280px] h-[420px] bg-gray-200 rounded-lg"></div>
+      </div>
+    </div>
+  </div>
+);
+
+const SideProductsSkeleton = () => (
+  <div className="absolute right-0 top-1/2 transform -translate-y-1/2 space-y-4 z-20">
+    {/* Up Arrow Skeleton */}
+    <div className="mx-7 w-6 h-6 bg-gray-200 rounded animate-pulse"></div>
+
+    {/* Product Options Skeleton */}
+    {Array.from({ length: 4 }).map((_, index) => (
+      <div key={index} className="p-2 border bg-gray-100 border-gray-300 animate-pulse">
+        <div className="w-[60px] h-[80px] bg-gray-200 rounded"></div>
+      </div>
+    ))}
+
+    {/* Down Arrow Skeleton */}
+    <div className="mx-7 w-6 h-6 bg-gray-200 rounded animate-pulse"></div>
+  </div>
+);
+
+const LandingPage = ({ collectionHandle = 'featured-products', maxProducts = 4 }: LandingPageProps) => {
+  const [selectedProduct, setSelectedProduct] = useState<number>(0);
+  const [products, setProducts] = useState<PartialDeep<Product, { recurseIntoArrays: true }>[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  const { addItem, removeItem, isInWishlist } = useWishlist();
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+
+  // Get current selected product
+  const selectedProductData = products[selectedProduct];
+
+  // Check if product is in wishlist
+  const isWishlisted = selectedProductData?.id ? isInWishlist(selectedProductData.id) : false;
+
+  const handleWishlistToggle = async () => {
+    if (!selectedProductData?.id) return;
+
+    setWishlistLoading(true);
+    try {
+      if (isWishlisted) {
+        removeItem(selectedProductData.id);
+      } else {
+        addItem(selectedProductData);
+      }
+    } catch (error) {
+      console.error('Failed to update wishlist:', error);
+    } finally {
+      setWishlistLoading(false);
+    }
   };
 
-  const selectedPhoneData = phoneImages.find((phone) => phone.id === selectedPhone);
+  // Trigger animations after component mounts
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Fetch products from API route
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await fetch(`/api/collections/${collectionHandle}?maxProducts=${maxProducts}`);
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch products: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // Filter products that have images and are available
+        const validProducts = data.products
+          .filter(
+            (product: PartialDeep<Product, { recurseIntoArrays: true }>) =>
+              product.images?.nodes?.length && product.images.nodes.length > 0 && product.availableForSale
+          )
+          .slice(0, maxProducts);
+
+        setProducts(validProducts);
+
+        // Set default selected product to the first one
+        if (validProducts.length > 0) {
+          setSelectedProduct(0);
+        }
+      } catch (err) {
+        console.error('Error fetching products:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load products');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [collectionHandle, maxProducts]);
+
+  // Reset image loaded state when product changes
+  useEffect(() => {
+    setImageLoaded(false);
+  }, [selectedProduct]);
+
+  // Get product image with fallback
+  const getProductImage = (product: PartialDeep<Product, { recurseIntoArrays: true }>, imageIndex: number = 0) => {
+    const image = product.images?.nodes?.[imageIndex];
+    return image
+      ? {
+          src: image.url || '',
+          alt: image.altText || product.title || 'Product image',
+          width: image.width || 400,
+          height: image.height || 600,
+        }
+      : null;
+  };
+
+  // Format price
+  const formatPrice = (amount: string, currencyCode: string) => {
+    const price = parseFloat(amount);
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currencyCode,
+    }).format(price);
+  };
+
+  const handleArrowClick = (direction: 'up' | 'down') => {
+    if (products.length === 0) return;
+
+    let newIndex;
+    if (direction === 'up') {
+      newIndex = selectedProduct > 0 ? selectedProduct - 1 : products.length - 1;
+    } else {
+      newIndex = selectedProduct < products.length - 1 ? selectedProduct + 1 : 0;
+    }
+    setSelectedProduct(newIndex);
+  };
+
+  const handleProductSelect = (productIndex: number) => {
+    setSelectedProduct(productIndex);
+  };
 
   return (
-    <div className="min-h-screen ">
+    <div className="min-h-screen">
       {/* Main Content */}
       <div className="container mx-auto px-4 py-24">
         <div className="grid lg:grid-cols-2 gap-12 items-center max-w-8xl mx-auto">
           {/* Left Content */}
-          <div className="space-y-8">
+          <div
+            className={`space-y-8 transition-all duration-1000 ease-out ${
+              isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-16'
+            }`}
+          >
             <div>
-              <h1 className="text-5xl lg:text-7xl font-bungee font-black text-gray-900 leading-tight">
-                CHERRIES FRESH
-                <br />
-                COLLECTION
-              </h1>
-              <p className="text-lg text-gray-700 mt-6 max-w-xl">
-                Cherries Was Born From The Desire To Reinvent Tech <br /> Not As Purely Functional
-              </p>
-              <div className="mt-8">
-                <Button showArrow className="">
-                  Shop Now
-                </Button>
+              {/* Dynamic Product Title */}
+              <div className="flex items-start gap-4">
+                <h1
+                  className={`text-5xl lg:text-7xl font-bungee font-black text-gray-900 leading-tight transition-all duration-1200 ease-out delay-200 ${
+                    isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-16'
+                  }`}
+                >
+                  {!loading && selectedProductData ? (
+                    <>
+                      CHERRIES FRESH
+                      <br />
+                      COLLECTION
+                      <hr className="border-gray-200 border-2 mt-1" />
+                      <span className="text-xl mt-4 flex items-center justify-between lg:text-2xl font-roboto font-normal ">
+                        {selectedProductData.title?.split(' ').slice(0, 2).join(' ').toUpperCase()}{' '}
+                        {selectedProductData.title?.split(' ').slice(2).join(' ').toUpperCase() || 'COLLECTION'}
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleWishlistToggle();
+                          }}
+                          disabled={wishlistLoading}
+                          className={` p-3  transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-110 active:scale-95 ${
+                            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                          }`}
+                          style={{ transitionDelay: '800ms' }}
+                          aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                        >
+                          <Heart
+                            className={`w-7 h-7 transition-colors ${
+                              isWishlisted ? 'fill-primary text-primary' : 'text-primary hover:text-primary'
+                            }`}
+                          />
+                        </button>
+                      </span>
+                      {/* Wishlist Button - Only show when product is loaded */}
+                    </>
+                  ) : (
+                    <>
+                      CHERRIES FRESH
+                      <br />
+                      COLLECTION
+                    </>
+                  )}
+                </h1>
               </div>
+
+              {/* Dynamic Product Price and Discount Info */}
+              {!loading && selectedProductData ? (
+                <div
+                  className={`mt-1 max-w-xl transition-all duration-1000 ease-out delay-400 ${
+                    isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'
+                  }`}
+                >
+                  {/* Price Display */}
+                  <div className="mb-2">
+                    {selectedProductData.priceRange?.minVariantPrice?.amount && (
+                      <div className="flex items-center gap-3">
+                        <span className="text-3xl lg:text-4xl font-bold text-gray-900">
+                          {formatPrice(
+                            selectedProductData.priceRange.minVariantPrice.amount,
+                            selectedProductData.priceRange.minVariantPrice.currencyCode || 'USD'
+                          )}
+                        </span>
+
+                        {/* Show compare at price if there's a discount */}
+                        {selectedProductData.compareAtPriceRange?.minVariantPrice?.amount &&
+                          selectedProductData.compareAtPriceRange?.minVariantPrice?.amount !== '0.0' && (
+                            <span className="text-xl text-gray-500 line-through">
+                              {formatPrice(
+                                selectedProductData.compareAtPriceRange.minVariantPrice.amount,
+                                selectedProductData.compareAtPriceRange.minVariantPrice.currencyCode || 'USD'
+                              )}
+                            </span>
+                          )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <p
+                  className={`text-lg text-gray-700 mt-6 max-w-xl transition-all duration-1000 ease-out delay-400 ${
+                    isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'
+                  }`}
+                >
+                  Cherries Was Born From The Desire To Reinvent Tech <br /> Not As Purely Functional
+                </p>
+              )}
+
+              {/* Product-specific CTA when product is selected */}
+              {!loading && selectedProductData && (
+                <div
+                  className={`mt-4 transition-all duration-1000 ease-out delay-600 ${
+                    isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'
+                  }`}
+                >
+                  <Link href={`/products/${selectedProductData.handle}`}>
+                    <Button showArrow className="mr-4 transition-all duration-300 hover:shadow-lg">
+                      View Product
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
-          {/* Right Content - Phone Display */}
-          <div className="relative flex justify-center items-center">
-            {/* Main Phone */}
-            <div className="relative z-10">
-              <Image
-                src={selectedPhoneData?.src || '/landingPage/collections/phone-1.png'}
-                alt={selectedPhoneData?.alt || 'Cherry Pattern Phone Case'}
-                width={400}
-                height={600}
-                className="drop-shadow-2xl"
-              />
-            </div>
-            {/* Side Phone Options */}
-            <div className="absolute right-0 top-1/2 transform -translate-y-1/2 space-y-4 z-20">
-              {/* Up Arrow */}
-              <button className="mx-7">
-                <ArrowUp />
-              </button>
-              {/* Phone Options */}
-              {phoneImages.map((phone, index) => (
-                <motion.div
-                  key={phone.id}
-                  className={`p-2 border cursor-pointer ${
-                    selectedPhone === phone.id ? 'bg-gray-200 border-gray-600' : 'bg-[#F9F9F9] border-gray-400'
-                  }`}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handlePhoneSelect(phone.id)}
+
+          {/* Right Content - Product Display */}
+          <div className="relative flex justify-start md:justify-center items-center">
+            {/* Loading State */}
+            {loading && (
+              <>
+                <MainProductSkeleton />
+                <SideProductsSkeleton />
+              </>
+            )}
+
+            {/* Error State */}
+            {error && !loading && (
+              <div className="text-center">
+                <p className="text-gray-600 mb-4">{error}</p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="text-blue-600 hover:text-blue-800 underline transition-colors duration-200"
                 >
-                  <Image src={phone.src} alt={phone.alt} width={60} height={80} className="rounded" />
-                </motion.div>
-              ))}
-              {/* Down Arrow */}
-              <button className="rotate-180 mx-7">
-                <ArrowUp />
-              </button>
-            </div>
+                  Try again
+                </button>
+              </div>
+            )}
+
+            {/* Products Display */}
+            {!loading && !error && products.length > 0 && (
+              <>
+                {/* Main Product */}
+                <div
+                  className={`relative z-10 transition-all duration-1200 ease-out delay-600 ${
+                    isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+                  }`}
+                >
+                  {selectedProductData && getProductImage(selectedProductData) && (
+                    <div
+                      key={selectedProduct}
+                      className={`transition-all duration-500 ease-out ${
+                        imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+                      }`}
+                    >
+                      {/* Desktop Image */}
+                      <div className="hidden md:block">
+                        <Image
+                          src={getProductImage(selectedProductData)!.src}
+                          alt={getProductImage(selectedProductData)!.alt}
+                          width={400}
+                          height={600}
+                          className="drop-shadow-2xl object-cover rounded-lg transition-transform duration-300 "
+                          priority={selectedProduct === 0}
+                          onLoad={() => setImageLoaded(true)}
+                          onError={(e) => {
+                            console.error('Image failed to load:', getProductImage(selectedProductData)!.src);
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      </div>
+
+                      {/* Mobile Image */}
+                      <div className="block md:hidden">
+                        <Image
+                          src={getProductImage(selectedProductData)!.src}
+                          alt={getProductImage(selectedProductData)!.alt}
+                          width={280}
+                          height={420}
+                          className="drop-shadow-2xl object-contain rounded-lg transition-transform duration-300  scale-x-150 scale-y-150"
+                          priority={selectedProduct === 0}
+                          onLoad={() => setImageLoaded(true)}
+                          onError={(e) => {
+                            console.error('Image failed to load:', getProductImage(selectedProductData)!.src);
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Fallback if no image */}
+                  {selectedProductData && !getProductImage(selectedProductData) && (
+                    <div className="flex items-center justify-center bg-gray-200 rounded-lg">
+                      <div className="hidden md:block w-[400px] h-[600px] flex items-center justify-center">
+                        <p className="text-gray-500">No image available</p>
+                      </div>
+                      <div className="block md:hidden w-[280px] h-[420px] flex items-center justify-center">
+                        <p className="text-gray-500">No image available</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Side Product Options */}
+                <div
+                  className={`absolute right-0 top-1/2 transform -translate-y-1/2 space-y-4 z-20 transition-all duration-1000 ease-out delay-1000 ${
+                    isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'
+                  }`}
+                >
+                  {/* Up Arrow */}
+                  <button
+                    className="mx-7 transition-all duration-200 hover:scale-110 hover:-translate-y-1 active:scale-90"
+                    onClick={() => handleArrowClick('up')}
+                  >
+                    <ArrowUp />
+                  </button>
+
+                  {/* Product Options */}
+                  {products.map((product, index) => {
+                    const image = getProductImage(product);
+                    return (
+                      <div
+                        key={product.id}
+                        className={`p-2 border cursor-pointer transition-all duration-300 hover:scale-105 hover:-translate-x-2 active:scale-95 ${
+                          selectedProduct === index
+                            ? 'bg-gray-200 border-gray-600 shadow-md'
+                            : 'bg-[#F9F9F9] border-gray-400 hover:bg-gray-100 hover:border-gray-500'
+                        }`}
+                        onClick={() => handleProductSelect(index)}
+                        style={{
+                          animationDelay: `${1200 + index * 100}ms`,
+                          animation: isVisible ? 'slideInRight 0.6s ease-out forwards' : 'none',
+                        }}
+                      >
+                        {image ? (
+                          <Image
+                            src={image.src}
+                            alt={image.alt}
+                            width={60}
+                            height={80}
+                            className="rounded object-cover transition-transform duration-200 hover:scale-110"
+                            loading="lazy"
+                            onError={(e) => {
+                              // Replace with placeholder if image fails
+                              (e.target as HTMLImageElement).src =
+                                'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA2MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yMCAzNkgyNFYzMkgyOFYzNkgzMlY0MEgyOFY0NEgyNFY0MEgyMFYzNloiIGZpbGw9IiM5Q0EzQUYiLz4KPC9zdmc+';
+                            }}
+                          />
+                        ) : (
+                          <div className="w-[60px] h-[80px] bg-gray-200 rounded flex items-center justify-center">
+                            <span className="text-xs text-gray-500">No image</span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+
+                  {/* Down Arrow */}
+                  <button
+                    className="rotate-180 mx-7 transition-all duration-200 hover:scale-110 hover:translate-y-1 active:scale-90"
+                    onClick={() => handleArrowClick('down')}
+                  >
+                    <ArrowUp />
+                  </button>
+                </div>
+              </>
+            )}
+
+            {/* No Products State */}
+            {!loading && !error && products.length === 0 && (
+              <div className="text-center">
+                <p className="text-gray-600">No products available in this collection.</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Add keyframe animations */}
+      <style jsx>{`
+        @keyframes slideInRight {
+          from {
+            opacity: 0;
+            transform: translateX(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+      `}</style>
     </div>
   );
 };

@@ -12,7 +12,8 @@ export default function Home() {
   return (
     <main className="bg-white">
       <HeroSection />
-      <CollectionSection />
+
+      <CollectionSection collectionHandle="phone-cases" maxProducts={4} />
       <NewestProductSection />
       <CategoriesSection />
       <SubscribeSection />

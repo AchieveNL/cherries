@@ -236,36 +236,13 @@ export async function initiateLogin(email?: string): Promise<void> {
  * Complete logout process
  * Clears local tokens and optionally redirects to Shopify logout
  */
-export async function logout(redirectToShopify: boolean = false): Promise<void> {
-  console.log('Logging out, redirectToShopify:', redirectToShopify);
+export async function logout(): Promise<void> {
+  console.log('Logging out...');
 
-  const tokens = getStoredTokens();
-
-  // Clear local tokens first
+  // Clear local tokens
   clearTokens();
 
-  if (redirectToShopify && tokens?.idToken) {
-    try {
-      const shopId = process.env.NEXT_PUBLIC_SHOPIFY_SHOP_ID;
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-
-      if (shopId && appUrl) {
-        const logoutUrl = `https://shopify.com/authentication/${shopId}/logout`;
-        const params = new URLSearchParams({
-          id_token_hint: tokens.idToken,
-          post_logout_redirect_uri: appUrl,
-        });
-
-        console.log('Redirecting to Shopify logout:', `${logoutUrl}?${params.toString()}`);
-        window.location.href = `${logoutUrl}?${params.toString()}`;
-        return;
-      }
-    } catch (error) {
-      console.error('Shopify logout error:', error);
-    }
-  }
-
-  // Fallback: redirect to home page
+  // Always redirect to home page
   console.log('Redirecting to home page');
   window.location.href = '/';
 }
